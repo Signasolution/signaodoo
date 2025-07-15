@@ -1,0 +1,50 @@
+name: Example Workflow (Build and Push)
+
+run-name: Build ${{ github.ref_name }} image
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - '**'
+
+jobs:
+  build-and-push:
+    name: "Ofleet : build & push"
+    runs-on: ubuntu-latest
+    container: ofleet/builder:v1-stable
+    env:
+      DOCKER_REGISTRY: "ghcr.io"
+      DOCKER_USERNAME: ${{ github.actor }}
+      DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Check out the repo from branch
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+#          token: ${{ secrets.SUBMODULE_PRIVATE_TOKEN }}     if you need to checkout submodules with private token
+      - name: Build and push image
+        env:
+          OFLEET_ODOO_IMAGE: ${{ vars.OFLEET_ODOO_IMAGE }}
+        run: |
+          ofleet-prepare ${OFLEET_ODOO_IMAGE} ${GITHUB_WORKSPACE}
+          ofleet-build "${DOCKER_REGISTRY}/${GITHUB_REPOSITORY}:${{github.ref_name}}-${GITHUB_SHA}" "${DOCKER_REGISTRY}" "${DOCKER_USERNAME}" "${DOCKER_PASSWORD}" "${GITHUB_WORKSPACE}"
+
+  deploy:
+    name: "Trigger Deployment"
+    runs-on: ubuntu-latest
+    container: ofleet/builder:v1-stable
+    needs: build-and-push
+    if: github.ref_type != 'tag'  # Do not execute for release
+    env:
+      OFLEET_TOKEN: ${{ secrets.OFLEET_TOKEN }}
+      OFLEET_PROJECT_ID: ${{ vars.OFLEET_PROJECT_ID }}
+      OFLEET_PRODUCTION_ID: ${{ vars.OFLEET_PRODUCTION_ID }}
+    steps:
+      - name: Deploy to Ofleet
+        run: |
+          ofleet-deploy "${OFLEET_TOKEN}" "${OFLEET_PROJECT_ID}" "${OFLEET_PRODUCTION_ID}" "${{github.ref_name}}-${GITHUB_SHA}" "${{github.ref_name}}"
