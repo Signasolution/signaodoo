@@ -1,6 +1,6 @@
 {
     "name": "Product Pricelist Qty Table",
-    "version": "1.1",
+    "version": "1.0",
     "depends": ["website_sale", "product"],
     "category": "Website",
     "summary": "Affiche un tableau des prix dégressifs sur les pages produit du site web",
