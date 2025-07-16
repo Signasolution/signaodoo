@@ -36,7 +36,7 @@
             rows.forEach(row => {
                 const rowQty = parseFloat(row.dataset.qty);
                 if (qty >= rowQty) {
-                    matched = row; // la plus grande quantité <= qty
+                    matched = row;
                 }
             });
 
