@@ -13,7 +13,7 @@
             "product_pricelist_qty_table/static/src/js/pricelist_table.js"
         ]
     },
-    "installable": true,
-    "application": false,
-    "auto_install": false
+    "installable": True,
+    "application": False,
+    "auto_install": False
 }
