@@ -1,7 +1,7 @@
 from odoo import models
 
-class ProductTemplate(models.Model):
-    _inherit = 'product.template'
+class ProductProduct(models.Model):
+    _inherit = 'product.product'
 
     def get_pricelist_items(self):
         self.ensure_one()
@@ -9,5 +9,5 @@ class ProductTemplate(models.Model):
         return self.env['product.pricelist.item'].search([
             ('pricelist_id', '=', pricelist.id),
             ('applied_on', '=', '1_product'),
-            ('product_tmpl_id', '=', self.id)
+            ('product_id', '=', self.id)
         ])
