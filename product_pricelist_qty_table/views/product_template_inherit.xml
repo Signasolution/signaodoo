@@ -1,6 +1,6 @@
 <odoo>
     <template id="product_pricelist_table" inherit_id="website_sale.product">
-        <xpath expr="//div[@id='product_details']" position="inside">
+        <xpath expr="//div[@id='add_to_cart']" position="after">
             <t t-set="pricelist_items" t-value="product.get_pricelist_items_by_quantity()"/>
             <t t-if="pricelist_items">
                 <div class="table-responsive mt-3">
