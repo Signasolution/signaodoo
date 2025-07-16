@@ -1,8 +1,8 @@
 <odoo>
     <template id="product_pricelist_table" inherit_id="website_sale.product">
-        <xpath expr="//div[@id='product_details']" position="inside">
+        <xpath expr="//div[@id='product_details']" position="before">
             <t t-set="pricelist_items" t-value="product.get_pricelist_items_by_quantity()"/>
-            <t t-if="pricelist_items">
+            <t t-if="pricelist_items and pricelist_items|length > 0">
                 <div class="table-responsive mt-3">
                     <table class="table table-bordered">
                         <thead>
@@ -23,62 +23,6 @@
                         </tbody>
                     </table>
                 </div>
-                <script type="text/javascript">
-                    document.addEventListener('DOMContentLoaded', function () {
-                        function highlightActiveRow(currentQty) {
-                            let matched = null;
-                            document.querySelectorAll('.hoverable-row').forEach(function (row) {
-                                const minQty = parseFloat(row.dataset.qty);
-                                if (currentQty >= minQty) {
-                                    matched = row;
-                                }
-                                row.classList.remove('selected-row');
-                            });
-                            if (matched) {
-                                matched.classList.add('selected-row');
-                            }
-                        }
-
-                        function attachQtyEvents() {
-                            const rows = document.querySelectorAll('.hoverable-row');
-                            const qtyInput = document.querySelector('#quantity');
-                            if (!qtyInput) return;
-
-                            rows.forEach(function (row) {
-                                row.addEventListener('click', function () {
-                                    const qty = parseFloat(row.dataset.qty);
-                                    qtyInput.value = qty;
-                                    qtyInput.dispatchEvent(new Event('input', { bubbles: true }));
-                                    qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
-                                    highlightActiveRow(qty);
-                                });
-                            });
-
-                            // Highlight on page load
-                            highlightActiveRow(parseFloat(qtyInput.value));
-
-                            // Highlight when manually changing input
-                            qtyInput.addEventListener('input', function () {
-                                const currentQty = parseFloat(qtyInput.value);
-                                if (!isNaN(currentQty)) {
-                                    highlightActiveRow(currentQty);
-                                }
-                            });
-                        }
-
-                        attachQtyEvents();
-                        setTimeout(attachQtyEvents, 1000);
-                    });
-                </script>
-                <style>
-                    .hoverable-row:hover {
-                        background-color: #f2f2f2;
-                    }
-                    .selected-row {
-                        background-color: #d1e7dd !important;
-                        font-weight: bold;
-                    }
-                </style>
             </t>
         </xpath>
     </template>

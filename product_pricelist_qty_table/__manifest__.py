@@ -9,4 +9,9 @@
     ],
     "installable": True,
     "auto_install": False
+    "assets": {
+        "web.assets_frontend": [
+            "product_pricelist_qty_table/static/src/js/pricelist_table.js"
+        ]
+    },
 }
