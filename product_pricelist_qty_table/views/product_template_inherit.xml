@@ -74,6 +74,29 @@
     }
 </style>
 </t>
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+        const qtyInput = document.querySelector('input[name="add_qty"]');
+        const tableRows = document.querySelectorAll("#pricelist_table tr[data-quantity]");
+
+        function highlightRow() {
+            if (!qtyInput || tableRows.length === 0) return;
+            const qty = parseFloat(qtyInput.value);
+            let matchedRow = null;
+            tableRows.forEach(row => {
+                row.classList.remove("highlighted-row");
+                const rowQty = parseFloat(row.getAttribute("data-quantity"));
+                if (qty >= rowQty) matchedRow = row;
+            });
+            if (matchedRow) matchedRow.classList.add("highlighted-row");
+        }
+
+        if (qtyInput) {
+            qtyInput.addEventListener("input", highlightRow);
+            highlightRow(); // init
+        }
+    });
+</script>
                         </tbody>
                     </table>
                 </div>
