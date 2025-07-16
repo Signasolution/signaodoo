@@ -24,24 +24,37 @@
                         </tbody>
                     </table>
                 </div>
-                <script type="text/javascript">
-                    document.addEventListener('DOMContentLoaded', function () {
-                        document.querySelectorAll('.hoverable-row').forEach(function (row) {
-                            row.addEventListener('click', function () {
-                                const qty = parseFloat(row.dataset.qty);
-                                const input = document.querySelector('#quantity');
-                                if (input) {
-                                    input.value = qty;
-                                    input.dispatchEvent(new Event('input', { bubbles: true }));
-                                    input.dispatchEvent(new Event('change', { bubbles: true }));
-                                    input.dispatchEvent(new Event('blur'));
-                                }
-                                document.querySelectorAll('.hoverable-row').forEach(r => r.classList.remove('selected-row'));
-                                row.classList.add('selected-row');
-                            });
-                        });
-                    });
-                </script>
+                
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.hoverable-row').forEach(function (row) {
+            row.addEventListener('click', function () {
+                const qty = parseFloat(row.dataset.qty);
+                const input = document.querySelector('input[name="add_qty"], #quantity');
+
+                if (input) {
+                    input.value = qty;
+
+                    // Déclenche tous les événements nécessaires
+                    ['input', 'change', 'blur'].forEach(ev =>
+                        input.dispatchEvent(new Event(ev, { bubbles: true }))
+                    );
+
+                    // Forcer recalcul pour Owl ou autres thèmes
+                    const recalcButton = document.querySelector('.oe_website_sale .js_product');
+                    if (recalcButton) {
+                        recalcButton.click();
+                    }
+                }
+
+                // Effet visuel
+                document.querySelectorAll('.hoverable-row').forEach(r => r.classList.remove('selected-row'));
+                row.classList.add('selected-row');
+            });
+        });
+    });
+</script>
+
                 <style>
                     .hoverable-row:hover {
                         background-color: #f2f2f2;
