@@ -32,3 +32,22 @@ class ProductTemplate(models.Model):
                 'currency': currency,
             })
         return results
+
+from odoo import models, fields
+
+class ProductTemplate(models.Model):
+    _inherit = 'product.template'
+
+    pricelist_qty_html = fields.Html(string="Tableau des prix", compute="_compute_pricelist_qty_html", sanitize=False)
+
+    def _compute_pricelist_qty_html(self):
+        for rec in self:
+            items = rec.get_pricelist_items_by_quantity()
+            if len(items) <= 1:
+                rec.pricelist_qty_html = ""
+            else:
+                table = "<table class='table table-sm'><thead><tr><th>Quantité</th><th>Prix</th></tr></thead><tbody>"
+                for item in items:
+                    table += f"<tr><td>{item['min_quantity']}</td><td>{item['currency'].symbol} {item['price']:.2f}</td></tr>"
+                table += "</tbody></table>"
+                rec.pricelist_qty_html = table
