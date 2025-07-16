@@ -21,7 +21,8 @@
                                     <td><t t-out="item['currency'].symbol + ' ' + ('%.2f' % item['price'])"/></td>
                                 </tr>
                             
-<script type="text/javascript">
+
+<script type="text/javascript"><![CDATA[
     document.addEventListener('DOMContentLoaded', function () {
         const rows = document.querySelectorAll('.hoverable-row');
         const input = document.querySelector('input[name="add_qty"], #quantity');
@@ -30,7 +31,7 @@
             let matched = null;
             rows.forEach(function(row) {
                 const rowQty = parseFloat(row.dataset.qty);
-                if (!isNaN(rowQty) &amp;&amp; qty &gt;= rowQty) {
+                if (!isNaN(rowQty) && qty >= rowQty) {
                     matched = row;
                 }
             });
@@ -55,7 +56,7 @@
         rows.forEach(function(row) {
             row.addEventListener('click', function () {
                 const qty = parseFloat(row.dataset.qty);
-                if (input &amp;&amp; !isNaN(qty)) {
+                if (input && !isNaN(qty)) {
                     input.value = qty;
                     ['input', 'change', 'blur'].forEach(function(ev) {
                         input.dispatchEvent(new Event(ev, { bubbles: true }));
@@ -65,7 +66,8 @@
             });
         });
     });
-</script>
+]]></script>
+
 <style>
     .selected-row {
         background-color: #f0f8ff;
@@ -77,16 +79,17 @@
                 </div>
                 
 
-<script type="text/javascript">
+
+<script type="text/javascript"><![CDATA[
     document.addEventListener('DOMContentLoaded', function () {
-        var rows = document.querySelectorAll('.hoverable-row');
-        var input = document.querySelector('input[name="add_qty"], #quantity');
+        const rows = document.querySelectorAll('.hoverable-row');
+        const input = document.querySelector('input[name="add_qty"], #quantity');
 
         function highlightMatchingRow(qty) {
-            var matched = null;
+            let matched = null;
             rows.forEach(function(row) {
-                var rowQty = parseFloat(row.dataset.qty);
-                if (qty &gt;= rowQty) {
+                const rowQty = parseFloat(row.dataset.qty);
+                if (!isNaN(rowQty) && qty >= rowQty) {
                     matched = row;
                 }
             });
@@ -101,27 +104,28 @@
 
         if (input) {
             input.addEventListener('input', function () {
-                var qty = parseFloat(input.value);
+                const qty = parseFloat(input.value);
                 if (!isNaN(qty)) {
                     highlightMatchingRow(qty);
                 }
             });
         }
 
-        rows.forEach(function (row) {
+        rows.forEach(function(row) {
             row.addEventListener('click', function () {
-                var qty = parseFloat(row.dataset.qty);
-                if (input) {
+                const qty = parseFloat(row.dataset.qty);
+                if (input && !isNaN(qty)) {
                     input.value = qty;
                     ['input', 'change', 'blur'].forEach(function(ev) {
                         input.dispatchEvent(new Event(ev, { bubbles: true }));
                     });
+                    highlightMatchingRow(qty);
                 }
-                highlightMatchingRow(qty);
             });
         });
     });
-</script>
+]]></script>
+
 
 
                 <style>
@@ -134,7 +138,8 @@
                     }
                 </style>
             
-<script type="text/javascript">
+
+<script type="text/javascript"><![CDATA[
     document.addEventListener('DOMContentLoaded', function () {
         const rows = document.querySelectorAll('.hoverable-row');
         const input = document.querySelector('input[name="add_qty"], #quantity');
@@ -143,7 +148,7 @@
             let matched = null;
             rows.forEach(function(row) {
                 const rowQty = parseFloat(row.dataset.qty);
-                if (!isNaN(rowQty) &amp;&amp; qty &gt;= rowQty) {
+                if (!isNaN(rowQty) && qty >= rowQty) {
                     matched = row;
                 }
             });
@@ -168,7 +173,7 @@
         rows.forEach(function(row) {
             row.addEventListener('click', function () {
                 const qty = parseFloat(row.dataset.qty);
-                if (input &amp;&amp; !isNaN(qty)) {
+                if (input && !isNaN(qty)) {
                     input.value = qty;
                     ['input', 'change', 'blur'].forEach(function(ev) {
                         input.dispatchEvent(new Event(ev, { bubbles: true }));
@@ -178,7 +183,8 @@
             });
         });
     });
-</script>
+]]></script>
+
 <style>
     .selected-row {
         background-color: #f0f8ff;
