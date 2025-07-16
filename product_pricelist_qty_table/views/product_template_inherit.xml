@@ -32,7 +32,9 @@
                                 const input = document.querySelector('#quantity');
                                 if (input) {
                                     input.value = qty;
-                                    input.dispatchEvent(new Event('change'));
+                                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                                    input.dispatchEvent(new Event('blur'));
                                 }
                                 document.querySelectorAll('.hoverable-row').forEach(r => r.classList.remove('selected-row'));
                                 row.classList.add('selected-row');
