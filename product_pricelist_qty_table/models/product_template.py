@@ -5,7 +5,13 @@ class ProductTemplate(models.Model):
 
     def get_pricelist_items_by_quantity(self, pricelist=None):
         self.ensure_one()
-        pricelist = pricelist or self.env['product.pricelist'].get_partner_pricelist(self.env.user.partner_id)
+        # Correction ici : récupération de la liste de prix depuis le contexte
+        pricelist = (
+            pricelist
+            or self.env.context.get('pricelist')
+            or self.env.user.partner_id.property_product_pricelist.id
+        )
+        pricelist = self.env['product.pricelist'].browse(pricelist)
 
         product_variants = self.product_variant_ids
         items = self.env['product.pricelist.item'].search([
