@@ -7,15 +7,7 @@
         <field name="arch" type="xml">
             <xpath expr="//page[@name='sales']" position="inside">
                 <group string="Tarifs dégressifs (liste active)">
-                    <field name="product_variant_ids" invisible="1"/>
-                    <field name="product_pricelist_item_ids" invisible="1" attrs="{'invisible': [('product_variant_ids', '=', False)]}"/>
                     <div>
-                        <label for="product_variant_ids" string=""/>
-                        <div class="oe_structure"/>
-                        <field name="product_variant_ids" widget="many2many_tags" readonly="1"/>
-                    </div>
-                    <div>
-                        <label string="Tarifs (liste active)"/>
                         <t t-set="pricelist_items" t-value="get_pricelist_items_by_quantity()"/>
                         <t t-if="pricelist_items and len(pricelist_items) &gt; 1">
                             <table class="o_table_view table table-sm mt-2">
