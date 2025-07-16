@@ -1,6 +1,6 @@
 <odoo>
-    <template id="product_pricelist_table" inherit_id="website_sale.product">
-        <xpath expr="//form[contains(@class, 'cart')]" position="after">
+  <template id="product_pricelist_under_cart" inherit_id="website_sale.product" name="Pricing table below cart">
+    <xpath expr="//a[@id='add_to_cart']" position="after">
             <t t-set="pricelist_items" t-value="product.get_pricelist_items_by_quantity()"/>
             <t t-if="pricelist_items">
                 <div class="table-responsive mt-3">
@@ -51,6 +51,6 @@
                     }
                 </style>
             </t>
-        </xpath>
-    </template>
+    </xpath>
+  </template>
 </odoo>
