@@ -25,20 +25,49 @@
                 </div>
                 <script type="text/javascript">
                     document.addEventListener('DOMContentLoaded', function () {
-                        document.querySelectorAll('.hoverable-row').forEach(function (row) {
-                            row.addEventListener('click', function () {
-                                const qty = parseFloat(row.dataset.qty);
-                                const input = document.querySelector('#quantity');
-                                if (input) {
-                                    input.value = qty;
-                                    input.dispatchEvent(new Event('change'));
+                        function highlightActiveRow(currentQty) {
+                            let matched = null;
+                            document.querySelectorAll('.hoverable-row').forEach(function (row) {
+                                const minQty = parseFloat(row.dataset.qty);
+                                if (currentQty >= minQty) {
+                                    matched = row;
                                 }
-                                // Enlever la classe des autres lignes
-                                document.querySelectorAll('.hoverable-row').forEach(r => r.classList.remove('selected-row'));
-                                // Ajouter la classe à la ligne cliquée
-                                row.classList.add('selected-row');
+                                row.classList.remove('selected-row');
                             });
-                        });
+                            if (matched) {
+                                matched.classList.add('selected-row');
+                            }
+                        }
+
+                        function attachQtyEvents() {
+                            const rows = document.querySelectorAll('.hoverable-row');
+                            const qtyInput = document.querySelector('#quantity');
+                            if (!qtyInput) return;
+
+                            rows.forEach(function (row) {
+                                row.addEventListener('click', function () {
+                                    const qty = parseFloat(row.dataset.qty);
+                                    qtyInput.value = qty;
+                                    qtyInput.dispatchEvent(new Event('input', { bubbles: true }));
+                                    qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
+                                    highlightActiveRow(qty);
+                                });
+                            });
+
+                            // Highlight on page load
+                            highlightActiveRow(parseFloat(qtyInput.value));
+
+                            // Highlight when manually changing input
+                            qtyInput.addEventListener('input', function () {
+                                const currentQty = parseFloat(qtyInput.value);
+                                if (!isNaN(currentQty)) {
+                                    highlightActiveRow(currentQty);
+                                }
+                            });
+                        }
+
+                        attachQtyEvents();
+                        setTimeout(attachQtyEvents, 1000);
                     });
                 </script>
                 <style>
