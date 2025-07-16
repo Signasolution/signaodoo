@@ -30,7 +30,7 @@
             let matched = null;
             rows.forEach(function(row) {
                 const rowQty = parseFloat(row.dataset.qty);
-                if (!isNaN(rowQty) && qty >= rowQty) {
+                if (!isNaN(rowQty) &amp;&amp; qty &gt;= rowQty) {
                     matched = row;
                 }
             });
@@ -55,7 +55,7 @@
         rows.forEach(function(row) {
             row.addEventListener('click', function () {
                 const qty = parseFloat(row.dataset.qty);
-                if (input && !isNaN(qty)) {
+                if (input &amp;&amp; !isNaN(qty)) {
                     input.value = qty;
                     ['input', 'change', 'blur'].forEach(function(ev) {
                         input.dispatchEvent(new Event(ev, { bubbles: true }));
@@ -86,7 +86,7 @@
             var matched = null;
             rows.forEach(function(row) {
                 var rowQty = parseFloat(row.dataset.qty);
-                if (qty >= rowQty) {
+                if (qty &gt;= rowQty) {
                     matched = row;
                 }
             });
@@ -143,7 +143,7 @@
             let matched = null;
             rows.forEach(function(row) {
                 const rowQty = parseFloat(row.dataset.qty);
-                if (!isNaN(rowQty) && qty >= rowQty) {
+                if (!isNaN(rowQty) &amp;&amp; qty &gt;= rowQty) {
                     matched = row;
                 }
             });
@@ -168,7 +168,7 @@
         rows.forEach(function(row) {
             row.addEventListener('click', function () {
                 const qty = parseFloat(row.dataset.qty);
-                if (input && !isNaN(qty)) {
+                if (input &amp;&amp; !isNaN(qty)) {
                     input.value = qty;
                     ['input', 'change', 'blur'].forEach(function(ev) {
                         input.dispatchEvent(new Event(ev, { bubbles: true }));
