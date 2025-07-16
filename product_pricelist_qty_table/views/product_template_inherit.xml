@@ -23,28 +23,15 @@
                             
 
 
-                
-
-
-
-
-
-            
-
-
-        </xpath>
-    </template>
-</odoo>
-        </tbody>
-    </table>
-</div>
-</t>
-
 <style>
     .selected-row {
         background-color: #f0f8ff;
     }
 </style>
+</t>
+
+
+
                 <style>
                     .hoverable-row:hover {
                         background-color: #f2f2f2;
@@ -54,144 +41,72 @@
                         font-weight: bold;
                     }
                 </style>
+            
+
+
 <style>
     .selected-row {
         background-color: #f0f8ff;
     }
 </style>
+</t>
+        </xpath>
+    </template>
+</odoo>
 
-<script type="text/javascript"><![CDATA[
-    document.addEventListener('DOMContentLoaded', function () {
-        const rows = document.querySelectorAll('.hoverable-row');
-        const input = document.querySelector('input[name="add_qty"], #quantity');
+        </tbody>
+    </table>
+</div>
+</t>
+</t>
+</xpath>
 
-        function highlightMatchingRow(qty) {
-            let matched = null;
-            rows.forEach(function(row) {
-                const rowQty = parseFloat(row.dataset.qty);
-                if (!isNaN(rowQty) && qty >= rowQty) {
-                    matched = row;
+<xpath expr="//head" position="inside">
+    <style>
+        .hoverable-row.selected-row {
+            border: 2px solid black !important;
+        }
+    </style>
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const rows = document.querySelectorAll('.hoverable-row');
+            const input = document.querySelector('input[name="add_qty"], #quantity');
+
+            function highlightMatchingRow(qty) {
+                let matched = null;
+                rows.forEach(function(row) {
+                    const rowQty = parseFloat(row.dataset.qty);
+                    if (!isNaN(rowQty) && qty >= rowQty) {
+                        matched = row;
+                    }
+                });
+
+                rows.forEach(function(r) {
+                    r.classList.remove('selected-row');
+                });
+                if (matched) {
+                    matched.classList.add('selected-row');
                 }
-            });
-
-            rows.forEach(function(r) {
-                r.classList.remove('selected-row');
-            });
-            if (matched) {
-                matched.classList.add('selected-row');
             }
-        }
 
-        if (input) {
-            input.addEventListener('input', function () {
-                const qty = parseFloat(input.value);
-                if (!isNaN(qty)) {
-                    highlightMatchingRow(qty);
-                }
-            });
-        }
+            if (input) {
+                input.addEventListener('input', function() {
+                    const qty = parseFloat(input.value);
+                    if (!isNaN(qty)) {
+                        highlightMatchingRow(qty);
+                    }
+                });
+            }
 
-        rows.forEach(function(row) {
-            row.addEventListener('click', function () {
-                const qty = parseFloat(row.dataset.qty);
-                if (input && !isNaN(qty)) {
-                    input.value = qty;
-                    ['input', 'change', 'blur'].forEach(function(ev) {
-                        input.dispatchEvent(new Event(ev, { bubbles: true }));
-                    });
-                    highlightMatchingRow(qty);
-                }
+            rows.forEach(function(row) {
+                row.addEventListener('click', function () {
+                    const qty = parseFloat(row.dataset.qty);
+                    if (!isNaN(qty) && input) {
+                        input.value = qty;
+                        input.dispatchEvent(new Event('input'));
+                    }
+                });
             });
         });
-    });
-]]></script>
-<script type="text/javascript"><![CDATA[
-    document.addEventListener('DOMContentLoaded', function () {
-        const rows = document.querySelectorAll('.hoverable-row');
-        const input = document.querySelector('input[name="add_qty"], #quantity');
-
-        function highlightMatchingRow(qty) {
-            let matched = null;
-            rows.forEach(function(row) {
-                const rowQty = parseFloat(row.dataset.qty);
-                if (!isNaN(rowQty) && qty >= rowQty) {
-                    matched = row;
-                }
-            });
-
-            rows.forEach(function(r) {
-                r.classList.remove('selected-row');
-            });
-            if (matched) {
-                matched.classList.add('selected-row');
-            }
-        }
-
-        if (input) {
-            input.addEventListener('input', function () {
-                const qty = parseFloat(input.value);
-                if (!isNaN(qty)) {
-                    highlightMatchingRow(qty);
-                }
-            });
-        }
-
-        rows.forEach(function(row) {
-            row.addEventListener('click', function () {
-                const qty = parseFloat(row.dataset.qty);
-                if (input && !isNaN(qty)) {
-                    input.value = qty;
-                    ['input', 'change', 'blur'].forEach(function(ev) {
-                        input.dispatchEvent(new Event(ev, { bubbles: true }));
-                    });
-                    highlightMatchingRow(qty);
-                }
-            });
-        });
-    });
-]]></script>
-<script type="text/javascript"><![CDATA[
-    document.addEventListener('DOMContentLoaded', function () {
-        const rows = document.querySelectorAll('.hoverable-row');
-        const input = document.querySelector('input[name="add_qty"], #quantity');
-
-        function highlightMatchingRow(qty) {
-            let matched = null;
-            rows.forEach(function(row) {
-                const rowQty = parseFloat(row.dataset.qty);
-                if (!isNaN(rowQty) && qty >= rowQty) {
-                    matched = row;
-                }
-            });
-
-            rows.forEach(function(r) {
-                r.classList.remove('selected-row');
-            });
-            if (matched) {
-                matched.classList.add('selected-row');
-            }
-        }
-
-        if (input) {
-            input.addEventListener('input', function () {
-                const qty = parseFloat(input.value);
-                if (!isNaN(qty)) {
-                    highlightMatchingRow(qty);
-                }
-            });
-        }
-
-        rows.forEach(function(row) {
-            row.addEventListener('click', function () {
-                const qty = parseFloat(row.dataset.qty);
-                if (input && !isNaN(qty)) {
-                    input.value = qty;
-                    ['input', 'change', 'blur'].forEach(function(ev) {
-                        input.dispatchEvent(new Event(ev, { bubbles: true }));
-                    });
-                    highlightMatchingRow(qty);
-                }
-            });
-        });
-    });
-]]></script>
+    </script>
+</xpath>
