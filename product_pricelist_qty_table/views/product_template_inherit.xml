@@ -20,7 +20,58 @@
                                     <td><t t-esc="item['min_quantity']"/></td>
                                     <td><t t-out="item['currency'].symbol + ' ' + ('%.2f' % item['price'])"/></td>
                                 </tr>
-                            </t>
+                            
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        const rows = document.querySelectorAll('.hoverable-row');
+        const input = document.querySelector('input[name="add_qty"], #quantity');
+
+        function highlightMatchingRow(qty) {
+            let matched = null;
+            rows.forEach(function(row) {
+                const rowQty = parseFloat(row.dataset.qty);
+                if (!isNaN(rowQty) && qty >= rowQty) {
+                    matched = row;
+                }
+            });
+
+            rows.forEach(function(r) {
+                r.classList.remove('selected-row');
+            });
+            if (matched) {
+                matched.classList.add('selected-row');
+            }
+        }
+
+        if (input) {
+            input.addEventListener('input', function () {
+                const qty = parseFloat(input.value);
+                if (!isNaN(qty)) {
+                    highlightMatchingRow(qty);
+                }
+            });
+        }
+
+        rows.forEach(function(row) {
+            row.addEventListener('click', function () {
+                const qty = parseFloat(row.dataset.qty);
+                if (input && !isNaN(qty)) {
+                    input.value = qty;
+                    ['input', 'change', 'blur'].forEach(function(ev) {
+                        input.dispatchEvent(new Event(ev, { bubbles: true }));
+                    });
+                    highlightMatchingRow(qty);
+                }
+            });
+        });
+    });
+</script>
+<style>
+    .selected-row {
+        background-color: #f0f8ff;
+    }
+</style>
+</t>
                         </tbody>
                     </table>
                 </div>
@@ -82,7 +133,58 @@
                         font-weight: bold;
                     }
                 </style>
-            </t>
+            
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        const rows = document.querySelectorAll('.hoverable-row');
+        const input = document.querySelector('input[name="add_qty"], #quantity');
+
+        function highlightMatchingRow(qty) {
+            let matched = null;
+            rows.forEach(function(row) {
+                const rowQty = parseFloat(row.dataset.qty);
+                if (!isNaN(rowQty) && qty >= rowQty) {
+                    matched = row;
+                }
+            });
+
+            rows.forEach(function(r) {
+                r.classList.remove('selected-row');
+            });
+            if (matched) {
+                matched.classList.add('selected-row');
+            }
+        }
+
+        if (input) {
+            input.addEventListener('input', function () {
+                const qty = parseFloat(input.value);
+                if (!isNaN(qty)) {
+                    highlightMatchingRow(qty);
+                }
+            });
+        }
+
+        rows.forEach(function(row) {
+            row.addEventListener('click', function () {
+                const qty = parseFloat(row.dataset.qty);
+                if (input && !isNaN(qty)) {
+                    input.value = qty;
+                    ['input', 'change', 'blur'].forEach(function(ev) {
+                        input.dispatchEvent(new Event(ev, { bubbles: true }));
+                    });
+                    highlightMatchingRow(qty);
+                }
+            });
+        });
+    });
+</script>
+<style>
+    .selected-row {
+        background-color: #f0f8ff;
+    }
+</style>
+</t>
         </xpath>
     </template>
 </odoo>
