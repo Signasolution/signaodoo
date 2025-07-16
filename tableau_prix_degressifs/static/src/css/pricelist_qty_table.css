@@ -1,0 +1,7 @@
+.pricelist-row {
+    cursor: pointer;
+}
+.selected-row {
+    border: 2px solid black;
+    font-weight: bold;
+}
