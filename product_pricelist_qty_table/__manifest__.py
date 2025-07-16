@@ -5,7 +5,8 @@
     "category": "Website",
     "summary": "Display quantity-based price breaks on website product pages",
     "data": [
-        "views/product_template_inherit.xml"
+        "views/product_template_inherit.xml",
+        "views/product_template_form_inherit.xml"
     ],
     "installable": True,
     "auto_install": False

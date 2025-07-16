@@ -1,8 +1,9 @@
+
 <odoo>
-  <template id="product_pricelist_under_cart" inherit_id="website_sale.product" name="Pricing table below cart">
-    <<xpath expr="//div[@id='add_to_cart_wrap']" position="after">
+    <template id="product_pricelist_table" inherit_id="website_sale.product">
+        <xpath expr="//div[@id='add_to_cart_wrap']" position="after">
             <t t-set="pricelist_items" t-value="product.get_pricelist_items_by_quantity()"/>
-            <t t-if="pricelist_items">
+            <t t-if="pricelist_items and len(pricelist_items) &gt; 1">
                 <div class="table-responsive mt-3">
                     <table class="table table-bordered">
                         <thead>
@@ -33,9 +34,7 @@
                                     input.value = qty;
                                     input.dispatchEvent(new Event('change'));
                                 }
-                                // Enlever la classe des autres lignes
                                 document.querySelectorAll('.hoverable-row').forEach(r => r.classList.remove('selected-row'));
-                                // Ajouter la classe à la ligne cliquée
                                 row.classList.add('selected-row');
                             });
                         });
@@ -51,6 +50,6 @@
                     }
                 </style>
             </t>
-    </xpath>
-  </template>
+        </xpath>
+    </template>
 </odoo>
