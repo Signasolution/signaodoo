@@ -15,7 +15,7 @@
                             <t t-foreach="pricelist_items" t-as="item">
                                 <tr>
                                     <td><t t-esc="item['min_quantity']"/></td>
-                                    <td><t t-esc="formatLang(item['price'], currency_obj=item['currency'])"/></td>
+                                    <t t-esc="item['currency'].symbol"/> <t t-esc="('%.2f' % item['price'])"/>
                                 </tr>
                             </t>
                         </tbody>
