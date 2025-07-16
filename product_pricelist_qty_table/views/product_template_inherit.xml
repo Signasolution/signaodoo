@@ -28,19 +28,21 @@
 
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function () {
-        const rows = document.querySelectorAll('.hoverable-row');
-        const input = document.querySelector('input[name="add_qty"], #quantity');
+        var rows = document.querySelectorAll('.hoverable-row');
+        var input = document.querySelector('input[name="add_qty"], #quantity');
 
         function highlightMatchingRow(qty) {
-            let matched = null;
-            rows.forEach(row => {
-                const rowQty = parseFloat(row.dataset.qty);
+            var matched = null;
+            rows.forEach(function(row) {
+                var rowQty = parseFloat(row.dataset.qty);
                 if (qty >= rowQty) {
                     matched = row;
                 }
             });
 
-            rows.forEach(r => r.classList.remove('selected-row'));
+            rows.forEach(function(r) {
+                r.classList.remove('selected-row');
+            });
             if (matched) {
                 matched.classList.add('selected-row');
             }
@@ -48,7 +50,7 @@
 
         if (input) {
             input.addEventListener('input', function () {
-                const qty = parseFloat(input.value);
+                var qty = parseFloat(input.value);
                 if (!isNaN(qty)) {
                     highlightMatchingRow(qty);
                 }
@@ -57,12 +59,12 @@
 
         rows.forEach(function (row) {
             row.addEventListener('click', function () {
-                const qty = parseFloat(row.dataset.qty);
+                var qty = parseFloat(row.dataset.qty);
                 if (input) {
                     input.value = qty;
-                    ['input', 'change', 'blur'].forEach(ev =>
-                        input.dispatchEvent(new Event(ev, { bubbles: true }))
-                    );
+                    ['input', 'change', 'blur'].forEach(function(ev) {
+                        input.dispatchEvent(new Event(ev, { bubbles: true }));
+                    });
                 }
                 highlightMatchingRow(qty);
             });
