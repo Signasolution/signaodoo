@@ -3,7 +3,7 @@
         <xpath expr="//div[@id='product_details']" position="before">
             <t t-set="pricelist_items" t-value="product.get_pricelist_items_by_quantity()"/>
             <t t-if="pricelist_items">
-                <t t-if="pricelist_items|length > 0">
+                <t t-if="pricelist_items and pricelist_items|length > 0">
                     <div class="table-responsive mt-3">
                         <table class="table table-bordered">
                             <thead>
