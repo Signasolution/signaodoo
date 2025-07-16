@@ -1,0 +1,27 @@
+<odoo>
+    <template id="product_pricelist_table" inherit_id="website_sale.product">
+        <xpath expr="//div[@id='product_details']" position="inside">
+            <t t-set="pricelist_items" t-value="product.get_pricelist_items_by_quantity()"/>
+            <t t-if="pricelist_items">
+                <div class="table-responsive mt-3">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Quantité minimale</th>
+                                <th>Prix unitaire</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="pricelist_items" t-as="item">
+                                <tr>
+                                    <td><t t-esc="item['min_quantity']"/></td>
+                                    <td><t t-esc="formatLang(item['price'], currency_obj=item['currency'])"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>
