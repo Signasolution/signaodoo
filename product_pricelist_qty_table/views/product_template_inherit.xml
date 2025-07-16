@@ -20,8 +20,9 @@
                                         style="cursor: pointer;">
                                         <td><t t-esc="item['min_quantity']"/></td>
                                         <td><t t-out="item['currency'].symbol + ' ' + ('%.2f' % item['price'])"/></td>
-                                    </tr>
+                                   </tr>
                                 </t>
+                              </t>
                             </tbody>
                         </table>
                     </div>
