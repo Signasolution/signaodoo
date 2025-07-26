@@ -1,0 +1,12 @@
+<odoo>
+  <template id="report_invoice_document_inherit" inherit_id="account.report_invoice_document">
+    <xpath expr="//th[@name='th_subtotal']" position="before">
+      <th name="th_discount" style="text-align: right;">Remise (%)</th>
+    </xpath>
+    <xpath expr="//td[@name='subtotal']" position="before">
+      <td name="discount" style="text-align: right;">
+        <span t-esc="l.discount"/>%
+      </td>
+    </xpath>
+  </template>
+</odoo>

@@ -25,7 +25,7 @@
     </field>
   </record>
 
-  <menuitem id="menu_type_client_root" name="Types de client" parent="contacts.menu_contacts_configuration" sequence="10"/>
+  <menuitem id="menu_type_client_root" parent="sale.sale_configuration" name="Types de client" parent="contacts.menu_contacts_configuration" sequence="10"/>
   <menuitem id="menu_type_client" name="Types de client" parent="menu_type_client_root" action="action_type_client"/>
 
   <record id="action_type_client" model="ir.actions.act_window">
