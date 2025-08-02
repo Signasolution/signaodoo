@@ -1,53 +1,33 @@
-from odoo import models
+from odoo import models, api
+
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
-    def get_pricelist_items_by_quantity(self, pricelist=None):
+    @api.model
+    def get_pricelist_items_by_quantity(self, pricelist):
+        """
+        Return all pricelist items for this product template or its variants
+        that have a minimum quantity > 0, ignoring application priority.
+        """
         self.ensure_one()
-        pricelist_id = (
-            pricelist
-            or self.env.context.get("pricelist")
-            or self.env.user.partner_id.property_product_pricelist.id
-        )
-        pricelist = self.env['product.pricelist'].browse(pricelist_id)
-
-        product_variants = self.product_variant_ids
-        items = self.env['product.pricelist.item'].search([
-            ('pricelist_id', '=', pricelist.id),
-            '|',
-            ('product_id', 'in', product_variants.ids),
-            '&',
-            ('applied_on', '=', '1_product'),
-            ('product_tmpl_id', '=', self.id),
-        ])
-
-        results = []
-        for item in items.sorted(key=lambda r: r.min_quantity):
-            currency = pricelist.currency_id
-            price = item.fixed_price if item.compute_price == 'fixed' else item.price
-            results.append({
+        # Fetch all items on this pricelist that apply to this template or its variants
+        items = pricelist.item_ids.filtered(lambda item: (
+            # Applied on template or product
+            item.applied_on in ['0_product_variant', '1_product'] and
+            # Belongs to this template or one of its variants
+            (item.product_tmpl_id == self or item.product_variant_id.product_tmpl_id == self) and
+            # Only items with quantity thresholds
+            item.min_quantity > 0
+        ))
+        # Sort by ascending min_quantity
+        items = items.sorted(key=lambda i: i.min_quantity)
+        # Build a list of dicts for QWeb
+        result = []
+        for item in items:
+            result.append({
                 'min_quantity': item.min_quantity,
-                'price': price,
-                'currency': currency,
+                'price': item.fixed_price,
+                'currency': item.currency_id,
             })
-        return results
-
-from odoo import models, fields
-
-class ProductTemplate(models.Model):
-    _inherit = 'product.template'
-
-    pricelist_qty_html = fields.Html(string="Tableau des prix", compute="_compute_pricelist_qty_html", sanitize=False)
-
-    def _compute_pricelist_qty_html(self):
-        for rec in self:
-            items = rec.get_pricelist_items_by_quantity()
-            if len(items) <= 1:
-                rec.pricelist_qty_html = ""
-            else:
-                table = "<table class='table table-sm'><thead><tr><th>Quantité</th><th>Prix</th></tr></thead><tbody>"
-                for item in items:
-                    table += f"<tr><td>{item['min_quantity']}</td><td>{item['currency'].symbol} {item['price']:.2f}</td></tr>"
-                table += "</tbody></table>"
-                rec.pricelist_qty_html = table
+        return result
