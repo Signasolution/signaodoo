@@ -5,29 +5,29 @@ class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
     @api.model
-    def get_pricelist_items_by_quantity(self, pricelist):
+    def get_pricelist_items_by_quantity(self, pricelist, partner=None):
         """
-        Return all pricelist items for this product template or its variants
-        that have a minimum quantity > 0, ignoring application priority.
+        Build a price table including all discounts for each quantity threshold.
+        It collects all quantity-based price items but computes the final price
+        for each threshold via the pricelist engine (percent, fixed, formulas, etc.).
         """
         self.ensure_one()
-        # Fetch all items on this pricelist that apply to this template or its variants
+        partner = partner or self.env.user.partner_id
+        # Collect all quantity thresholds applicable to this product or template
         items = pricelist.item_ids.filtered(lambda item: (
-            # Applied on template or product
             item.applied_on in ['0_product_variant', '1_product'] and
-            # Belongs to this template or one of its variants
-            (item.product_tmpl_id == self or item.product_variant_id.product_tmpl_id == self) and
-            # Only items with quantity thresholds
-            item.min_quantity > 0
+            (item.product_tmpl_id == self or item.product_variant_id.product_tmpl_id == self)
         ))
-        # Sort by ascending min_quantity
-        items = items.sorted(key=lambda i: i.min_quantity)
-        # Build a list of dicts for QWeb
+        # Unique, sorted thresholds
+        qty_set = sorted({int(item.min_quantity) for item in items if item.min_quantity >= 0})
+        # Build table by computing final price at each threshold
         result = []
-        for item in items:
+        for qty in qty_set:
+            # Compute price including all discount rules
+            price = pricelist.get_product_price(self.product_variant_id, qty, partner)
             result.append({
-                'min_quantity': item.min_quantity,
-                'price': item.fixed_price,
-                'currency': item.currency_id,
+                'min_quantity': qty,
+                'price': price,
+                'currency': pricelist.currency_id,
             })
         return result
