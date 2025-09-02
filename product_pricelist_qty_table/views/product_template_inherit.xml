@@ -1,7 +1,7 @@
 <odoo>
     <template id="product_pricelist_table" inherit_id="website_sale.product">
         <xpath expr="//div[@id='product_details']" position="inside">
-            <t t-set="pricelist_items" t-value="product.product_variant_id.get_pricelist_items_qty()"/>
+            <t t-set="pricelist_items" t-value="product.product_tmpl_id.get_pricelist_items_qty()"/>
             <t t-if="pricelist_items and pricelist_items | length">
                 <div class="my-3">
                     <h4>Tarifs dégressifs</h4>
