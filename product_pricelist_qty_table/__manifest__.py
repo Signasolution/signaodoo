@@ -1,13 +1,14 @@
 {
-    "name": "Product Pricelist Qty Table",
+    "name": "Tableau de prix dégressifs",
     "version": "1.0",
-    "depends": ["website_sale", "product"],
     "category": "Website",
-    "summary": "Affiche un tableau avec la liste des prix dégressifs, sur le site web et dans le backend",
+    "summary": "Affiche un tableau des prix dégressifs sur la page produit",
+    "author": "Jean-Louis T.",
+    "depends": ["website_sale"],
     "data": [
-        "views/product_template_inherit.xml",
-        "views/product_template_form_inherit.xml"
+        "views/product_template_inherit.xml"
     ],
     "installable": True,
+    "application": False,
     "auto_install": False
 }

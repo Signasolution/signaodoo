@@ -1,33 +1,31 @@
-from odoo import models, api
-
+from odoo import models
 
 class ProductTemplate(models.Model):
-    _inherit = 'product.template'
+    _inherit = "product.template"
 
-    @api.model
-    def get_pricelist_items_by_quantity(self, pricelist, partner=None):
-        """
-        Build a price table including all discounts for each quantity threshold.
-        It collects all quantity-based price items but computes the final price
-        for each threshold via the pricelist engine (percent, fixed, formulas, etc.).
-        """
+    def get_pricelist_items_qty(self):
         self.ensure_one()
-        partner = partner or self.env.user.partner_id
-        # Collect all quantity thresholds applicable to this product or template
-        items = pricelist.item_ids.filtered(lambda item: (
-            item.applied_on in ['0_product_variant', '1_product'] and
-            (item.product_tmpl_id == self or item.product_variant_id.product_tmpl_id == self)
+        product = self.product_variant_id or self
+        pricelist = self.env.context.get('pricelist')
+
+        if not pricelist:
+            return []
+
+        pricelist = self.env['product.pricelist'].browse(pricelist)
+        items = pricelist.item_ids.filtered(lambda r: (
+            r.applied_on in ['0_product_variant', '1_product'] and
+            (
+                r.product_id == product or
+                r.product_tmpl_id == self
+            ) and
+            r.min_quantity > 1
         ))
-        # Unique, sorted thresholds
-        qty_set = sorted({int(item.min_quantity) for item in items if item.min_quantity >= 0})
-        # Build table by computing final price at each threshold
+
         result = []
-        for qty in qty_set:
-            # Compute price including all discount rules
-            price = pricelist.get_product_price(self.product_variant_id, qty, partner)
+        for item in sorted(items, key=lambda r: r.min_quantity):
             result.append({
-                'min_quantity': qty,
-                'price': price,
-                'currency': pricelist.currency_id,
+                'min_quantity': int(item.min_quantity),
+                'price': item.fixed_price or 0.0,
+                'currency': item.currency_id,
             })
         return result
