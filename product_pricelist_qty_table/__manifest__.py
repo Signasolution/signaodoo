@@ -1,13 +1,14 @@
 {
-    "name": "Product Pricelist Qty Table",
+    "name": "Tableau des prix dégressifs",
     "version": "1.0",
-    "depends": ["website_sale", "product"],
+    "author": "Signa Solution / Jean-Louis T.",
     "category": "Website",
-    "summary": "Display quantity-based price breaks on website product pages",
+    "summary": "Affiche un tableau des prix dégressifs sur la fiche produit",
+    "depends": ["website_sale"],
     "data": [
-        "views/product_template_inherit.xml",
-        "views/product_template_form_inherit.xml"
+        "views/product_template_inherit.xml"
     ],
     "installable": True,
-    "auto_install": False
+    "auto_install": False,
+    "application": False
 }

@@ -1,88 +1,25 @@
-
 <odoo>
-    <template id="product_pricelist_table" inherit_id="website_sale.product">
-        <xpath expr="//div[@id='add_to_cart_wrap']" position="after">
-            <t t-set="pricelist_items" t-value="product.get_pricelist_items_by_quantity()"/>
-            <t t-if="pricelist_items and len(pricelist_items) &gt; 1">
-                <div class="table-responsive mt-3">
-                    <table class="table table-bordered">
-                        <thead>
+    <template id="product_pricelist_table" name="Tableau des prix dégressifs">
+        <t t-if="pricelist_items and pricelist_items | length">
+            <div id="pricelist_qty_table" class="table-responsive mt-3">
+                <p><strong>Liste de prix : <t t-esc="pricelist.name"/></strong></p>
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Quantité minimale</th>
+                            <th>Prix</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="pricelist_items" t-as="item">
                             <tr>
-                                <th>Quantité minimale</th>
-                                <th>Prix unitaire</th>
+                                <td><t t-esc="item.min_quantity"/></td>
+                                <td><t t-esc="item.fixed_price"/></td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <t t-foreach="pricelist_items" t-as="item">
-                                <tr class="hoverable-row"
-                                    t-att-data-qty="item['min_quantity']"
-                                    style="cursor: pointer;">
-                                    <td><t t-esc="item['min_quantity']"/></td>
-                                    <td><t t-out="item['currency'].symbol + ' ' + ('%.2f' % item['price'])"/></td>
-                                </tr>
-                            </t>
-                        </tbody>
-                    </table>
-                </div>
-                
-
-<script type="text/javascript">
-    document.addEventListener('DOMContentLoaded', function () {
-        var rows = document.querySelectorAll('.hoverable-row');
-        var input = document.querySelector('input[name="add_qty"], #quantity');
-
-        function highlightMatchingRow(qty) {
-            var matched = null;
-            rows.forEach(function(row) {
-                var rowQty = parseFloat(row.dataset.qty);
-                if (qty >= rowQty) {
-                    matched = row;
-                }
-            });
-
-            rows.forEach(function(r) {
-                r.classList.remove('selected-row');
-            });
-            if (matched) {
-                matched.classList.add('selected-row');
-            }
-        }
-
-        if (input) {
-            input.addEventListener('input', function () {
-                var qty = parseFloat(input.value);
-                if (!isNaN(qty)) {
-                    highlightMatchingRow(qty);
-                }
-            });
-        }
-
-        rows.forEach(function (row) {
-            row.addEventListener('click', function () {
-                var qty = parseFloat(row.dataset.qty);
-                if (input) {
-                    input.value = qty;
-                    ['input', 'change', 'blur'].forEach(function(ev) {
-                        input.dispatchEvent(new Event(ev, { bubbles: true }));
-                    });
-                }
-                highlightMatchingRow(qty);
-            });
-        });
-    });
-</script>
-
-
-                <style>
-                    .hoverable-row:hover {
-                        background-color: #f2f2f2;
-                    }
-                    .selected-row {
-                        background-color: #d1e7dd !important;
-                        font-weight: bold;
-                    }
-                </style>
-            </t>
-        </xpath>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </t>
     </template>
 </odoo>
