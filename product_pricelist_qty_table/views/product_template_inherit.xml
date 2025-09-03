@@ -1,22 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-  <!-- Héritage de la page produit -->
   <template id="product_pricelist_table" inherit_id="website_sale.product" name="Tableau des prix dégressifs">
-    <!-- ANCRAGE ROBUSTE : plusieurs conteneurs possibles -->
     <xpath expr="(//div[contains(@class,'o_product_terms_conditions')] 
                  | //div[@id='product_details'] 
                  | //div[contains(@class,'o_wsale_product_page')] 
                  | //div[contains(@class,'oe_website_sale')])[1]" position="before">
-
-<!-- Récupère la liste de prix active (compatible Odoo récent) -->
-<t t-set="pricelist"
-   t-value="(request.website.sale_get_order().pricelist_id) or request.website._get_current_pricelist()"/>
-
-<t t-set="pricelist_id" t-value="(pricelist and pricelist.id) or False"/>
-<t t-set="product_ctx" t-value="product.with_context(pricelist=pricelist_id)"/>
-<t t-set="pricelist_items" t-value="product_ctx.get_pricelist_items_by_quantity()"/>
-<t t-set="safe_items" t-value="pricelist_items or []"/>
-
+      <t t-set="pricelist"
+         t-value="(request.website.sale_get_order() and request.website.sale_get_order().pricelist_id) or request.website._get_current_pricelist()"/>
+      <t t-set="pricelist_id" t-value="(pricelist and pricelist.id) or False"/>
+      <t t-set="product_ctx" t-value="product.with_context(pricelist=pricelist_id)"/>
+      <t t-set="pricelist_items" t-value="product_ctx.get_pricelist_items_by_quantity()"/>
+      <t t-set="safe_items" t-value="pricelist_items or []"/>
       <t t-if="safe_items and safe_items|length > 0">
         <div class="table-responsive mt-3" id="pricelist_qty_table">
           <table class="table table-sm table-bordered table-hover">
@@ -28,7 +22,7 @@
             </thead>
             <tbody>
               <t t-foreach="safe_items" t-as="item">
-                <tr class="hoverable-row" t-att-data-qty="item['min_quantity']">
+                <tr class="hoverable-row" t-att-data-qty="item['min_quantity']" style="cursor:pointer;">
                   <td><t t-esc="item['min_quantity']"/></td>
                   <td><t t-out="formatLang(item['price'], currency_obj=item['currency'])"/></td>
                 </tr>

@@ -7,17 +7,21 @@ class ProductTemplate(models.Model):
         self.ensure_one()
         pricelist_id = self.env.context.get('pricelist')
         if not pricelist_id:
+            website = self.env['website'].get_current_website()
+            pricelist = website and website._get_current_pricelist() or False
+            pricelist_id = pricelist.id if pricelist else False
+        if not pricelist_id:
             return []
+        product = self.product_variant_id
         items = self.env['product.pricelist.item'].search([
             ('pricelist_id', '=', pricelist_id),
             '|',
-                '&', ('applied_on', '=', '0_product_variant'), ('product_id', '=', self.id),
-                '&', ('applied_on', '=', '1_product'), ('product_tmpl_id', '=', self.product_tmpl_id.id),
+                '&', ('applied_on', '=', '0_product_variant'), ('product_id', '=', product.id),
+                '&', ('applied_on', '=', '1_product'), ('product_tmpl_id', '=', self.id),
             ('min_quantity', '>', 1),
         ], order='min_quantity')
-        # Retourne dicts prêts pour QWeb
         return [{
-            'min_quantity': item.min_quantity,
-            'price': item.fixed_price,
+            'min_quantity': int(item.min_quantity or 0),
+            'price': float(item.fixed_price or 0.0),
             'currency': item.pricelist_id.currency_id,
         } for item in items]
