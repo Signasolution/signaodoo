@@ -8,12 +8,14 @@
                  | //div[contains(@class,'o_wsale_product_page')] 
                  | //div[contains(@class,'oe_website_sale')])[1]" position="before">
 
-      <!-- Récupère la pricelist active -->
-      <t t-set="pricelist" t-value="request.website.get_current_pricelist()"/>
-      <t t-set="pricelist_id" t-value="(pricelist and pricelist.id) or False"/>
-      <t t-set="product_ctx" t-value="product.with_context(pricelist=pricelist_id)"/>
-      <t t-set="pricelist_items" t-value="product_ctx.get_pricelist_items_by_quantity()"/>
-      <t t-set="safe_items" t-value="pricelist_items or []"/>
+<!-- Récupère la liste de prix active (compatible Odoo récent) -->
+<t t-set="pricelist"
+   t-value="(request.website.sale_get_order().pricelist_id) or request.website._get_current_pricelist()"/>
+
+<t t-set="pricelist_id" t-value="(pricelist and pricelist.id) or False"/>
+<t t-set="product_ctx" t-value="product.with_context(pricelist=pricelist_id)"/>
+<t t-set="pricelist_items" t-value="product_ctx.get_pricelist_items_by_quantity()"/>
+<t t-set="safe_items" t-value="pricelist_items or []"/>
 
       <t t-if="safe_items and safe_items|length > 0">
         <div class="table-responsive mt-3" id="pricelist_qty_table">
