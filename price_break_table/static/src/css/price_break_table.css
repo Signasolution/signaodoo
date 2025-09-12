@@ -1,0 +1,120 @@
+/* Styles pour le tableau de prix dégressifs */
+
+.price-break-table-container {
+    margin: 20px 0;
+    padding: 15px;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+}
+
+.price-break-table-title {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.price-break-table {
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+
+.price-break-table th {
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+    padding: 12px 8px;
+}
+
+.price-break-table td {
+    padding: 10px 8px;
+    vertical-align: middle;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.price-break-clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.price-break-clickable:hover {
+    background-color: #e3f2fd !important;
+    transform: translateX(2px);
+}
+
+.price-break-active {
+    background-color: #d4edda !important;
+    border-left: 4px solid #28a745;
+    font-weight: 600;
+}
+
+.price-break-active:hover {
+    background-color: #c3e6cb !important;
+}
+
+.price-break-table-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: #6c757d;
+}
+
+.price-break-table-empty {
+    text-align: center;
+    padding: 20px;
+    color: #6c757d;
+}
+
+/* Styles spécifiques pour le frontend (e-commerce) */
+.oe_website_sale .price-break-table-container {
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.oe_website_sale .price-break-table-title {
+    color: #2c3e50;
+    border-bottom-color: #3498db;
+}
+
+/* Styles pour les petits écrans */
+@media (max-width: 768px) {
+    .price-break-table-container {
+        margin: 15px 0;
+        padding: 10px;
+    }
+    
+    .price-break-table {
+        font-size: 0.8rem;
+    }
+    
+    .price-break-table th,
+    .price-break-table td {
+        padding: 8px 6px;
+    }
+}
+
+/* Animation pour la surbrillance */
+@keyframes highlightRow {
+    0% { background-color: #fff3cd; }
+    100% { background-color: #d4edda; }
+}
+
+.price-break-active {
+    animation: highlightRow 0.5s ease-in-out;
+}
+
+/* Styles pour l'intégration dans les formulaires */
+.o_form_view .price-break-table-container {
+    margin: 10px 0;
+    background-color: #ffffff;
+    border: 1px solid #ced4da;
+}
+
+.o_form_view .price-break-table-title {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}

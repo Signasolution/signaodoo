@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_product_template_price_break,product.template.price.break,product.model_product_template,base.group_user,1,0,0,0
+access_product_template_price_break_manager,product.template.price.break.manager,product.model_product_template,base.group_system,1,1,1,1
