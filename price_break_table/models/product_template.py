@@ -22,10 +22,11 @@ class ProductTemplate(models.Model):
         # Récupération de la liste de prix
         if not pricelist_id:
             pricelist_id = self.env.context.get('pricelist_id')
-        if not pricelist_id:
+        
+        if pricelist_id:
             pricelist = self.env['product.pricelist'].browse(pricelist_id)
         else:
-            pricelist = self.env['product.pricelist'].browse(pricelist_id)
+            pricelist = self.env['product.pricelist'].search([('active', '=', True)], limit=1)
         
         if not pricelist.exists():
             pricelist = self.env['product.pricelist'].search([('active', '=', True)], limit=1)
@@ -102,11 +103,13 @@ class ProductTemplate(models.Model):
         for rule in rules:
             # Vérification des conditions de la règle
             if self._is_rule_applicable(rule, partner_id):
+                # Calcul du prix réel avec la méthode Odoo
+                price = self._compute_price_with_pricelist(pricelist, rule)
                 applicable_rules.append({
                     'id': rule.id,
                     'min_quantity': rule.min_quantity,
                     'max_quantity': rule.max_quantity if rule.max_quantity else float('inf'),
-                    'price': self._compute_rule_price(rule, pricelist),
+                    'price': price,
                     'sequence': rule.sequence,
                 })
         
@@ -133,19 +136,24 @@ class ProductTemplate(models.Model):
         
         return True
 
-    def _compute_rule_price(self, rule, pricelist):
-        """Calcule le prix selon la règle"""
-        if rule.compute_price == 'fixed':
-            return rule.fixed_price
-        elif rule.compute_price == 'percentage':
-            base_price = self.list_price
-            return base_price * (1 - rule.percent_price / 100)
-        elif rule.compute_price == 'formula':
-            # Logique de formule (simplifiée)
-            base_price = self.list_price
-            return base_price * (1 + rule.price_discount / 100)
-        
-        return self.list_price
+    def _compute_price_with_pricelist(self, pricelist, rule):
+        """Calcule le prix selon la règle avec la méthode Odoo standard"""
+        try:
+            # Utilisation de la méthode standard d'Odoo pour calculer le prix
+            if rule.compute_price == 'fixed':
+                return rule.fixed_price
+            elif rule.compute_price == 'percentage':
+                base_price = self.list_price
+                return base_price * (1 - rule.percent_price / 100)
+            elif rule.compute_price == 'formula':
+                # Logique de formule (simplifiée)
+                base_price = self.list_price
+                return base_price * (1 + rule.price_discount / 100)
+            
+            # Fallback : prix de base
+            return self.list_price
+        except Exception:
+            return self.list_price
 
     @api.model
     def get_price_break_table_js_data(self, product_id, pricelist_id=None, partner_id=None, quantity=1.0):

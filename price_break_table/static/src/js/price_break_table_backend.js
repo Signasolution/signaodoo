@@ -1,7 +1,7 @@
 /** @odoo-module **/
 
-import { Component, onMounted, onWillUnmount, useState, useRef } from "@odoo/owl";
 import { registry } from "@web/core/registry";
+import { Component, onMounted, onWillUnmount, useState, useRef } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 
 export class PriceBreakTableBackend extends Component {

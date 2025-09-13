@@ -84,9 +84,84 @@ price_break_table/
 
 Ce module est distribué sous licence LGPL-3.
 
+## Dépannage
+
+### Le tableau ne s'affiche pas
+
+1. **Vérifiez que le module est bien installé** :
+   - Allez dans Applications
+   - Recherchez "Tableau de Prix Dégressifs"
+   - Assurez-vous qu'il est marqué comme "Installé"
+
+2. **Vérifiez la configuration des prix dégressifs** :
+   - Allez dans Ventes > Configuration > Listes de prix
+   - Créez des règles avec des quantités minimales différentes (ex: 1, 5, 10, 25+)
+   - Assurez-vous que les règles sont actives
+
+3. **Testez avec des données de test** :
+   ```bash
+   # Dans le shell Odoo
+   exec(open('addons/price_break_table/config_test.py').read())
+   create_test_data()
+   ```
+
+4. **Vérifiez la console du navigateur** :
+   - Ouvrez les outils de développement (F12)
+   - Regardez l'onglet Console pour des erreurs JavaScript
+   - Le message "Price Break Table: Product ID not found" indique un problème de configuration
+
+5. **Redémarrez le serveur Odoo** :
+   - Arrêtez le serveur
+   - Redémarrez-le
+   - Videz le cache du navigateur (Ctrl+F5)
+
+### Le tableau s'affiche mais est vide
+
+1. **Vérifiez les règles de prix** :
+   - Les règles doivent avoir des quantités minimales > 0
+   - Les règles doivent être actives
+   - Les règles doivent correspondre au produit affiché
+
+2. **Vérifiez les permissions** :
+   - L'utilisateur doit avoir accès aux listes de prix
+   - L'utilisateur doit avoir accès aux produits
+
+### Problèmes de performance
+
+1. **Limitez le nombre de règles** :
+   - Évitez de créer trop de règles de prix
+   - Utilisez des quantités raisonnables
+
+2. **Cache** :
+   - Videz le cache du navigateur
+   - Redémarrez le serveur Odoo
+
+## Tests
+
+### Test automatique
+```bash
+# Dans le shell Odoo
+exec(open('addons/price_break_table/test_module.py').read())
+test_price_break_module()
+```
+
+### Test manuel
+1. Créez un produit avec un prix de base
+2. Créez une liste de prix avec des règles dégressives
+3. Visitez la page produit
+4. Vérifiez que le tableau s'affiche
+5. Testez l'interaction (clic sur les lignes)
+
 ## Changelog
 
-### Version 18.3.1.0.0
+### Version 18.0.1.0.1
+- Correction des problèmes d'affichage
+- Amélioration de la compatibilité avec Odoo 18
+- Système de fallback JavaScript
+- Correction des templates XML
+- Ajout des scripts de test
+
+### Version 18.0.1.0.0
 - Version initiale
 - Support complet des prix dégressifs
 - Interaction bidirectionnelle

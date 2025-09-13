@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Tableau de Prix Dégressifs',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Sales',
     'summary': 'Affiche un tableau interactif des prix dégressifs par quantité sur les pages produits',
     'description': """
