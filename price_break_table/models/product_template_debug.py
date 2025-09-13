@@ -69,7 +69,7 @@ class ProductTemplate(models.Model):
                 applicable_rules.append({
                     'id': rule.id,
                     'min_quantity': rule.min_quantity,
-                    'max_quantity': rule.max_quantity if rule.max_quantity else float('inf'),
+                    'max_quantity': float('inf'),  # Pas de max_quantity dans cette version
                     'price': price,
                     'sequence': rule.sequence,
                 })
