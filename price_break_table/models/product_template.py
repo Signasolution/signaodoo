@@ -138,20 +138,22 @@ class ProductTemplate(models.Model):
                     print(f"[DEBUG] Règle {rule.id}: Règle par catégorie {rule.categ_id.name}")
                 
                 if is_applicable:
-                    # Vérification des conditions supplémentaires
-                    if self._is_rule_applicable(rule, partner_id):
-                        # Calcul du prix réel avec la méthode Odoo
-                        price = self._compute_price_with_pricelist(pricelist, rule)
-                        applicable_rules.append({
-                            'id': rule.id,
-                            'min_quantity': rule.min_quantity,
-                            'max_quantity': float('inf'),  # Pas de max_quantity dans cette version
-                            'price': price,
-                            'sequence': rule.id,  # Utiliser l'ID comme séquence
-                        })
-                        print(f"[DEBUG] Règle {rule.id} ajoutée: {rule.min_quantity}+ → {price}€")
+                    # Calcul du prix direct (comme dans la méthode debug)
+                    if rule.compute_price == 'fixed':
+                        price = rule.fixed_price
+                    elif rule.compute_price == 'percentage':
+                        price = self.list_price * (1 - rule.percent_price / 100)
                     else:
-                        print(f"[DEBUG] Règle {rule.id} non applicable (conditions non remplies)")
+                        price = self.list_price
+                    
+                    applicable_rules.append({
+                        'id': rule.id,
+                        'min_quantity': rule.min_quantity,
+                        'max_quantity': float('inf'),  # Pas de max_quantity dans cette version
+                        'price': price,
+                        'sequence': rule.id,  # Utiliser l'ID comme séquence
+                    })
+                    print(f"[DEBUG] Règle {rule.id} ajoutée: {rule.min_quantity}+ → {price}€")
                 else:
                     print(f"[DEBUG] Règle {rule.id} non applicable au produit")
             
