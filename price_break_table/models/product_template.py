@@ -99,75 +99,71 @@ class ProductTemplate(models.Model):
         
         print(f"[DEBUG] _get_price_break_rules - Produit: {self.name}, Liste: {pricelist.name}")
         
-        # Récupération de toutes les règles applicables
-        domain = [
-            ('pricelist_id', '=', pricelist.id),
-            ('active', '=', True),
-            ('min_quantity', '>', 0),  # Seulement les règles avec quantité minimale
-        ]
-        
-        # Recherche des règles spécifiques au produit
-        product_domain = domain + [
-            '|',
-            ('product_tmpl_id', '=', self.id),
-            ('product_id', 'in', self.product_variant_ids.ids),
-        ]
-        
-        # Recherche des règles globales (sans produit spécifique)
-        global_domain = domain + [
-            ('product_tmpl_id', '=', False),
-            ('product_id', '=', False),
-        ]
-        
-        # Recherche des règles par catégorie
-        category_domain = domain + [
-            ('product_tmpl_id', '=', False),
-            ('product_id', '=', False),
-            ('categ_id', '!=', False),
-        ]
-        
-        print(f"[DEBUG] Recherche des règles spécifiques au produit...")
-        product_rules = self.env['product.pricelist.item'].search(product_domain, order='sequence, min_quantity')
-        print(f"[DEBUG] Règles spécifiques trouvées: {len(product_rules)}")
-        
-        print(f"[DEBUG] Recherche des règles globales...")
-        global_rules = self.env['product.pricelist.item'].search(global_domain, order='sequence, min_quantity')
-        print(f"[DEBUG] Règles globales trouvées: {len(global_rules)}")
-        
-        print(f"[DEBUG] Recherche des règles par catégorie...")
-        category_rules = self.env['product.pricelist.item'].search(category_domain, order='sequence, min_quantity')
-        print(f"[DEBUG] Règles par catégorie trouvées: {len(category_rules)}")
-        
-        # Combiner toutes les règles
-        all_rules = product_rules + global_rules + category_rules
-        
-        print(f"[DEBUG] Total des règles à évaluer: {len(all_rules)}")
-        
-        # Filtrage et tri selon la logique Odoo
-        applicable_rules = []
-        for rule in all_rules:
-            print(f"[DEBUG] Évaluation de la règle {rule.id}: Qty min={rule.min_quantity}, Produit={rule.product_tmpl_id.name if rule.product_tmpl_id else 'Global'}")
+        # Recherche simplifiée et compatible
+        try:
+            # Essayer d'abord une recherche simple
+            all_rules = self.env['product.pricelist.item'].search([
+                ('pricelist_id', '=', pricelist.id),
+                ('min_quantity', '>', 0),
+            ], order='sequence, min_quantity')
             
-            # Vérification des conditions de la règle
-            if self._is_rule_applicable(rule, partner_id):
-                # Calcul du prix réel avec la méthode Odoo
-                price = self._compute_price_with_pricelist(pricelist, rule)
-                applicable_rules.append({
-                    'id': rule.id,
-                    'min_quantity': rule.min_quantity,
-                    'max_quantity': rule.max_quantity if rule.max_quantity else float('inf'),
-                    'price': price,
-                    'sequence': rule.sequence,
-                })
-                print(f"[DEBUG] Règle {rule.id} ajoutée: {rule.min_quantity}+ → {price}€")
-            else:
-                print(f"[DEBUG] Règle {rule.id} non applicable")
-        
-        # Tri par quantité minimale
-        applicable_rules.sort(key=lambda x: x['min_quantity'])
-        
-        print(f"[DEBUG] Règles finales applicables: {len(applicable_rules)}")
-        return applicable_rules
+            print(f"[DEBUG] Toutes les règles trouvées: {len(all_rules)}")
+            
+            # Filtrer les règles applicables à ce produit
+            applicable_rules = []
+            for rule in all_rules:
+                print(f"[DEBUG] Évaluation de la règle {rule.id}: Qty min={rule.min_quantity}")
+                
+                # Vérifier si la règle s'applique à ce produit
+                is_applicable = False
+                
+                # Règle spécifique au produit
+                if rule.product_tmpl_id and rule.product_tmpl_id.id == self.id:
+                    is_applicable = True
+                    print(f"[DEBUG] Règle {rule.id}: Spécifique au produit")
+                
+                # Règle spécifique à une variante du produit
+                elif rule.product_id and rule.product_id.product_tmpl_id.id == self.id:
+                    is_applicable = True
+                    print(f"[DEBUG] Règle {rule.id}: Spécifique à la variante {rule.product_id.name}")
+                
+                # Règle globale (pas de produit spécifique)
+                elif not rule.product_tmpl_id and not rule.product_id:
+                    is_applicable = True
+                    print(f"[DEBUG] Règle {rule.id}: Règle globale")
+                
+                # Règle par catégorie
+                elif rule.categ_id and self.categ_id and rule.categ_id in self.categ_id.parent_path.split('/'):
+                    is_applicable = True
+                    print(f"[DEBUG] Règle {rule.id}: Règle par catégorie {rule.categ_id.name}")
+                
+                if is_applicable:
+                    # Vérification des conditions supplémentaires
+                    if self._is_rule_applicable(rule, partner_id):
+                        # Calcul du prix réel avec la méthode Odoo
+                        price = self._compute_price_with_pricelist(pricelist, rule)
+                        applicable_rules.append({
+                            'id': rule.id,
+                            'min_quantity': rule.min_quantity,
+                            'max_quantity': rule.max_quantity if rule.max_quantity else float('inf'),
+                            'price': price,
+                            'sequence': rule.sequence,
+                        })
+                        print(f"[DEBUG] Règle {rule.id} ajoutée: {rule.min_quantity}+ → {price}€")
+                    else:
+                        print(f"[DEBUG] Règle {rule.id} non applicable (conditions non remplies)")
+                else:
+                    print(f"[DEBUG] Règle {rule.id} non applicable au produit")
+            
+            # Tri par quantité minimale
+            applicable_rules.sort(key=lambda x: x['min_quantity'])
+            
+            print(f"[DEBUG] Règles finales applicables: {len(applicable_rules)}")
+            return applicable_rules
+            
+        except Exception as e:
+            print(f"[DEBUG] Erreur lors de la recherche des règles: {str(e)}")
+            return []
 
     def _is_rule_applicable(self, rule, partner_id=None):
         """Vérifie si une règle de prix est applicable"""
