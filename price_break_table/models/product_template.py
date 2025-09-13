@@ -147,7 +147,7 @@ class ProductTemplate(models.Model):
                             'min_quantity': rule.min_quantity,
                             'max_quantity': float('inf'),  # Pas de max_quantity dans cette version
                             'price': price,
-                            'sequence': rule.sequence,
+                            'sequence': rule.id,  # Utiliser l'ID comme séquence
                         })
                         print(f"[DEBUG] Règle {rule.id} ajoutée: {rule.min_quantity}+ → {price}€")
                     else:
