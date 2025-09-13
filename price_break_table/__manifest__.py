@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Tableau de Prix Dégressifs',
-    'version': '18.0.1.0.2',
+    'version': '18.0.1.0.3',
     'category': 'Sales',
     'summary': 'Affiche un tableau interactif des prix dégressifs par quantité sur les pages produits',
     'description': """
@@ -24,16 +24,15 @@
     'data': [
         'security/ir.model.access.csv',
         'views/product_template_views.xml',
-        'views/sale_order_line_views.xml',
         'views/website_sale_templates.xml',
     ],
     'assets': {
         'web.assets_frontend': [
-            'price_break_table/static/src/js/price_break_auto_init.js',
+            'price_break_table/static/src/js/price_break_simple.js',
             'price_break_table/static/src/css/price_break_table.css',
         ],
         'web.assets_backend': [
-            'price_break_table/static/src/js/price_break_auto_init.js',
+            'price_break_table/static/src/js/price_break_simple.js',
             'price_break_table/static/src/css/price_break_table.css',
         ],
     },

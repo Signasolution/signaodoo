@@ -2,32 +2,12 @@
 <odoo>
     <data>
         
-        <!-- Extension du template de détail produit pour ajouter le tableau de prix -->
-        <template id="website_sale_product_price_break" inherit_id="website_sale.product" name="Product Price Break Table">
-            <xpath expr="//div[contains(@class, 'product_price')]" position="after">
-                <div class="price-break-table-widget" 
-                     data-product-id="product_template_id" 
-                     data-pricelist-id="pricelist_id"
-                     data-partner-id="partner_id"
-                     data-current-quantity="add_qty"
-                     style="margin-top: 20px;">
-                    <!-- Le tableau sera chargé dynamiquement par JavaScript -->
-                </div>
-            </xpath>
-        </template>
-
-        <!-- Extension du template de formulaire de commande -->
-        <template id="website_sale_cart_price_break" inherit_id="website_sale.cart_lines" name="Cart Price Break Table">
-            <xpath expr="//td[contains(@class, 'cart_product')]" position="after">
-                <div class="price-break-table-widget" 
-                     data-product-id="line.product_template_id.id" 
-                     data-pricelist-id="website.pricelist_id"
-                     data-partner-id="website.partner_id"
-                     data-current-quantity="line.product_uom_qty"
-                     style="margin-top: 10px; font-size: 0.9rem;">
-                    <!-- Le tableau sera chargé dynamiquement par JavaScript -->
-                </div>
-            </xpath>
+        <!-- Template simple pour l'initialisation automatique -->
+        <!-- Le JavaScript se chargera automatiquement d'ajouter les tableaux -->
+        <template id="website_sale_product_price_break_placeholder" name="Product Price Break Placeholder">
+            <div id="price-break-placeholder" style="display: none;">
+                <!-- Placeholder pour l'initialisation automatique -->
+            </div>
         </template>
 
     </data>
