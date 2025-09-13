@@ -34,6 +34,9 @@ function initPriceBreak() {
     }
 }
 
+// Variable globale pour éviter les doublons
+window.priceBreakProcessed = window.priceBreakProcessed || new Set();
+
 function processProductElement(element) {
     // Vérifier si déjà traité
     if (element.dataset.priceBreakProcessed) {
@@ -50,8 +53,16 @@ function processProductElement(element) {
     
     console.log('[PriceBreak] ID produit trouvé:', productId);
     
+    // Vérifier si ce produit a déjà été traité
+    if (window.priceBreakProcessed.has(productId)) {
+        console.log('[PriceBreak] Produit', productId, 'déjà traité, ignoré');
+        element.dataset.priceBreakProcessed = 'true';
+        return false;
+    }
+    
     // Marquer comme traité
     element.dataset.priceBreakProcessed = 'true';
+    window.priceBreakProcessed.add(productId);
     
     // Ajouter le tableau
     addPriceBreakTable(element, productId);
@@ -176,12 +187,20 @@ class SimplePriceBreakWidget {
             const result = await response.json();
             console.log('[PriceBreak] Réponse reçue:', result);
             
-            if (result.result && result.result.rows && result.result.rows.length > 0) {
-                console.log('[PriceBreak] Tableau affiché avec', result.result.rows.length, 'lignes');
-                this.renderTable(result.result);
+            if (result.result) {
+                console.log('[PriceBreak] Données détaillées:', JSON.stringify(result.result, null, 2));
+                
+                if (result.result.rows && result.result.rows.length > 0) {
+                    console.log('[PriceBreak] Tableau affiché avec', result.result.rows.length, 'lignes');
+                    this.renderTable(result.result);
+                } else {
+                    console.log('[PriceBreak] Aucune ligne trouvée dans result.rows');
+                    console.log('[PriceBreak] Structure complète:', result.result);
+                    this.renderEmpty();
+                }
             } else {
-                console.log('[PriceBreak] Aucune donnée trouvée');
-                this.renderEmpty();
+                console.log('[PriceBreak] Aucun résultat dans la réponse');
+                this.renderError();
             }
             
         } catch (error) {
