@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Vue formulaire des lignes de commande avec tableau de prix -->
+        <!-- Utilisation d'un template générique pour éviter les erreurs de référence -->
+        <template id="sale_order_line_price_break_widget" name="Sale Order Line Price Break Widget">
+            <div class="price-break-table-widget" 
+                 data-product-id="product_id" 
+                 data-pricelist-id="order_id.pricelist_id" 
+                 data-partner-id="order_id.partner_id" 
+                 data-current-quantity="product_uom_qty" 
+                 style="margin-top: 10px;">
+                <!-- Le tableau sera chargé dynamiquement par JavaScript -->
+            </div>
+        </template>
+    </data>
+</odoo>
