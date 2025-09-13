@@ -1,44 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
-        
-        <!-- Extension de la vue formulaire produit pour ajouter le tableau de prix -->
-        <record id="product_template_form_view_price_break" model="ir.ui.view">
-            <field name="name">product.template.form.price.break</field>
-            <field name="model">product.template</field>
-            <field name="inherit_id" ref="product.product_template_form_view"/>
-            <field name="arch" type="xml">
-                <xpath expr="//page[@name='sales']" position="inside">
-                    <group string="Prix Dégressifs" name="price_break_group">
-                        <div class="price-break-table-widget" 
-                             data-product-id="id" 
-                             data-pricelist-id="context.get('pricelist_id')"
-                             data-partner-id="context.get('partner_id')">
-                            <!-- Le tableau sera chargé dynamiquement par JavaScript -->
-                        </div>
-                    </group>
-                </xpath>
-            </field>
-        </record>
-
-        <!-- Extension de la vue formulaire ligne de commande pour afficher le tableau -->
-        <record id="sale_order_line_form_view_price_break" model="ir.ui.view">
-            <field name="name">sale.order.line.form.price.break</field>
-            <field name="model">sale.order.line</field>
-            <field name="inherit_id" ref="sale.view_order_line_form"/>
-            <field name="arch" type="xml">
-                <xpath expr="//field[@name='product_id']" position="after">
-                    <div class="price-break-table-widget" 
-                         data-product-id="product_id" 
-                         data-pricelist-id="order_id.pricelist_id"
-                         data-partner-id="order_id.partner_id"
-                         data-current-quantity="product_uom_qty"
-                         style="margin-top: 10px;">
-                        <!-- Le tableau sera chargé dynamiquement par JavaScript -->
-                    </div>
-                </xpath>
-            </field>
-        </record>
-
-    </data>
+    <record id="sale_order_line_form_view_price_break" model="ir.ui.view">
+        <field name="name">sale.order.line.form.price.break</field>
+        <field name="model">sale.order.line</field>
+        <field name="inherit_id" ref="sale.sale_order_line_view_form_readonly"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_id']" position="after">
+                <div class="price-break-table-widget" 
+                     data-product-id="product_id" 
+                     data-pricelist-id="order_id.pricelist_id" 
+                     data-partner-id="order_id.partner_id" 
+                     data-current-quantity="product_uom_qty" 
+                     style="margin-top: 10px;">
+                    <!-- Le tableau sera chargé dynamiquement par JavaScript -->
+                </div>
+            </xpath>
+        </field>
+    </record>
 </odoo>
