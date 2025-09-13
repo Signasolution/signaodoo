@@ -6,7 +6,7 @@
 
     // Configuration
     const CONFIG = {
-        debug: false,
+        debug: true,  // Activé pour le debug
         autoInit: true,
         checkInterval: 2000,
         maxRetries: 10
@@ -99,29 +99,54 @@
     }
 
     function getProductId(element) {
+        log('Recherche de l\'ID produit dans l\'élément:', element);
+        
         // Méthode 1: Data attribute direct
         let productId = element.dataset.productTemplateId || element.dataset.productId;
-        if (productId) return productId;
+        if (productId) {
+            log('ID produit trouvé via data attribute:', productId);
+            return productId;
+        }
 
         // Méthode 2: Input hidden
         const productInput = element.querySelector('input[name="product_template_id"]');
-        if (productInput) return productInput.value;
+        if (productInput) {
+            log('ID produit trouvé via input hidden:', productInput.value);
+            return productInput.value;
+        }
 
         // Méthode 3: Meta tag
         const metaTag = element.querySelector('meta[name="product-id"]');
-        if (metaTag) return metaTag.content;
+        if (metaTag) {
+            log('ID produit trouvé via meta tag:', metaTag.content);
+            return metaTag.content;
+        }
 
         // Méthode 4: URL
         const urlMatch = window.location.pathname.match(/\/product\/(\d+)/);
-        if (urlMatch) return urlMatch[1];
+        if (urlMatch) {
+            log('ID produit trouvé via URL:', urlMatch[1]);
+            return urlMatch[1];
+        }
 
         // Méthode 5: Recherche dans le contexte parent
         const parentElement = element.closest('body');
         if (parentElement) {
             const globalProductInput = parentElement.querySelector('input[name="product_template_id"]');
-            if (globalProductInput) return globalProductInput.value;
+            if (globalProductInput) {
+                log('ID produit trouvé via recherche globale:', globalProductInput.value);
+                return globalProductInput.value;
+            }
         }
 
+        // Méthode 6: Recherche dans tout le document
+        const documentProductInput = document.querySelector('input[name="product_template_id"]');
+        if (documentProductInput) {
+            log('ID produit trouvé via recherche document:', documentProductInput.value);
+            return documentProductInput.value;
+        }
+
+        log('Aucun ID produit trouvé');
         return null;
     }
 
@@ -213,39 +238,51 @@
         }
 
         async loadData(quantity = null) {
-            if (!this.productId) return;
+            if (!this.productId) {
+                log('Product ID manquant:', this.productId);
+                return;
+            }
             
             const qty = quantity || this.currentQuantity;
             
+            log('Chargement des données pour produit:', this.productId, 'quantité:', qty);
+            
             try {
+                const requestData = {
+                    jsonrpc: '2.0',
+                    method: 'call',
+                    params: {
+                        model: 'product.template',
+                        method: 'get_price_break_table_js_data',
+                        args: [parseInt(this.productId)],
+                        kwargs: {
+                            pricelist_id: this.pricelistId ? parseInt(this.pricelistId) : null,
+                            partner_id: this.partnerId ? parseInt(this.partnerId) : null,
+                            quantity: qty,
+                        }
+                    },
+                    id: Math.floor(Math.random() * 1000000)
+                };
+                
+                log('Requête envoyée:', requestData);
+                
                 const response = await fetch('/web/dataset/call_kw', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        jsonrpc: '2.0',
-                        method: 'call',
-                        params: {
-                            model: 'product.template',
-                            method: 'get_price_break_table_js_data',
-                            args: [parseInt(this.productId)],
-                            kwargs: {
-                                pricelist_id: this.pricelistId ? parseInt(this.pricelistId) : null,
-                                partner_id: this.partnerId ? parseInt(this.partnerId) : null,
-                                quantity: qty,
-                            }
-                        },
-                        id: Math.floor(Math.random() * 1000000)
-                    })
+                    body: JSON.stringify(requestData)
                 });
                 
                 const result = await response.json();
+                log('Réponse reçue:', result);
                 
                 if (result.result && result.result.rows && result.result.rows.length > 0) {
+                    log('Tableau affiché avec', result.result.rows.length, 'lignes');
                     this.renderTable(result.result);
                     this.currentQuantity = qty;
                 } else {
+                    log('Aucune donnée trouvée dans la réponse');
                     this.renderEmpty();
                 }
                 
