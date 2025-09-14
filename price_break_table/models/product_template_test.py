@@ -63,7 +63,7 @@ class ProductTemplateTest(models.Model):
                     applicable_rules.append({
                         'id': rule.id,
                         'min_quantity': rule.min_quantity,
-                        'max_quantity': float('inf'),
+                        'max_quantity': 999999,  # Valeur JSON valide au lieu d'infinity
                         'price': price,
                         'sequence': rule.id,
                     })

@@ -69,7 +69,7 @@ class ProductTemplate(models.Model):
                 applicable_rules.append({
                     'id': rule.id,
                     'min_quantity': rule.min_quantity,
-                    'max_quantity': float('inf'),  # Pas de max_quantity dans cette version
+                    'max_quantity': 999999,  # Valeur JSON valide au lieu d'infinity
                     'price': price,
                     'sequence': rule.id,  # Utiliser l'ID comme séquence
                 })
