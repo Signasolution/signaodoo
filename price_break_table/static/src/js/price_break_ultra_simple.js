@@ -456,7 +456,11 @@ class SimplePriceBreakWidget {
             // Fonction de mise à jour avec debounce pour éviter trop d'appels
             let updateTimeout;
             const updateTable = (event) => {
-                console.log('[PriceBreak] Événement détecté:', event.type, 'Valeur:', event.target.value);
+                if (event) {
+                    console.log('[PriceBreak] Événement détecté:', event.type, 'Valeur:', event.target ? event.target.value : 'N/A');
+                } else {
+                    console.log('[PriceBreak] Mise à jour déclenchée (sans événement)');
+                }
                 clearTimeout(updateTimeout);
                 updateTimeout = setTimeout(() => {
                     console.log('[PriceBreak] Changement de quantité détecté, mise à jour du tableau');
