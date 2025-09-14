@@ -32,6 +32,7 @@
                         document.addEventListener('DOMContentLoaded', function () {
                             var rows = document.querySelectorAll('.price-break-row');
                             var input = document.querySelector('input[name="add_qty"], #quantity');
+                            var lastValue = '';
 
                             function highlightMatchingRow(qty) {
                                 var matched = null;
@@ -51,53 +52,37 @@
                             }
 
                             function updateHighlight() {
-                                var qty = parseFloat(input.value);
-                                if (!isNaN(qty)) {
-                                    highlightMatchingRow(qty);
+                                if (input && input.value !== lastValue) {
+                                    lastValue = input.value;
+                                    var qty = parseFloat(input.value);
+                                    if (!isNaN(qty)) {
+                                        highlightMatchingRow(qty);
+                                    }
                                 }
                             }
 
                             if (input) {
                                 // Événement pour la saisie manuelle
                                 input.addEventListener('input', updateHighlight);
-                                
-                                // Événements pour les boutons plus/moins
                                 input.addEventListener('change', updateHighlight);
                                 
-                                // Observer les changements de valeur (pour les boutons plus/moins)
-                                var observer = new MutationObserver(function(mutations) {
-                                    mutations.forEach(function(mutation) {
-                                        if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
-                                            updateHighlight();
-                                        }
-                                    });
-                                });
-                                observer.observe(input, { attributes: true, attributeFilter: ['value'] });
+                                // Surveillance continue de la valeur
+                                setInterval(updateHighlight, 200);
                                 
-                                // Observer les changements dans le DOM (boutons plus/moins)
-                                var parentObserver = new MutationObserver(function(mutations) {
-                                    mutations.forEach(function(mutation) {
-                                        if (mutation.type === 'childList') {
-                                            setTimeout(updateHighlight, 100);
-                                        }
+                                // Événements sur tous les boutons possibles
+                                var allButtons = document.querySelectorAll('button, .btn, [onclick*="qty"], .fa-plus, .fa-minus, .btn-plus, .btn-minus');
+                                allButtons.forEach(function(btn) {
+                                    btn.addEventListener('click', function() {
+                                        setTimeout(updateHighlight, 300);
                                     });
                                 });
+                                
+                                // Événements sur les éléments parents
                                 if (input.parentNode) {
-                                    parentObserver.observe(input.parentNode, { childList: true, subtree: true });
-                                }
-                                
-                                // Événements sur les boutons plus/moins s'ils existent
-                                var plusBtn = document.querySelector('.fa-plus, .btn-plus, [data-action="plus"]');
-                                var minusBtn = document.querySelector('.fa-minus, .btn-minus, [data-action="minus"]');
-                                
-                                if (plusBtn) {
-                                    plusBtn.addEventListener('click', function() {
-                                        setTimeout(updateHighlight, 200);
-                                    });
-                                }
-                                if (minusBtn) {
-                                    minusBtn.addEventListener('click', function() {
-                                        setTimeout(updateHighlight, 200);
+                                    input.parentNode.addEventListener('click', function(e) {
+                                        if (e.target.tagName === 'BUTTON' || e.target.classList.contains('btn') || e.target.classList.contains('fa')) {
+                                            setTimeout(updateHighlight, 300);
+                                        }
                                     });
                                 }
                             }
@@ -107,6 +92,7 @@
                                     var qty = parseFloat(row.dataset.qty);
                                     if (input) {
                                         input.value = qty;
+                                        lastValue = qty.toString();
                                         ['input', 'change', 'blur'].forEach(function(ev) {
                                             input.dispatchEvent(new Event(ev, { bubbles: true }));
                                         });
