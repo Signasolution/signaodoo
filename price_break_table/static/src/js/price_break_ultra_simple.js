@@ -338,29 +338,54 @@ class SimplePriceBreakWidget {
             'input[id*="quantity"]',
             '.js_product input[name="add_qty"]',
             '.js_product input[name="quantity"]',
-            'input[data-product-template-id]'
+            'input[data-product-template-id]',
+            'input[type="number"]',
+            '.js_product input[type="number"]',
+            '.product input[type="number"]'
         ];
+        
+        console.log('[PriceBreak] Recherche du champ de quantité...');
         
         for (const selector of selectors) {
             const input = document.querySelector(selector);
             if (input) {
-                console.log('[PriceBreak] Champ de quantité trouvé:', selector);
+                console.log('[PriceBreak] Champ de quantité trouvé:', selector, input);
+                console.log('[PriceBreak] Valeur actuelle:', input.value);
                 return input;
             }
         }
         
+        // Recherche plus large si aucun sélecteur spécifique ne fonctionne
+        const allInputs = document.querySelectorAll('input[type="number"]');
+        console.log('[PriceBreak] Tous les champs number trouvés:', allInputs.length);
+        
+        for (let i = 0; i < allInputs.length; i++) {
+            const input = allInputs[i];
+            console.log(`[PriceBreak] Input ${i}:`, input.name, input.id, input.value, input);
+            
+            // Vérifier si c'est probablement un champ de quantité
+            if (input.name && (input.name.includes('qty') || input.name.includes('quantity'))) {
+                console.log('[PriceBreak] Champ de quantité trouvé par nom:', input.name);
+                return input;
+            }
+        }
+        
+        console.log('[PriceBreak] Aucun champ de quantité trouvé');
         return null;
     }
     
     setupQuantityChangeListener() {
+        console.log('[PriceBreak] Configuration de l\'écouteur de changement de quantité...');
+        
         // Écouter les changements de quantité manuels
         const quantityInput = this.findQuantityInput();
         if (quantityInput) {
-            console.log('[PriceBreak] Écouteur de changement de quantité configuré');
+            console.log('[PriceBreak] Écouteur de changement de quantité configuré sur:', quantityInput);
             
             // Fonction de mise à jour avec debounce pour éviter trop d'appels
             let updateTimeout;
-            const updateTable = () => {
+            const updateTable = (event) => {
+                console.log('[PriceBreak] Événement détecté:', event.type, 'Valeur:', event.target.value);
                 clearTimeout(updateTimeout);
                 updateTimeout = setTimeout(() => {
                     console.log('[PriceBreak] Changement de quantité détecté, mise à jour du tableau');
@@ -373,28 +398,47 @@ class SimplePriceBreakWidget {
             quantityInput.addEventListener('change', updateTable);
             quantityInput.addEventListener('keyup', updateTable);
             
+            // Test immédiat pour vérifier que l'écouteur fonctionne
+            console.log('[PriceBreak] Test de l\'écouteur - valeur actuelle:', quantityInput.value);
+            
             // Stocker la référence pour pouvoir la supprimer plus tard
             this.quantityInput = quantityInput;
         } else {
             console.log('[PriceBreak] Champ de quantité non trouvé pour l\'écouteur');
+            
+            // Essayer de reconfigurer après un délai au cas où le DOM n'est pas encore prêt
+            setTimeout(() => {
+                console.log('[PriceBreak] Tentative de reconfiguration de l\'écouteur...');
+                this.setupQuantityChangeListener();
+            }, 2000);
         }
     }
     
     updateActiveRow() {
+        console.log('[PriceBreak] updateActiveRow appelée');
+        
         // Mettre à jour uniquement l'affichage de la ligne active sans recharger toutes les données
         if (this.tableData && this.tableData.rows) {
             const currentQuantity = this.getCurrentQuantity();
+            console.log('[PriceBreak] Quantité actuelle:', currentQuantity);
+            
             const activeRow = this.findActiveRow(this.tableData.rows, currentQuantity);
+            console.log('[PriceBreak] Ligne active trouvée:', activeRow);
             
             // Mettre à jour les styles des lignes
             const rows = this.element.querySelectorAll('tbody tr');
+            console.log('[PriceBreak] Lignes trouvées:', rows.length);
+            
             rows.forEach((row, index) => {
                 const rowData = this.tableData.rows[index];
                 const isActive = activeRow && activeRow.min_quantity === rowData.min_quantity;
                 
+                console.log(`[PriceBreak] Ligne ${index}: qty=${rowData.min_quantity}, active=${isActive}`);
+                
                 if (isActive) {
                     row.style.backgroundColor = '#e8f5e8';
                     row.style.border = '2px solid #28a745';
+                    console.log(`[PriceBreak] Ligne ${index} mise en surbrillance`);
                 } else {
                     row.style.backgroundColor = '';
                     row.style.border = '';
@@ -402,6 +446,8 @@ class SimplePriceBreakWidget {
             });
             
             console.log('[PriceBreak] Ligne active mise à jour pour quantité:', currentQuantity);
+        } else {
+            console.log('[PriceBreak] Pas de données de tableau disponibles pour la mise à jour');
         }
     }
     
