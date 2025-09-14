@@ -16,84 +16,83 @@
                     Data: <t t-esc="price_break_data"/>
                 </div>
                 <t t-if="price_break_data and len(price_break_data.get('rows', [])) > 1">
-                        <div class="table-responsive mt-3">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Quantité</th>
-                                        <th>Prix unitaire</th>
+                    <div class="table-responsive mt-3">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Quantité</th>
+                                    <th>Prix unitaire</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="price_break_data['rows']" t-as="row">
+                                    <tr class="price-break-row"
+                                        t-att-data-qty="row['min_quantity']"
+                                        style="cursor: pointer;">
+                                        <td><t t-esc="row['quantity_display']"/></td>
+                                        <td><t t-esc="row['price_formatted']"/></td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    <t t-foreach="price_break_data['rows']" t-as="row">
-                                        <tr class="price-break-row"
-                                            t-att-data-qty="row['min_quantity']"
-                                            style="cursor: pointer;">
-                                            <td><t t-esc="row['quantity_display']"/></td>
-                                            <td><t t-esc="row['price_formatted']"/></td>
-                                        </tr>
-                                    </t>
-                                </tbody>
-                            </table>
-                        </div>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
 
-                        <script type="text/javascript">
-                            document.addEventListener('DOMContentLoaded', function () {
-                                var rows = document.querySelectorAll('.price-break-row');
-                                var input = document.querySelector('input[name="add_qty"], #quantity');
+                    <script type="text/javascript">
+                        document.addEventListener('DOMContentLoaded', function () {
+                            var rows = document.querySelectorAll('.price-break-row');
+                            var input = document.querySelector('input[name="add_qty"], #quantity');
 
-                                function highlightMatchingRow(qty) {
-                                    var matched = null;
-                                    rows.forEach(function(row) {
-                                        var rowQty = parseFloat(row.dataset.qty);
-                                        if (qty >= rowQty) {
-                                            matched = row;
-                                        }
-                                    });
-
-                                    rows.forEach(function(r) {
-                                        r.classList.remove('price-break-active');
-                                    });
-                                    if (matched) {
-                                        matched.classList.add('price-break-active');
+                            function highlightMatchingRow(qty) {
+                                var matched = null;
+                                rows.forEach(function(row) {
+                                    var rowQty = parseFloat(row.dataset.qty);
+                                    if (qty >= rowQty) {
+                                        matched = row;
                                     }
-                                }
+                                });
 
-                                if (input) {
-                                    input.addEventListener('input', function () {
-                                        var qty = parseFloat(input.value);
-                                        if (!isNaN(qty)) {
-                                            highlightMatchingRow(qty);
-                                        }
-                                    });
+                                rows.forEach(function(r) {
+                                    r.classList.remove('price-break-active');
+                                });
+                                if (matched) {
+                                    matched.classList.add('price-break-active');
                                 }
+                            }
 
-                                rows.forEach(function (row) {
-                                    row.addEventListener('click', function () {
-                                        var qty = parseFloat(row.dataset.qty);
-                                        if (input) {
-                                            input.value = qty;
-                                            ['input', 'change', 'blur'].forEach(function(ev) {
-                                                input.dispatchEvent(new Event(ev, { bubbles: true }));
-                                            });
-                                        }
+                            if (input) {
+                                input.addEventListener('input', function () {
+                                    var qty = parseFloat(input.value);
+                                    if (!isNaN(qty)) {
                                         highlightMatchingRow(qty);
-                                    });
+                                    }
+                                });
+                            }
+
+                            rows.forEach(function (row) {
+                                row.addEventListener('click', function () {
+                                    var qty = parseFloat(row.dataset.qty);
+                                    if (input) {
+                                        input.value = qty;
+                                        ['input', 'change', 'blur'].forEach(function(ev) {
+                                            input.dispatchEvent(new Event(ev, { bubbles: true }));
+                                        });
+                                    }
+                                    highlightMatchingRow(qty);
                                 });
                             });
-                        </script>
+                        });
+                    </script>
 
-                        <style>
-                            .price-break-row:hover {
-                                background-color: #e3f2fd;
-                            }
-                            .price-break-active {
-                                background-color: #e8f5e8 !important;
-                                border: 2px solid #28a745 !important;
-                                font-weight: bold;
-                            }
-                        </style>
-                    </t>
+                    <style>
+                        .price-break-row:hover {
+                            background-color: #e3f2fd;
+                        }
+                        .price-break-active {
+                            background-color: #e8f5e8 !important;
+                            border: 2px solid #28a745 !important;
+                            font-weight: bold;
+                        }
+                    </style>
                 </t>
             </xpath>
         </template>
