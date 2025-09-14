@@ -2,12 +2,18 @@
 <odoo>
     <data>
         
-        <!-- Template simple pour l'initialisation automatique -->
-        <!-- Le JavaScript se chargera automatiquement d'ajouter les tableaux -->
-        <template id="website_sale_product_price_break_placeholder" name="Product Price Break Placeholder">
-            <div id="price-break-placeholder" style="display: none;">
-                <!-- Placeholder pour l'initialisation automatique -->
-            </div>
+        <!-- Template pour le tableau de prix dégressifs sur les pages produit -->
+        <template id="website_sale_product_price_break" name="Product Price Break Table" inherit_id="website_sale.product">
+            <xpath expr="//div[@id='product_detail']" position="inside">
+                <div class="price-break-table-widget" 
+                     data-product-id="product_template.id" 
+                     data-pricelist-id="1" 
+                     data-partner-id="1" 
+                     data-current-quantity="1" 
+                     style="margin-top: 20px;">
+                    <!-- Le tableau sera chargé dynamiquement par JavaScript -->
+                </div>
+            </xpath>
         </template>
 
     </data>

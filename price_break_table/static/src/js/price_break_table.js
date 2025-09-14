@@ -3,13 +3,9 @@
 
 // Fonction pour vérifier si on est sur une page produit du site web
 function isProductPage() {
-    // Vérifier uniquement l'héritage de la vue website_sale.product
-    // Chercher l'attribut data-view-xpath ou data-view-id qui indique l'héritage
-    const hasWebsiteSaleProduct = document.querySelector('[data-view-xpath*="website_sale.product"]') ||
-                                 document.querySelector('[data-view-id*="website_sale.product"]') ||
-                                 document.querySelector('.oe_website_sale[data-view*="product"]');
-    
-    return hasWebsiteSaleProduct !== null;
+    // Le tableau est maintenant injecté directement dans la vue website_sale.product
+    // Vérifier simplement la présence du conteneur du tableau
+    return document.querySelector('.price-break-table-widget') !== null;
 }
 
 // Fonction principale
