@@ -14,7 +14,11 @@ function isProductPage() {
         /\/product\/\d+/,
         /\/shop\/product\/\d+/,
         /\?product=/,
-        /#product/
+        /#product/,
+        /\/product-\d+/,
+        /\/shop\/product-\d+/,
+        /\/product\/\w+/,
+        /\/shop\/product\/\w+/
     ];
     
     // Vérifier si l'URL correspond à un pattern de page produit
@@ -25,7 +29,10 @@ function isProductPage() {
         'input[name="add_qty"]',
         '.js_product',
         '.product_detail',
-        '#product_detail'
+        '#product_detail',
+        '.oe_website_sale',
+        '[data-product-template-id]',
+        '.js_main_product'
     ];
     
     const hasProductElements = productPageElements.some(selector => 
@@ -34,21 +41,26 @@ function isProductPage() {
     
     // Vérifier qu'on n'est PAS sur une page de liste ou panier
     const nonProductPages = [
-        '/shop', // Page d'accueil shop
         '/shop/cart', // Panier
         '/shop/checkout', // Checkout
-        '/category/', // Pages de catégorie
-        '/collection/' // Collections
+        '/cart', // Panier alternatif
+        '/checkout' // Checkout alternatif
     ];
     
     const isNonProductPage = nonProductPages.some(path => url.includes(path));
     
-    const result = (isProductUrl || hasProductElements) && !isNonProductPage;
+    // Si on a des éléments de produit, on est probablement sur une page produit
+    const result = hasProductElements || (isProductUrl && !isNonProductPage);
+    
     console.log('[PriceBreak] Détection page produit:', {
+        url,
         isProductUrl,
         hasProductElements,
         isNonProductPage,
-        result
+        result,
+        foundElements: productPageElements.filter(selector => 
+            document.querySelector(selector) !== null
+        )
     });
     
     return result;
