@@ -105,7 +105,7 @@ class ProductTemplate(models.Model):
             all_rules = self.env['product.pricelist.item'].search([
                 ('pricelist_id', '=', pricelist.id),
                 ('min_quantity', '>', 0),
-            ], order='sequence, min_quantity')
+            ])
             
             print(f"[DEBUG] Toutes les règles trouvées: {len(all_rules)}")
             
