@@ -63,8 +63,8 @@
 
 /* Ligne active (surlignée) */
 .price-break-active {
-    background-color: #e8f5e8 !important;
-    border: 2px solid #28a745 !important;
+    background-color: #b4ede5 !important;
+    border: 2px solid #79C8BD !important;
     font-weight: 600;
     cursor: pointer;
 }

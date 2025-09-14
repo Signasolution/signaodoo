@@ -5,45 +5,90 @@
 function isProductPage() {
     const url = window.location.href;
     
+    // 1. Vérifier les pages NON-produit (exclusion prioritaire)
+    const nonProductPages = [
+        '/shop/cart',
+        '/shop/checkout', 
+        '/cart',
+        '/checkout',
+        '/shop',
+        '/shop/category',
+        '/category',
+        '/shop/search',
+        '/search',
+        '/shop/all',
+        '/all',
+        '/shop/brands',
+        '/brands'
+    ];
+    
+    const isNonProductPage = nonProductPages.some(path => url.includes(path));
+    if (isNonProductPage) {
+        return false;
+    }
+    
+    // 2. Vérifier les classes CSS spécifiques aux pages produit Odoo
+    const productPageClasses = [
+        '.js_product',           // Page produit principale
+        '.product_detail',       // Détail produit
+        '#product_detail',       // ID détail produit
+        '.js_main_product',      // Produit principal
+        '.product_template',     // Template produit
+        '.product_product',      // Variante produit
+        '[data-product-template-id]', // Données produit
+        '.product-info',         // Info produit
+        '.product-summary'       // Résumé produit
+    ];
+    
+    const hasProductClasses = productPageClasses.some(selector => 
+        document.querySelector(selector) !== null
+    );
+    
+    // 3. Vérifier les éléments spécifiques aux pages produit
+    const productElements = [
+        'input[name="add_qty"]',        // Champ quantité ajout panier
+        'button[name="add"]',           // Bouton ajouter au panier
+        '.js_add_cart_variant',         // Bouton ajouter variante
+        '.product_price',               // Prix produit
+        '.oe_product_price',            // Prix Odoo
+        '.product_price_text',          // Texte prix
+        '.product_quantity',            // Quantité produit
+        '.js_product_main',             // Produit principal JS
+        '.product_template_selector'    // Sélecteur template
+    ];
+    
+    const hasProductElements = productElements.some(selector => 
+        document.querySelector(selector) !== null
+    );
+    
+    // 4. Vérifier les patterns d'URL spécifiques aux pages produit
     const productUrlPatterns = [
-        /\/shop\/product\//,
-        /\/product\//,
-        /\/product\/\d+/,
-        /\/shop\/product\/\d+/,
-        /\?product=/,
-        /#product/,
-        /\/product-\d+/,
-        /\/shop\/product-\d+/,
-        /\/product\/\w+/,
-        /\/shop\/product\/\w+/
+        /\/shop\/product\/[^\/]+$/,     // /shop/product/nom-produit
+        /\/product\/[^\/]+$/,           // /product/nom-produit
+        /\/shop\/product\/\d+/,         // /shop/product/123
+        /\/product\/\d+/,               // /product/123
+        /\?product=\d+/,                // ?product=123
+        /#product-\d+/,                 // #product-123
+        /\/product-\d+/,                // /product-123
+        /\/shop\/product-\d+/           // /shop/product-123
     ];
     
     const isProductUrl = productUrlPatterns.some(pattern => pattern.test(url));
     
-    const productPageElements = [
-        'input[name="add_qty"]',
-        '.js_product',
-        '.product_detail',
-        '#product_detail',
-        '.oe_website_sale',
-        '[data-product-template-id]',
-        '.js_main_product'
-    ];
+    // 5. Vérifier qu'on n'est pas sur une page de liste
+    const isListPage = document.querySelector('.js_products') || 
+                       document.querySelector('.product_list') ||
+                       document.querySelector('.product_grid') ||
+                       document.querySelector('.shop_products') ||
+                       url.includes('/shop') && !url.includes('/product');
     
-    const hasProductElements = productPageElements.some(selector => 
-        document.querySelector(selector) !== null
-    );
+    // 6. Critères de décision
+    // Page produit si : classes produit OU (éléments produit ET URL produit) ET pas page liste
+    const isProduct = hasProductClasses || 
+                     (hasProductElements && isProductUrl) && 
+                     !isListPage;
     
-    const nonProductPages = [
-        '/shop/cart',
-        '/shop/checkout',
-        '/cart',
-        '/checkout'
-    ];
-    
-    const isNonProductPage = nonProductPages.some(path => url.includes(path));
-    
-    return hasProductElements || (isProductUrl && !isNonProductPage);
+    return isProduct;
 }
 
 // Fonction principale
@@ -83,6 +128,17 @@ window.priceBreakProcessed = window.priceBreakProcessed || new Set();
 
 function processProductElement(element) {
     if (element.dataset.priceBreakProcessed) {
+        return false;
+    }
+    
+    // Vérifier que l'élément contient bien des éléments de page produit
+    const hasProductElements = element.querySelector('input[name="add_qty"]') ||
+                              element.querySelector('button[name="add"]') ||
+                              element.querySelector('.js_add_cart_variant') ||
+                              element.querySelector('.product_price') ||
+                              element.querySelector('.js_product');
+    
+    if (!hasProductElements) {
         return false;
     }
     
