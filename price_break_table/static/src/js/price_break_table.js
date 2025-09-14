@@ -8,46 +8,67 @@ function isProductPage() {
         return false; // Backend Odoo
     }
     
-    // 2. Détection positive : chercher les combinaisons d'éléments qui définissent une page produit
-    
-    // Combinaison 1: Champ quantité + Bouton ajouter au panier + Prix produit
-    const hasQuantityField = document.querySelector('input[name="add_qty"]') !== null;
-    const hasAddButton = document.querySelector('button[name="add"]') !== null;
-    const hasProductPrice = document.querySelector('.product_price, .oe_product_price, .product_price_text') !== null;
-    
-    if (hasQuantityField && hasAddButton && hasProductPrice) {
-        return true;
-    }
-    
-    // Combinaison 2: Élément .js_product + données produit template
-    const hasJsProduct = document.querySelector('.js_product') !== null;
-    const hasProductTemplateId = document.querySelector('[data-product-template-id]') !== null;
-    
-    if (hasJsProduct && hasProductTemplateId) {
-        return true;
-    }
-    
-    // Combinaison 3: Détail produit + sélecteur de variantes
-    const hasProductDetail = document.querySelector('.product_detail, #product_detail') !== null;
-    const hasVariantSelector = document.querySelector('.js_add_cart_variant, .product_template_selector') !== null;
-    
-    if (hasProductDetail && hasVariantSelector) {
-        return true;
-    }
-    
-    // Combinaison 4: Produit principal + champ quantité
-    const hasMainProduct = document.querySelector('.js_main_product') !== null;
-    
-    if (hasMainProduct && hasQuantityField) {
-        return true;
-    }
-    
-    // Combinaison 5: Vérifier qu'on a un seul produit affiché (pas une liste)
-    const productCount = document.querySelectorAll('.js_product, .product_detail').length;
-    const hasSingleProduct = productCount === 1;
-    
-    if (hasSingleProduct && (hasQuantityField || hasProductPrice)) {
-        return true;
+    // 2. Utiliser les données de session Odoo pour détecter une page produit
+    try {
+        // Vérifier si on a accès à l'objet session d'Odoo
+        if (typeof odoo !== 'undefined' && odoo.session) {
+            const session = odoo.session;
+            
+            // Vérifier si on est sur une page produit via les données de session
+            if (session.website && session.website.current_website) {
+                // Vérifier les paramètres de la page actuelle
+                const currentPage = session.website.current_website;
+                if (currentPage && currentPage.product_tmpl_id) {
+                    return true;
+                }
+            }
+        }
+        
+        // 3. Vérifier via les données globales d'Odoo
+        if (typeof odoo !== 'undefined' && odoo.website) {
+            const website = odoo.website;
+            if (website.product && website.product.product_tmpl_id) {
+                return true;
+            }
+        }
+        
+        // 4. Vérifier via les données de la page dans le DOM (méta tags)
+        const productMeta = document.querySelector('meta[name="product-template-id"]');
+        if (productMeta && productMeta.content) {
+            return true;
+        }
+        
+        // 5. Vérifier via les données JSON dans le DOM
+        const productData = document.querySelector('script[type="application/json"][data-product]');
+        if (productData) {
+            try {
+                const data = JSON.parse(productData.textContent);
+                if (data.product_tmpl_id || data.product_id) {
+                    return true;
+                }
+            } catch (e) {
+                // Ignorer les erreurs de parsing
+            }
+        }
+        
+        // 6. Vérifier via les attributs data spécifiques aux pages produit
+        const productTemplateData = document.querySelector('[data-product-template-id]');
+        if (productTemplateData && productTemplateData.dataset.productTemplateId) {
+            return true;
+        }
+        
+        // 7. Vérifier via les variables globales JavaScript d'Odoo
+        if (typeof window.product_tmpl_id !== 'undefined' && window.product_tmpl_id) {
+            return true;
+        }
+        
+        if (typeof window.product_id !== 'undefined' && window.product_id) {
+            return true;
+        }
+        
+    } catch (error) {
+        // En cas d'erreur, ne pas afficher le tableau
+        return false;
     }
     
     return false;
@@ -79,7 +100,7 @@ function initPriceBreak() {
             }
         });
     }
-    
+
     if (!foundProducts) {
         setTimeout(initPriceBreak, 2000);
     }
@@ -93,20 +114,8 @@ function processProductElement(element) {
         return false;
     }
     
-    // Vérifier que l'élément contient une combinaison spécifique de page produit
-    const hasQuantityField = element.querySelector('input[name="add_qty"]') !== null;
-    const hasAddButton = element.querySelector('button[name="add"]') !== null;
-    const hasProductPrice = element.querySelector('.product_price, .oe_product_price, .product_price_text') !== null;
-    const hasJsProduct = element.querySelector('.js_product') !== null;
-    const hasProductTemplateId = element.querySelector('[data-product-template-id]') !== null;
-    
-    // Vérifier qu'on a au moins 2 éléments de page produit
-    const productElementsCount = [hasQuantityField, hasAddButton, hasProductPrice, hasJsProduct, hasProductTemplateId]
-        .filter(Boolean).length;
-    
-    if (productElementsCount < 2) {
-        return false;
-    }
+    // Si on arrive ici, c'est que isProductPage() a déjà validé qu'on est sur une page produit
+    // On peut donc traiter l'élément directement
     
     const productId = getProductId(element);
     if (!productId) {
