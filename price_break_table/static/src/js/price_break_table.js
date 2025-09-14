@@ -1,11 +1,16 @@
 // Tableau de prix dégressifs pour Odoo - Version unifiée
 // Toutes les fonctionnalités dans un seul fichier
 
-// Fonction pour vérifier si on est sur une page produit
+// Fonction pour vérifier si on est sur une page produit du site web
 function isProductPage() {
     const url = window.location.href;
     
-    // 1. Vérifier les pages NON-produit (exclusion prioritaire)
+    // 1. Vérifier qu'on est sur le site web (pas le backend)
+    if (document.querySelector('.o_web_client')) {
+        return false; // Backend Odoo
+    }
+    
+    // 2. Exclusion stricte des pages NON-produit
     const nonProductPages = [
         '/shop/cart',
         '/shop/checkout', 
@@ -19,7 +24,12 @@ function isProductPage() {
         '/shop/all',
         '/all',
         '/shop/brands',
-        '/brands'
+        '/brands',
+        '/shop/page/',
+        '/page/',
+        '/contact',
+        '/about',
+        '/blog'
     ];
     
     const isNonProductPage = nonProductPages.some(path => url.includes(path));
@@ -27,41 +37,19 @@ function isProductPage() {
         return false;
     }
     
-    // 2. Vérifier les classes CSS spécifiques aux pages produit Odoo
-    const productPageClasses = [
-        '.js_product',           // Page produit principale
-        '.product_detail',       // Détail produit
-        '#product_detail',       // ID détail produit
-        '.js_main_product',      // Produit principal
-        '.product_template',     // Template produit
-        '.product_product',      // Variante produit
-        '[data-product-template-id]', // Données produit
-        '.product-info',         // Info produit
-        '.product-summary'       // Résumé produit
-    ];
+    // 3. Vérifier qu'on n'est pas sur une page de liste/catégorie
+    const isListPage = document.querySelector('.js_products') || 
+                       document.querySelector('.product_list') ||
+                       document.querySelector('.product_grid') ||
+                       document.querySelector('.shop_products') ||
+                       document.querySelector('.oe_product') ||
+                       url.includes('/shop') && !url.includes('/product');
     
-    const hasProductClasses = productPageClasses.some(selector => 
-        document.querySelector(selector) !== null
-    );
+    if (isListPage) {
+        return false;
+    }
     
-    // 3. Vérifier les éléments spécifiques aux pages produit
-    const productElements = [
-        'input[name="add_qty"]',        // Champ quantité ajout panier
-        'button[name="add"]',           // Bouton ajouter au panier
-        '.js_add_cart_variant',         // Bouton ajouter variante
-        '.product_price',               // Prix produit
-        '.oe_product_price',            // Prix Odoo
-        '.product_price_text',          // Texte prix
-        '.product_quantity',            // Quantité produit
-        '.js_product_main',             // Produit principal JS
-        '.product_template_selector'    // Sélecteur template
-    ];
-    
-    const hasProductElements = productElements.some(selector => 
-        document.querySelector(selector) !== null
-    );
-    
-    // 4. Vérifier les patterns d'URL spécifiques aux pages produit
+    // 4. Vérifier les patterns d'URL spécifiques aux pages produit uniquement
     const productUrlPatterns = [
         /\/shop\/product\/[^\/]+$/,     // /shop/product/nom-produit
         /\/product\/[^\/]+$/,           // /product/nom-produit
@@ -75,20 +63,25 @@ function isProductPage() {
     
     const isProductUrl = productUrlPatterns.some(pattern => pattern.test(url));
     
-    // 5. Vérifier qu'on n'est pas sur une page de liste
-    const isListPage = document.querySelector('.js_products') || 
-                       document.querySelector('.product_list') ||
-                       document.querySelector('.product_grid') ||
-                       document.querySelector('.shop_products') ||
-                       url.includes('/shop') && !url.includes('/product');
+    // 5. Vérifier les éléments spécifiques aux pages produit individuelles
+    const productPageElements = [
+        'input[name="add_qty"]',        // Champ quantité ajout panier
+        'button[name="add"]',           // Bouton ajouter au panier
+        '.js_add_cart_variant',         // Bouton ajouter variante
+        '.js_product',                  // Page produit principale
+        '.product_detail',              // Détail produit
+        '#product_detail',              // ID détail produit
+        '.js_main_product',             // Produit principal
+        '[data-product-template-id]',   // Données produit
+        '.product_template_selector'    // Sélecteur template
+    ];
     
-    // 6. Critères de décision
-    // Page produit si : classes produit OU (éléments produit ET URL produit) ET pas page liste
-    const isProduct = hasProductClasses || 
-                     (hasProductElements && isProductUrl) && 
-                     !isListPage;
+    const hasProductElements = productPageElements.some(selector => 
+        document.querySelector(selector) !== null
+    );
     
-    return isProduct;
+    // 6. Critère final : URL produit ET éléments produit
+    return isProductUrl && hasProductElements;
 }
 
 // Fonction principale
