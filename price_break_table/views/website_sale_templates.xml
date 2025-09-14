@@ -105,8 +105,8 @@
 
                     <style>
                         .price-break-table-container {
-                            width: 60%;
-                            max-width: 400px;
+                            width: 70%;
+                            max-width: 500px;
                         }
                         .price-break-row:hover {
                             background-color: #c7eae5;
