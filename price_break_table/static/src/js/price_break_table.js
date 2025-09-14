@@ -3,85 +3,54 @@
 
 // Fonction pour vérifier si on est sur une page produit du site web
 function isProductPage() {
-    const url = window.location.href;
-    
     // 1. Vérifier qu'on est sur le site web (pas le backend)
     if (document.querySelector('.o_web_client')) {
         return false; // Backend Odoo
     }
     
-    // 2. Exclusion stricte des pages NON-produit
-    const nonProductPages = [
-        '/shop/cart',
-        '/shop/checkout', 
-        '/cart',
-        '/checkout',
-        '/shop',
-        '/shop/category',
-        '/category',
-        '/shop/search',
-        '/search',
-        '/shop/all',
-        '/all',
-        '/shop/brands',
-        '/brands',
-        '/shop/page/',
-        '/page/',
-        '/contact',
-        '/about',
-        '/blog'
-    ];
+    // 2. Détection positive : chercher les combinaisons d'éléments qui définissent une page produit
     
-    const isNonProductPage = nonProductPages.some(path => url.includes(path));
-    if (isNonProductPage) {
-        return false;
+    // Combinaison 1: Champ quantité + Bouton ajouter au panier + Prix produit
+    const hasQuantityField = document.querySelector('input[name="add_qty"]') !== null;
+    const hasAddButton = document.querySelector('button[name="add"]') !== null;
+    const hasProductPrice = document.querySelector('.product_price, .oe_product_price, .product_price_text') !== null;
+    
+    if (hasQuantityField && hasAddButton && hasProductPrice) {
+        return true;
     }
     
-    // 3. Vérifier qu'on n'est pas sur une page de liste/catégorie
-    const isListPage = document.querySelector('.js_products') || 
-                       document.querySelector('.product_list') ||
-                       document.querySelector('.product_grid') ||
-                       document.querySelector('.shop_products') ||
-                       document.querySelector('.oe_product') ||
-                       url.includes('/shop') && !url.includes('/product');
+    // Combinaison 2: Élément .js_product + données produit template
+    const hasJsProduct = document.querySelector('.js_product') !== null;
+    const hasProductTemplateId = document.querySelector('[data-product-template-id]') !== null;
     
-    if (isListPage) {
-        return false;
+    if (hasJsProduct && hasProductTemplateId) {
+        return true;
     }
     
-    // 4. Vérifier les patterns d'URL spécifiques aux pages produit uniquement
-    const productUrlPatterns = [
-        /\/shop\/product\/[^\/]+$/,     // /shop/product/nom-produit
-        /\/product\/[^\/]+$/,           // /product/nom-produit
-        /\/shop\/product\/\d+/,         // /shop/product/123
-        /\/product\/\d+/,               // /product/123
-        /\?product=\d+/,                // ?product=123
-        /#product-\d+/,                 // #product-123
-        /\/product-\d+/,                // /product-123
-        /\/shop\/product-\d+/           // /shop/product-123
-    ];
+    // Combinaison 3: Détail produit + sélecteur de variantes
+    const hasProductDetail = document.querySelector('.product_detail, #product_detail') !== null;
+    const hasVariantSelector = document.querySelector('.js_add_cart_variant, .product_template_selector') !== null;
     
-    const isProductUrl = productUrlPatterns.some(pattern => pattern.test(url));
+    if (hasProductDetail && hasVariantSelector) {
+        return true;
+    }
     
-    // 5. Vérifier les éléments spécifiques aux pages produit individuelles
-    const productPageElements = [
-        'input[name="add_qty"]',        // Champ quantité ajout panier
-        'button[name="add"]',           // Bouton ajouter au panier
-        '.js_add_cart_variant',         // Bouton ajouter variante
-        '.js_product',                  // Page produit principale
-        '.product_detail',              // Détail produit
-        '#product_detail',              // ID détail produit
-        '.js_main_product',             // Produit principal
-        '[data-product-template-id]',   // Données produit
-        '.product_template_selector'    // Sélecteur template
-    ];
+    // Combinaison 4: Produit principal + champ quantité
+    const hasMainProduct = document.querySelector('.js_main_product') !== null;
     
-    const hasProductElements = productPageElements.some(selector => 
-        document.querySelector(selector) !== null
-    );
+    if (hasMainProduct && hasQuantityField) {
+        return true;
+    }
     
-    // 6. Critère final : URL produit ET éléments produit
-    return isProductUrl && hasProductElements;
+    // Combinaison 5: Vérifier qu'on a un seul produit affiché (pas une liste)
+    const productCount = document.querySelectorAll('.js_product, .product_detail').length;
+    const hasSingleProduct = productCount === 1;
+    
+    if (hasSingleProduct && (hasQuantityField || hasProductPrice)) {
+        return true;
+    }
+    
+    return false;
 }
 
 // Fonction principale
@@ -124,14 +93,18 @@ function processProductElement(element) {
         return false;
     }
     
-    // Vérifier que l'élément contient bien des éléments de page produit
-    const hasProductElements = element.querySelector('input[name="add_qty"]') ||
-                              element.querySelector('button[name="add"]') ||
-                              element.querySelector('.js_add_cart_variant') ||
-                              element.querySelector('.product_price') ||
-                              element.querySelector('.js_product');
+    // Vérifier que l'élément contient une combinaison spécifique de page produit
+    const hasQuantityField = element.querySelector('input[name="add_qty"]') !== null;
+    const hasAddButton = element.querySelector('button[name="add"]') !== null;
+    const hasProductPrice = element.querySelector('.product_price, .oe_product_price, .product_price_text') !== null;
+    const hasJsProduct = element.querySelector('.js_product') !== null;
+    const hasProductTemplateId = element.querySelector('[data-product-template-id]') !== null;
     
-    if (!hasProductElements) {
+    // Vérifier qu'on a au moins 2 éléments de page produit
+    const productElementsCount = [hasQuantityField, hasAddButton, hasProductPrice, hasJsProduct, hasProductTemplateId]
+        .filter(Boolean).length;
+    
+    if (productElementsCount < 2) {
         return false;
     }
     
@@ -181,9 +154,9 @@ function getProductId(element) {
     if (dataId) {
         return dataId.dataset.productId;
     }
-    
-    return null;
-}
+        
+        return null;
+    }
 
 function addPriceBreakTable(container, productId) {
     const tableContainer = document.createElement('div');
@@ -278,7 +251,7 @@ class SimplePriceBreakWidget {
             </div>
         `;
     }
-    
+
     renderTable(data) {
         const currentQuantity = this.getCurrentQuantity();
         const activeRow = this.findActiveRow(data.rows, currentQuantity);
@@ -289,7 +262,7 @@ class SimplePriceBreakWidget {
             const boldQuantity = isActive ? `<strong>${row.quantity_display}</strong>` : row.quantity_display;
             const boldPrice = isActive ? `<strong>${row.price_formatted}</strong>` : row.price_formatted;
             
-            return `
+        return `
             <tr class="price-break-clickable${activeClass}" 
                 data-quantity="${row.min_quantity}" 
                 data-price="${row.price}"
@@ -307,15 +280,15 @@ class SimplePriceBreakWidget {
                 </h6>
                 <table class="price-break-table">
                     <thead>
-                        <tr>
-                            <th>Quantité</th>
+                            <tr>
+                                <th>Quantité</th>
                             <th class="text-right">Prix unitaire</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                            </tr>
+                        </thead>
+                        <tbody>
                         ${rowsHtml}
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
                 <small class="price-break-help">
                     💡 Cliquez sur une ligne pour ajuster la quantité
                 </small>
