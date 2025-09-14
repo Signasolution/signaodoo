@@ -112,8 +112,9 @@ function addPriceBreakTable(container, productId) {
     if (targetLocation) {
         targetLocation.appendChild(tableContainer);
         
-        // Initialiser le widget
-        new SimplePriceBreakWidget(tableContainer);
+        // Initialiser le widget et le rendre accessible globalement
+        const widget = new SimplePriceBreakWidget(tableContainer);
+        window.priceBreakWidget = widget;
         console.log('[PriceBreak] Tableau ajouté avec succès');
     } else {
         console.log('[PriceBreak] Emplacement non trouvé');
@@ -218,8 +219,11 @@ class SimplePriceBreakWidget {
     }
     
     renderTable(data) {
-        const rowsHtml = data.rows.map(row => `
-            <tr style="cursor: pointer; ${row.is_active ? 'background-color: #e8f5e8;' : ''}">
+        const rowsHtml = data.rows.map((row, index) => `
+            <tr style="cursor: pointer; ${row.is_active ? 'background-color: #e8f5e8;' : ''}" 
+                data-quantity="${row.min_quantity}" 
+                data-price="${row.price}"
+                onclick="priceBreakWidget.setQuantity(${row.min_quantity})">
                 <td><strong>${row.quantity_display}</strong></td>
                 <td style="text-align: right;"><strong>${row.price_formatted}</strong></td>
             </tr>
@@ -246,6 +250,9 @@ class SimplePriceBreakWidget {
                 </small>
             </div>
         `;
+        
+        // Stocker les données pour les utiliser dans setQuantity
+        this.tableData = data;
     }
     
     renderEmpty() {
@@ -262,6 +269,77 @@ class SimplePriceBreakWidget {
                 <small>Erreur lors du chargement des prix dégressifs.</small>
             </div>
         `;
+    }
+    
+    setQuantity(quantity) {
+        console.log('[PriceBreak] Définition de la quantité:', quantity);
+        
+        // Trouver le champ de quantité sur la page
+        const quantityInput = this.findQuantityInput();
+        if (quantityInput) {
+            quantityInput.value = quantity;
+            quantityInput.dispatchEvent(new Event('change', { bubbles: true }));
+            quantityInput.dispatchEvent(new Event('input', { bubbles: true }));
+            
+            console.log('[PriceBreak] Quantité mise à jour:', quantity);
+            
+            // Mettre à jour l'affichage du tableau
+            this.loadData();
+            
+            // Optionnel: Afficher un message de confirmation
+            this.showQuantityUpdateMessage(quantity);
+        } else {
+            console.log('[PriceBreak] Champ de quantité non trouvé');
+        }
+    }
+    
+    findQuantityInput() {
+        // Sélecteurs pour trouver le champ de quantité
+        const selectors = [
+            'input[name="add_qty"]',
+            'input[name="quantity"]',
+            'input[id*="quantity"]',
+            '.js_product input[name="add_qty"]',
+            '.js_product input[name="quantity"]',
+            'input[data-product-template-id]'
+        ];
+        
+        for (const selector of selectors) {
+            const input = document.querySelector(selector);
+            if (input) {
+                console.log('[PriceBreak] Champ de quantité trouvé:', selector);
+                return input;
+            }
+        }
+        
+        return null;
+    }
+    
+    showQuantityUpdateMessage(quantity) {
+        // Créer un message temporaire
+        const message = document.createElement('div');
+        message.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            z-index: 9999;
+            font-size: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        `;
+        message.textContent = `Quantité mise à jour: ${quantity}`;
+        
+        document.body.appendChild(message);
+        
+        // Supprimer le message après 3 secondes
+        setTimeout(() => {
+            if (message.parentNode) {
+                message.parentNode.removeChild(message);
+            }
+        }, 3000);
     }
 }
 
