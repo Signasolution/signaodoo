@@ -59,11 +59,17 @@ class ProductTemplate(models.Model):
             max_qty = rule.get('max_quantity', 0)
             price = rule.get('price', 0)
             
-            # Formatage de la quantité
-            if max_qty and max_qty != float('inf'):
-                qty_display = f"{min_qty}+ à {max_qty}"
+            # Formatage de la quantité (enlever les décimales inutiles)
+            if max_qty and max_qty != 999999:
+                if min_qty == int(min_qty):
+                    qty_display = f"{int(min_qty)}+ à {int(max_qty)}"
+                else:
+                    qty_display = f"{min_qty}+ à {max_qty}"
             else:
-                qty_display = f"{min_qty}+"
+                if min_qty == int(min_qty):
+                    qty_display = f"{int(min_qty)}+"
+                else:
+                    qty_display = f"{min_qty}+"
             
             # Détermination si cette ligne est active (correspond à la quantité actuelle)
             is_active = min_qty <= quantity and (not max_qty or max_qty >= quantity)

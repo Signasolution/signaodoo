@@ -81,10 +81,17 @@ class ProductTemplateTest(models.Model):
                 # Déterminer si cette règle est active pour la quantité actuelle
                 is_active = quantity >= rule['min_quantity']
                 
+                # Formatage propre de la quantité (enlever les décimales inutiles)
+                min_qty = rule['min_quantity']
+                if min_qty == int(min_qty):
+                    quantity_display = f"{int(min_qty)}+"
+                else:
+                    quantity_display = f"{min_qty}+"
+                
                 rows.append({
                     'min_quantity': rule['min_quantity'],
                     'max_quantity': rule['max_quantity'],
-                    'quantity_display': f"{rule['min_quantity']}+",
+                    'quantity_display': quantity_display,
                     'price': rule['price'],
                     'price_formatted': f"{rule['price']:,.2f} €".replace(',', ' '),
                     'is_active': is_active,
