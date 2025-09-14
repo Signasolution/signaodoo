@@ -52,7 +52,7 @@
                             }
 
                             function updateHighlight() {
-                                if (input && input.value !== lastValue) {
+                                if (input &amp;&amp; input.value !== lastValue) {
                                     lastValue = input.value;
                                     var qty = parseFloat(input.value);
                                     if (!isNaN(qty)) {
@@ -105,11 +105,11 @@
 
                     <style>
                         .price-break-row:hover {
-                            background-color: #e3f2fd;
+                            background-color: #c7eae5;
                         }
                         .price-break-active {
-                            background-color: #e8f5e8 !important;
-                            border: 2px solid #28a745 !important;
+                            background-color: #c7eae5 !important;
+                            border: 2px solid #79C8BD !important;
                             font-weight: bold;
                         }
                     </style>
