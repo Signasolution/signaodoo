@@ -2,6 +2,10 @@
    TABLEAU DE PRIX DÉGRESSIFS - STYLES CSS
    ======================================== */
 
+/* ========================================
+   1. STRUCTURE PRINCIPALE
+   ======================================== */
+
 /* Conteneur principal */
 .price-break-table-container {
     width: 60%;
@@ -10,6 +14,7 @@
     border: 1px solid #ddd;
     border-radius: 5px;
     background: #f9f9f9;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 /* Titre du tableau */
@@ -50,6 +55,16 @@
     text-align: right !important;
 }
 
+/* Message d'aide */
+.price-break-help {
+    color: #666;
+    font-style: italic;
+}
+
+/* ========================================
+   2. INTERACTIONS ET ÉTATS
+   ======================================== */
+
 /* Lignes cliquables */
 .price-break-clickable {
     cursor: pointer;
@@ -63,10 +78,11 @@
 
 /* Ligne active (surlignée) */
 .price-break-active {
-    background-color: #b4ede5 !important;
-    border: 2px solid #79C8BD !important;
+    background-color: #e8f5e8 !important;
+    border: 2px solid #28a745 !important;
     font-weight: 600;
     cursor: pointer;
+    animation: highlightRow 0.5s ease-in-out;
 }
 
 .price-break-active:hover {
@@ -79,39 +95,22 @@
     100% { background-color: #e8f5e8; }
 }
 
-.price-break-active {
-    animation: highlightRow 0.5s ease-in-out;
-}
-
-/* Message d'aide */
-.price-break-help {
-    color: #666;
-    font-style: italic;
-}
-
 /* États de chargement et erreur */
-.price-break-table-loading {
-    text-align: center;
-    padding: 10px;
-    border: 1px solid #ddd;
-    background: #f9f9f9;
-    color: #666;
-}
-
+.price-break-table-loading,
 .price-break-table-empty {
     text-align: center;
     padding: 10px;
-    color: #666;
     border: 1px solid #ddd;
     background: #f9f9f9;
+    color: #666;
 }
 
 .price-break-table-error {
     text-align: center;
     padding: 10px;
-    color: #d32f2f;
     border: 1px solid #ddd;
     background: #f9f9f9;
+    color: #d32f2f;
 }
 
 /* Message de confirmation */
@@ -141,10 +140,10 @@
 }
 
 /* ========================================
-   ADAPTATIONS POUR DIFFÉRENTS CONTEXTES
+   3. CONTEXTES SPÉCIFIQUES
    ======================================== */
 
-/* Styles spécifiques pour le frontend (e-commerce) */
+/* Frontend e-commerce */
 .oe_website_sale .price-break-table-container {
     background-color: #ffffff;
     border: 1px solid #ddd;
@@ -157,7 +156,7 @@
     padding-bottom: 8px;
 }
 
-/* Styles pour l'intégration dans les formulaires backend */
+/* Backend Odoo */
 .o_form_view .price-break-table-container {
     margin: 10px 0;
     background-color: #ffffff;
@@ -169,45 +168,8 @@
     margin-bottom: 10px;
 }
 
-/* Styles pour les thèmes sombres */
-@media (prefers-color-scheme: dark) {
-    .price-break-table-container {
-        background-color: #2d3748;
-        border-color: #4a5568;
-        color: #e2e8f0;
-    }
-    
-    .price-break-table-title {
-        color: #e2e8f0;
-    }
-    
-    .price-break-table thead th {
-        background-color: #4a5568;
-        color: #e2e8f0;
-        border-bottom-color: #718096;
-    }
-    
-    .price-break-table tbody td {
-        border-bottom-color: #4a5568;
-        color: #e2e8f0;
-    }
-    
-    .price-break-clickable:hover {
-        background-color: #2b6cb0 !important;
-    }
-    
-    .price-break-active {
-        background-color: #22543d !important;
-        border-color: #38a169 !important;
-    }
-    
-    .price-break-active:hover {
-        background-color: #276749 !important;
-    }
-}
-
 /* ========================================
-   RESPONSIVE DESIGN
+   4. RESPONSIVE DESIGN
    ======================================== */
 
 /* Tablettes */
@@ -265,36 +227,57 @@
 }
 
 /* ========================================
-   COMPATIBILITÉ AVEC DIFFÉRENTS THÈMES
+   5. THÈMES SOMBRES
    ======================================== */
 
-/* Bootstrap */
-.table .price-break-table {
-    margin-bottom: 0;
-}
-
-/* Foundation */
-.price-break-table-container .price-break-table {
-    width: 100%;
-}
-
-/* Material Design */
-.price-break-table-container {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+@media (prefers-color-scheme: dark) {
+    .price-break-table-container {
+        background-color: #2d3748;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    .price-break-table-title {
+        color: #e2e8f0;
+    }
+    
+    .price-break-table thead th {
+        background-color: #4a5568;
+        color: #e2e8f0;
+        border-bottom-color: #718096;
+    }
+    
+    .price-break-table tbody td {
+        border-bottom-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    .price-break-clickable:hover {
+        background-color: #2b6cb0 !important;
+    }
+    
+    .price-break-active {
+        background-color: #22543d !important;
+        border-color: #38a169 !important;
+    }
+    
+    .price-break-active:hover {
+        background-color: #276749 !important;
+    }
 }
 
 /* ========================================
-   ACCESSIBILITÉ
+   6. ACCESSIBILITÉ
    ======================================== */
 
-/* Focus visible pour l'accessibilité */
+/* Focus visible */
 .price-break-clickable:focus,
 .price-break-active:focus {
     outline: 2px solid #007bff;
     outline-offset: 2px;
 }
 
-/* Contraste amélioré pour les malvoyants */
+/* Contraste élevé */
 @media (prefers-contrast: high) {
     .price-break-table-container {
         border: 2px solid #000;
@@ -313,7 +296,7 @@
     }
 }
 
-/* Réduction des animations pour les utilisateurs sensibles */
+/* Réduction des animations */
 @media (prefers-reduced-motion: reduce) {
     .price-break-clickable,
     .price-break-active,
@@ -321,4 +304,18 @@
         transition: none;
         animation: none;
     }
+}
+
+/* ========================================
+   7. COMPATIBILITÉ THÈMES
+   ======================================== */
+
+/* Bootstrap */
+.table .price-break-table {
+    margin-bottom: 0;
+}
+
+/* Foundation */
+.price-break-table-container .price-break-table {
+    width: 100%;
 }
