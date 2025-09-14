@@ -4,12 +4,6 @@
         
         <!-- Template pour le tableau de prix dégressifs sur les pages produit -->
         <template id="website_sale_product_price_break" name="Product Price Break Table" inherit_id="website_sale.product">
-            <!-- Ajouter un méta tag pour identifier la page produit -->
-            <xpath expr="//head" position="inside">
-                <meta name="page-type" content="product"/>
-                <meta name="product-template-id" content="product_template.id"/>
-            </xpath>
-            
             <!-- Ajouter le conteneur du tableau -->
             <xpath expr="//div[@id='product_detail']" position="inside">
                 <div class="price-break-table-widget" 

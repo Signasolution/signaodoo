@@ -3,74 +3,15 @@
 
 // Fonction pour vérifier si on est sur une page produit du site web
 function isProductPage() {
-    // Méthode 1: Vérifier via les données de session Odoo
+    // Vérifier uniquement via params.model === 'product.product'
     try {
-        if (typeof odoo !== 'undefined' && odoo.session) {
-            const session = odoo.session;
-            
-            // Vérifier si on est sur une page produit via les données de session
-            if (session.website && session.website.current_website) {
-                const currentPage = session.website.current_website;
-                
-                // Vérifier les paramètres spécifiques aux pages produit
-                if (currentPage.product_tmpl_id || currentPage.product_id) {
-                    return true;
-                }
-            }
-            
-            // Vérifier via les données de la requête courante
-            if (session.request && session.request.params) {
-                const params = session.request.params;
-                if (params.model === 'product.template' || params.model === 'product.product') {
-                    return true;
-                }
-            }
+        if (typeof odoo !== 'undefined' && odoo.session && odoo.session.request && odoo.session.request.params) {
+            const params = odoo.session.request.params;
+            return params.model === 'product.product';
         }
     } catch (e) {
-        // Ignorer les erreurs de session
-    }
-    
-    // Méthode 2: Vérifier via les méta tags de la page
-    const pageType = document.querySelector('meta[name="page-type"]');
-    if (pageType && pageType.content === 'product') {
-        return true;
-    }
-    
-    // Méthode 3: Vérifier via les données JSON dans le DOM
-    const productData = document.querySelector('script[type="application/json"][data-model="product.template"]');
-    if (productData) {
-        try {
-            const data = JSON.parse(productData.textContent);
-            if (data.product_tmpl_id || data.product_id) {
-                return true;
-            }
-        } catch (e) {
-            // Ignorer les erreurs de parsing
-        }
-    }
-    
-    // Méthode 4: Vérifier via les variables globales JavaScript
-    if (typeof window.product_tmpl_id !== 'undefined' && window.product_tmpl_id) {
-        return true;
-    }
-    
-    if (typeof window.product_id !== 'undefined' && window.product_id) {
-        return true;
-    }
-    
-    // Méthode 5: Vérifier via les attributs data spécifiques
-    const productTemplateData = document.querySelector('[data-product-template-id]');
-    if (productTemplateData && productTemplateData.dataset.productTemplateId) {
-        return true;
-    }
-    
-    // Méthode 6: Vérifier via les classes CSS spécifiques aux pages produit
-    const hasProductClasses = document.querySelector('.js_product') && 
-                              document.querySelector('.oe_website_sale') &&
-                              document.querySelector('input[name="add_qty"]');
-    
-    if (hasProductClasses) {
-        return true;
+        // En cas d'erreur, ne pas afficher
+        return false;
     }
     
     return false;
