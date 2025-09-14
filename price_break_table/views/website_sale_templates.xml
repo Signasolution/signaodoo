@@ -5,8 +5,9 @@
         <!-- Template pour le tableau de prix dégressifs sur les pages produit -->
         <template id="website_sale_product_price_break" name="Product Price Break Table" inherit_id="website_sale.product">
             <xpath expr="//div[@id='add_to_cart_wrap']" position="after">
-                <t t-set="price_break_data" t-value="product_template.get_price_break_table_data()"/>
-                <t t-if="price_break_data and len(price_break_data.get('rows', [])) > 1">
+                <t t-if="product_template and product_template.id and not request.params.get('search') and not request.params.get('category_id')">
+                    <t t-set="price_break_data" t-value="product_template.get_price_break_table_data()"/>
+                    <t t-if="price_break_data and len(price_break_data.get('rows', [])) > 1">
                     <div class="table-responsive mt-3">
                         <table class="table table-bordered">
                             <thead>
@@ -84,6 +85,7 @@
         font-weight: bold;
     }
 </style>
+                    </t>
                 </t>
             </xpath>
         </template>
