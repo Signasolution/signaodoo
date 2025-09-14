@@ -50,13 +50,56 @@
                                 }
                             }
 
+                            function updateHighlight() {
+                                var qty = parseFloat(input.value);
+                                if (!isNaN(qty)) {
+                                    highlightMatchingRow(qty);
+                                }
+                            }
+
                             if (input) {
-                                input.addEventListener('input', function () {
-                                    var qty = parseFloat(input.value);
-                                    if (!isNaN(qty)) {
-                                        highlightMatchingRow(qty);
-                                    }
+                                // Événement pour la saisie manuelle
+                                input.addEventListener('input', updateHighlight);
+                                
+                                // Événements pour les boutons plus/moins
+                                input.addEventListener('change', updateHighlight);
+                                
+                                // Observer les changements de valeur (pour les boutons plus/moins)
+                                var observer = new MutationObserver(function(mutations) {
+                                    mutations.forEach(function(mutation) {
+                                        if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+                                            updateHighlight();
+                                        }
+                                    });
                                 });
+                                observer.observe(input, { attributes: true, attributeFilter: ['value'] });
+                                
+                                // Observer les changements dans le DOM (boutons plus/moins)
+                                var parentObserver = new MutationObserver(function(mutations) {
+                                    mutations.forEach(function(mutation) {
+                                        if (mutation.type === 'childList') {
+                                            setTimeout(updateHighlight, 100);
+                                        }
+                                    });
+                                });
+                                if (input.parentNode) {
+                                    parentObserver.observe(input.parentNode, { childList: true, subtree: true });
+                                }
+                                
+                                // Événements sur les boutons plus/moins s'ils existent
+                                var plusBtn = document.querySelector('.fa-plus, .btn-plus, [data-action="plus"]');
+                                var minusBtn = document.querySelector('.fa-minus, .btn-minus, [data-action="minus"]');
+                                
+                                if (plusBtn) {
+                                    plusBtn.addEventListener('click', function() {
+                                        setTimeout(updateHighlight, 200);
+                                    });
+                                }
+                                if (minusBtn) {
+                                    minusBtn.addEventListener('click', function() {
+                                        setTimeout(updateHighlight, 200);
+                                    });
+                                }
                             }
 
                             rows.forEach(function (row) {
