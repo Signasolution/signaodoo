@@ -1,0 +1,8 @@
+<odoo>
+    <template id="assets_frontend" name="product_category_ui_enhancer assets" inherit_id="website.assets_frontend">
+        <xpath expr="." position="inside">
+            <link rel="stylesheet" type="text/css" href="/product_category_ui_enhancer/static/src/css/category_ui.css"/>
+            <script type="text/javascript" src="/product_category_ui_enhancer/static/src/js/category_ui.js"/>
+        </xpath>
+    </template>
+</odoo>
