@@ -239,8 +239,8 @@ class SimplePriceBreakWidget {
                 data-quantity="${row.min_quantity}" 
                 data-price="${row.price}"
                 onclick="priceBreakWidget.setQuantity(${row.min_quantity})">
-                <td><strong>${row.quantity_display}</strong></td>
-                <td style="text-align: right;"><strong>${row.price_formatted}</strong></td>
+                <td>${isActive ? `<strong>${row.quantity_display}</strong>` : row.quantity_display}</td>
+                <td style="text-align: right;">${isActive ? `<strong>${row.price_formatted}</strong>` : row.price_formatted}</td>
             </tr>
         `;
         }).join('');
@@ -408,9 +408,19 @@ class SimplePriceBreakWidget {
                 if (isActive) {
                     row.style.backgroundColor = '#e8f5e8';
                     row.style.border = '2px solid #28a745';
+                    
+                    // Mettre en gras le texte de la ligne active
+                    const cells = row.querySelectorAll('td');
+                    cells[0].innerHTML = `<strong>${rowData.quantity_display}</strong>`;
+                    cells[1].innerHTML = `<strong>${rowData.price_formatted}</strong>`;
                 } else {
                     row.style.backgroundColor = '';
                     row.style.border = '';
+                    
+                    // Retirer le gras du texte des lignes inactives
+                    const cells = row.querySelectorAll('td');
+                    cells[0].innerHTML = rowData.quantity_display;
+                    cells[1].innerHTML = rowData.price_formatted;
                 }
             });
         }
