@@ -157,6 +157,7 @@ class SimplePriceBreakWidget {
     async init() {
         this.showLoading();
         await this.loadData();
+        this.setupQuantityChangeListener();
     }
     
     async loadData() {
@@ -349,6 +350,59 @@ class SimplePriceBreakWidget {
         }
         
         return null;
+    }
+    
+    setupQuantityChangeListener() {
+        // Écouter les changements de quantité manuels
+        const quantityInput = this.findQuantityInput();
+        if (quantityInput) {
+            console.log('[PriceBreak] Écouteur de changement de quantité configuré');
+            
+            // Fonction de mise à jour avec debounce pour éviter trop d'appels
+            let updateTimeout;
+            const updateTable = () => {
+                clearTimeout(updateTimeout);
+                updateTimeout = setTimeout(() => {
+                    console.log('[PriceBreak] Changement de quantité détecté, mise à jour du tableau');
+                    this.updateActiveRow();
+                }, 300); // Attendre 300ms après le dernier changement
+            };
+            
+            // Écouter différents types d'événements
+            quantityInput.addEventListener('input', updateTable);
+            quantityInput.addEventListener('change', updateTable);
+            quantityInput.addEventListener('keyup', updateTable);
+            
+            // Stocker la référence pour pouvoir la supprimer plus tard
+            this.quantityInput = quantityInput;
+        } else {
+            console.log('[PriceBreak] Champ de quantité non trouvé pour l\'écouteur');
+        }
+    }
+    
+    updateActiveRow() {
+        // Mettre à jour uniquement l'affichage de la ligne active sans recharger toutes les données
+        if (this.tableData && this.tableData.rows) {
+            const currentQuantity = this.getCurrentQuantity();
+            const activeRow = this.findActiveRow(this.tableData.rows, currentQuantity);
+            
+            // Mettre à jour les styles des lignes
+            const rows = this.element.querySelectorAll('tbody tr');
+            rows.forEach((row, index) => {
+                const rowData = this.tableData.rows[index];
+                const isActive = activeRow && activeRow.min_quantity === rowData.min_quantity;
+                
+                if (isActive) {
+                    row.style.backgroundColor = '#e8f5e8';
+                    row.style.border = '2px solid #28a745';
+                } else {
+                    row.style.backgroundColor = '';
+                    row.style.border = '';
+                }
+            });
+            
+            console.log('[PriceBreak] Ligne active mise à jour pour quantité:', currentQuantity);
+        }
     }
     
     showQuantityUpdateMessage(quantity) {
