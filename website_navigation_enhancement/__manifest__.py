@@ -25,13 +25,12 @@
     'website': 'https://www.votre-site.com',
     'depends': ['website', 'website_sale'],
     'data': [
-        'views/website_templates.xml',
-        'views/website_sale_templates.xml',
+        'views/website_templates_simple.xml',
     ],
     'assets': {
         'web.assets_frontend': [
-            'website_navigation_enhancement/static/src/css/navigation_enhancement.css',
-            'website_navigation_enhancement/static/src/js/navigation_enhancement.js',
+            'website_navigation_enhancement/static/src/css/navigation_enhancement_simple.css',
+            'website_navigation_enhancement/static/src/js/navigation_enhancement_simple.js',
         ],
     },
     'installable': True,

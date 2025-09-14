@@ -49,12 +49,7 @@
         <!-- Template pour améliorer la navigation dans le header -->
         <template id="website_sale_header_navigation_enhancement" name="Website Sale Header Navigation Enhancement" inherit_id="website.layout">
             
-            <!-- Améliorer le menu principal -->
-            <xpath expr="//nav[@id='top_menu']" position="attributes">
-                <attribute name="class">navbar navbar-expand-lg website-navigation</attribute>
-            </xpath>
-            
-            <!-- Améliorer les liens du menu principal -->
+            <!-- Améliorer les liens du menu principal si ils existent -->
             <xpath expr="//a[contains(@class, 'nav-link')]" position="attributes">
                 <attribute name="class">nav-link</attribute>
             </xpath>

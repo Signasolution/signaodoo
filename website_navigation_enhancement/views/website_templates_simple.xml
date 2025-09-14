@@ -55,39 +55,19 @@
             </div>
         </template>
 
-        <!-- Template pour améliorer la navigation principale -->
-        <template id="website_navigation_enhancement" name="Website Navigation Enhancement" inherit_id="website.layout">
-            <!-- Ajouter le fil d'Ariane après le header -->
-            <xpath expr="//div[@id='wrapwrap']/main" position="inside">
+        <!-- Template pour ajouter le fil d'Ariane sur toutes les pages -->
+        <template id="website_breadcrumb_global" name="Website Breadcrumb Global" inherit_id="website.layout">
+            <!-- Ajouter le fil d'Ariane au début du contenu principal -->
+            <xpath expr="//main" position="inside">
                 <t t-call="website_navigation_enhancement.website_breadcrumb_template"/>
             </xpath>
         </template>
 
-        <!-- Template pour améliorer le menu des catégories -->
-        <template id="website_sale_categories_enhancement" name="Website Sale Categories Enhancement" inherit_id="website_sale.categories">
+        <!-- Template pour améliorer les pages de vente -->
+        <template id="website_sale_enhancement" name="Website Sale Enhancement" inherit_id="website_sale.layout">
+            <!-- Ajouter des classes CSS pour le styling -->
             <xpath expr="//div[@class='oe_website_sale']" position="attributes">
                 <attribute name="class">oe_website_sale website-navigation-enhanced</attribute>
-            </xpath>
-        </template>
-
-        <!-- Template pour la page produit -->
-        <template id="website_sale_product_enhancement" name="Website Sale Product Enhancement" inherit_id="website_sale.product">
-            <!-- Ajouter le fil d'Ariane sur les pages produit -->
-            <xpath expr="//div[@id='product_detail']" position="before">
-                <t t-call="website_navigation_enhancement.website_breadcrumb_template"/>
-            </xpath>
-            
-            <!-- Améliorer l'affichage de la catégorie du produit -->
-            <xpath expr="//div[contains(@class, 'product-category')]" position="attributes">
-                <attribute name="class">product-category position-indicator</attribute>
-            </xpath>
-        </template>
-
-        <!-- Template pour la liste des produits -->
-        <template id="website_sale_products_enhancement" name="Website Sale Products Enhancement" inherit_id="website_sale.products">
-            <!-- Ajouter le fil d'Ariane sur les pages de liste -->
-            <xpath expr="//div[@class='oe_website_sale']" position="inside">
-                <t t-call="website_navigation_enhancement.website_breadcrumb_template"/>
             </xpath>
         </template>
 
