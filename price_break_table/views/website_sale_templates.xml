@@ -7,7 +7,7 @@
             <xpath expr="//div[@id='add_to_cart_wrap']" position="after">
                 <t t-set="price_break_data" t-value="product.get_price_break_table_data()"/>
                 <t t-if="price_break_data and price_break_data.get('rows') and len(price_break_data['rows']) > 1">
-                    <div class="table-responsive mt-3">
+                    <div class="table-responsive mt-3 price-break-table-container">
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
@@ -104,6 +104,10 @@
                     </script>
 
                     <style>
+                        .price-break-table-container {
+                            width: 60%;
+                            max-width: 400px;
+                        }
                         .price-break-row:hover {
                             background-color: #c7eae5;
                         }
