@@ -19,9 +19,6 @@ class ProductTemplate(models.Model):
         """
         self.ensure_one()
         
-        # Debug: Log des paramètres d'entrée
-        print(f"[DEBUG] get_price_break_table_data - Produit: {self.name} (ID: {self.id})")
-        print(f"[DEBUG] Paramètres: pricelist_id={pricelist_id}, partner_id={partner_id}, quantity={quantity}")
         
         # Récupération de la liste de prix
         if not pricelist_id:
@@ -29,27 +26,19 @@ class ProductTemplate(models.Model):
         
         if pricelist_id:
             pricelist = self.env['product.pricelist'].browse(pricelist_id)
-            print(f"[DEBUG] Liste de prix trouvée par ID: {pricelist.name if pricelist.exists() else 'NON TROUVÉE'}")
         else:
             pricelist = self.env['product.pricelist'].search([('active', '=', True)], limit=1)
-            print(f"[DEBUG] Liste de prix par défaut: {pricelist.name if pricelist else 'AUCUNE'}")
         
         if not pricelist.exists():
             pricelist = self.env['product.pricelist'].search([('active', '=', True)], limit=1)
         
         if not pricelist:
-            print(f"[DEBUG] Aucune liste de prix active trouvée")
             return {'rows': [], 'currency': False, 'current_quantity': quantity}
-        
-        print(f"[DEBUG] Liste de prix utilisée: {pricelist.name} (ID: {pricelist.id})")
         
         # Récupération des règles de prix pour ce produit
         price_rules = self._get_price_break_rules(pricelist, partner_id)
         
-        print(f"[DEBUG] Règles trouvées: {len(price_rules)}")
-        
         if not price_rules:
-            print(f"[DEBUG] Aucune règle de prix dégressif trouvée")
             return {'rows': [], 'currency': pricelist.currency_id, 'current_quantity': quantity}
         
         # Construction des lignes du tableau
@@ -84,7 +73,6 @@ class ProductTemplate(models.Model):
                 'rule_id': rule.get('id'),
             })
             
-            print(f"[DEBUG] Règle ajoutée: {qty_display} → {price}€")
         
         result = {
             'rows': table_rows,
@@ -103,45 +91,34 @@ class ProductTemplate(models.Model):
         """
         self.ensure_one()
         
-        print(f"[DEBUG] _get_price_break_rules - Produit: {self.name}, Liste: {pricelist.name}")
-        
-        # Recherche simplifiée et compatible
         try:
-            # Essayer d'abord une recherche simple
+            # Recherche des règles de prix
             all_rules = self.env['product.pricelist.item'].search([
                 ('pricelist_id', '=', pricelist.id),
                 ('min_quantity', '>', 0),
             ])
             
-            print(f"[DEBUG] Toutes les règles trouvées: {len(all_rules)}")
-            
             # Filtrer les règles applicables à ce produit
             applicable_rules = []
             for rule in all_rules:
-                print(f"[DEBUG] Évaluation de la règle {rule.id}: Qty min={rule.min_quantity}")
-                
                 # Vérifier si la règle s'applique à ce produit
                 is_applicable = False
                 
                 # Règle spécifique au produit
                 if rule.product_tmpl_id and rule.product_tmpl_id.id == self.id:
                     is_applicable = True
-                    print(f"[DEBUG] Règle {rule.id}: Spécifique au produit")
                 
                 # Règle spécifique à une variante du produit
                 elif rule.product_id and rule.product_id.product_tmpl_id.id == self.id:
                     is_applicable = True
-                    print(f"[DEBUG] Règle {rule.id}: Spécifique à la variante {rule.product_id.name}")
                 
                 # Règle globale (pas de produit spécifique)
                 elif not rule.product_tmpl_id and not rule.product_id:
                     is_applicable = True
-                    print(f"[DEBUG] Règle {rule.id}: Règle globale")
                 
                 # Règle par catégorie
                 elif rule.categ_id and self.categ_id and rule.categ_id in self.categ_id.parent_path.split('/'):
                     is_applicable = True
-                    print(f"[DEBUG] Règle {rule.id}: Règle par catégorie {rule.categ_id.name}")
                 
                 if is_applicable:
                     # Calcul du prix direct (comme dans la méthode debug)
@@ -159,18 +136,13 @@ class ProductTemplate(models.Model):
                         'price': price,
                         'sequence': rule.id,  # Utiliser l'ID comme séquence
                     })
-                    print(f"[DEBUG] Règle {rule.id} ajoutée: {rule.min_quantity}+ → {price}€")
-                else:
-                    print(f"[DEBUG] Règle {rule.id} non applicable au produit")
             
             # Tri par quantité minimale
             applicable_rules.sort(key=lambda x: x['min_quantity'])
             
-            print(f"[DEBUG] Règles finales applicables: {len(applicable_rules)}")
             return applicable_rules
             
         except Exception as e:
-            print(f"[DEBUG] Erreur lors de la recherche des règles: {str(e)}")
             return []
 
     def _is_rule_applicable(self, rule, partner_id=None):
