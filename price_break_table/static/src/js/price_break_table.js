@@ -1,11 +1,10 @@
-// Tableau de prix dégressifs pour Odoo
-// Version de production - Code nettoyé
+// Tableau de prix dégressifs pour Odoo - Version unifiée
+// Toutes les fonctionnalités dans un seul fichier
 
 // Fonction pour vérifier si on est sur une page produit
 function isProductPage() {
     const url = window.location.href;
     
-    // Patterns d'URL qui indiquent qu'on est sur une page produit
     const productUrlPatterns = [
         /\/shop\/product\//,
         /\/product\//,
@@ -19,10 +18,8 @@ function isProductPage() {
         /\/shop\/product\/\w+/
     ];
     
-    // Vérifier si l'URL correspond à un pattern de page produit
     const isProductUrl = productUrlPatterns.some(pattern => pattern.test(url));
     
-    // Vérifier aussi les éléments DOM spécifiques à une page produit
     const productPageElements = [
         'input[name="add_qty"]',
         '.js_product',
@@ -37,7 +34,6 @@ function isProductPage() {
         document.querySelector(selector) !== null
     );
     
-    // Vérifier qu'on n'est PAS sur une page de liste ou panier
     const nonProductPages = [
         '/shop/cart',
         '/shop/checkout',
@@ -56,7 +52,6 @@ function initPriceBreak() {
         return;
     }
     
-    // Chercher tous les éléments de page produit
     const productSelectors = [
         '.oe_website_sale',
         '.product_detail',
@@ -109,10 +104,23 @@ function processProductElement(element) {
 }
 
 function getProductId(element) {
-    // Essayer de trouver l'ID du produit de différentes façons
-    const input = element.querySelector('input[name="add_qty"]');
-    if (input) {
-        return input.value;
+    const selectors = [
+        'input[name="add_qty"]',
+        'input[name="quantity"]',
+        'input[id*="quantity"]',
+        '.js_product input[name="add_qty"]',
+        '.js_product input[name="quantity"]',
+        'input[data-product-template-id]',
+        'input[type="number"]',
+        '.js_product input[type="number"]',
+        '.product input[type="number"]'
+    ];
+    
+    for (const selector of selectors) {
+        const input = element.querySelector(selector);
+        if (input) {
+            return input.value;
+        }
     }
     
     const productId = element.querySelector('[data-product-template-id]');
@@ -129,18 +137,14 @@ function getProductId(element) {
 }
 
 function addPriceBreakTable(container, productId) {
-    // Créer le conteneur
     const tableContainer = document.createElement('div');
     tableContainer.className = 'price-break-table-widget';
     tableContainer.dataset.productId = productId;
-    tableContainer.style.marginTop = '20px';
     
-    // Trouver l'emplacement
     const targetLocation = findTargetLocation(container);
     if (targetLocation) {
         targetLocation.appendChild(tableContainer);
         
-        // Initialiser le widget et le rendre accessible globalement
         const widget = new SimplePriceBreakWidget(tableContainer);
         window.priceBreakWidget = widget;
     }
@@ -160,7 +164,6 @@ function findTargetLocation(container) {
         if (element) {
             const wrapper = document.createElement('div');
             wrapper.className = 'price-break-wrapper';
-            wrapper.style.marginTop = '15px';
             element.parentNode.insertBefore(wrapper, element.nextSibling);
             return wrapper;
         }
@@ -221,59 +224,61 @@ class SimplePriceBreakWidget {
     
     showLoading() {
         this.element.innerHTML = `
-            <div style="text-align: center; padding: 10px; border: 1px solid #ddd; background: #f9f9f9;">
+            <div class="price-break-table-loading">
                 <small>Chargement des prix dégressifs...</small>
             </div>
         `;
     }
     
     renderTable(data) {
-        // Trouver la ligne active basée sur la quantité actuelle
         const currentQuantity = this.getCurrentQuantity();
         const activeRow = this.findActiveRow(data.rows, currentQuantity);
         
         const rowsHtml = data.rows.map((row, index) => {
             const isActive = activeRow && activeRow.min_quantity === row.min_quantity;
+            const activeClass = isActive ? ' price-break-active' : '';
+            const boldQuantity = isActive ? `<strong>${row.quantity_display}</strong>` : row.quantity_display;
+            const boldPrice = isActive ? `<strong>${row.price_formatted}</strong>` : row.price_formatted;
+            
             return `
-            <tr style="cursor: pointer; ${isActive ? 'background-color: #e8f5e8; border: 2px solid #28a745;' : ''}" 
+            <tr class="price-break-clickable${activeClass}" 
                 data-quantity="${row.min_quantity}" 
                 data-price="${row.price}"
                 onclick="priceBreakWidget.setQuantity(${row.min_quantity})">
-                <td>${isActive ? `<strong>${row.quantity_display}</strong>` : row.quantity_display}</td>
-                <td style="text-align: right;">${isActive ? `<strong>${row.price_formatted}</strong>` : row.price_formatted}</td>
+                <td>${boldQuantity}</td>
+                <td class="text-right">${boldPrice}</td>
             </tr>
         `;
         }).join('');
         
         this.element.innerHTML = `
-            <div style="border: 1px solid #ddd; border-radius: 5px; padding: 15px; background: #f9f9f9; margin: 10px 0; width: 60%;">
-                <h6 style="margin-bottom: 10px; color: #333;">
+            <div class="price-break-table-container">
+                <h6 class="price-break-table-title">
                     📊 Prix dégressifs par quantité
                 </h6>
-                <table class="table table-sm" style="margin-bottom: 10px; font-size: 0.9em; width: 100%;">
-                    <thead style="background-color: #f5f5f5;">
+                <table class="price-break-table">
+                    <thead>
                         <tr>
                             <th>Quantité</th>
-                            <th style="text-align: right;">Prix unitaire</th>
+                            <th class="text-right">Prix unitaire</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${rowsHtml}
                     </tbody>
                 </table>
-                <small style="color: #666;">
+                <small class="price-break-help">
                     💡 Cliquez sur une ligne pour ajuster la quantité
                 </small>
             </div>
         `;
         
-        // Stocker les données pour les utiliser dans setQuantity
         this.tableData = data;
     }
     
     renderEmpty() {
         this.element.innerHTML = `
-            <div style="text-align: center; padding: 10px; color: #666; border: 1px solid #ddd; background: #f9f9f9;">
+            <div class="price-break-table-empty">
                 <small>Aucun prix dégressif disponible pour ce produit.</small>
             </div>
         `;
@@ -281,7 +286,7 @@ class SimplePriceBreakWidget {
     
     renderError() {
         this.element.innerHTML = `
-            <div style="text-align: center; padding: 10px; color: #d32f2f; border: 1px solid #ddd; background: #f9f9f9;">
+            <div class="price-break-table-error">
                 <small>Erreur lors du chargement des prix dégressifs.</small>
             </div>
         `;
@@ -341,7 +346,6 @@ class SimplePriceBreakWidget {
             }
         }
         
-        // Recherche plus large
         const allInputs = document.querySelectorAll('input[type="number"]');
         for (let i = 0; i < allInputs.length; i++) {
             const input = allInputs[i];
@@ -364,12 +368,10 @@ class SimplePriceBreakWidget {
                 }, 300);
             };
             
-            // Écouter différents types d'événements
             quantityInput.addEventListener('input', updateTable);
             quantityInput.addEventListener('change', updateTable);
             quantityInput.addEventListener('keyup', updateTable);
             
-            // Écouter aussi les événements sur les boutons +/- (spinner)
             const quantityContainer = quantityInput.closest('.input-group') || quantityInput.parentNode;
             if (quantityContainer) {
                 quantityContainer.addEventListener('click', (event) => {
@@ -386,7 +388,6 @@ class SimplePriceBreakWidget {
             
             this.quantityInput = quantityInput;
         } else {
-            // Essayer de reconfigurer après un délai
             setTimeout(() => {
                 this.setupQuantityChangeListener();
             }, 2000);
@@ -398,7 +399,6 @@ class SimplePriceBreakWidget {
             const currentQuantity = this.getCurrentQuantity();
             const activeRow = this.findActiveRow(this.tableData.rows, currentQuantity);
             
-            // Mettre à jour les styles des lignes
             const rows = this.element.querySelectorAll('tbody tr');
             
             rows.forEach((row, index) => {
@@ -406,18 +406,16 @@ class SimplePriceBreakWidget {
                 const isActive = activeRow && activeRow.min_quantity === rowData.min_quantity;
                 
                 if (isActive) {
-                    row.style.backgroundColor = '#e8f5e8';
-                    row.style.border = '2px solid #28a745';
+                    row.classList.add('price-break-active');
+                    row.classList.remove('price-break-clickable');
                     
-                    // Mettre en gras le texte de la ligne active
                     const cells = row.querySelectorAll('td');
                     cells[0].innerHTML = `<strong>${rowData.quantity_display}</strong>`;
                     cells[1].innerHTML = `<strong>${rowData.price_formatted}</strong>`;
                 } else {
-                    row.style.backgroundColor = '';
-                    row.style.border = '';
+                    row.classList.remove('price-break-active');
+                    row.classList.add('price-break-clickable');
                     
-                    // Retirer le gras du texte des lignes inactives
                     const cells = row.querySelectorAll('td');
                     cells[0].innerHTML = rowData.quantity_display;
                     cells[1].innerHTML = rowData.price_formatted;
@@ -428,18 +426,7 @@ class SimplePriceBreakWidget {
     
     showQuantityUpdateMessage(quantity) {
         const message = document.createElement('div');
-        message.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #28a745;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            z-index: 9999;
-            font-size: 14px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        `;
+        message.className = 'price-break-message';
         message.textContent = `Quantité mise à jour: ${quantity}`;
         
         document.body.appendChild(message);

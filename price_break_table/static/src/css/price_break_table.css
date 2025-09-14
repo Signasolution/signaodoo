@@ -1,39 +1,56 @@
-/* Styles pour le tableau de prix dégressifs */
+/* ========================================
+   TABLEAU DE PRIX DÉGRESSIFS - STYLES CSS
+   ======================================== */
 
+/* Conteneur principal */
 .price-break-table-container {
-    margin: 20px 0;
+    width: 60%;
+    margin: 10px 0;
     padding: 15px;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background: #f9f9f9;
 }
 
+/* Titre du tableau */
 .price-break-table-title {
-    color: #495057;
-    font-weight: 600;
-    margin-bottom: 15px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid #dee2e6;
-}
-
-.price-break-table {
     margin-bottom: 10px;
-    font-size: 0.9rem;
+    color: #333;
+    font-size: 1rem;
+    font-weight: 600;
 }
 
-.price-break-table th {
+/* Tableau principal */
+.price-break-table {
+    width: 100%;
+    margin-bottom: 10px;
+    font-size: 0.9em;
+    border-collapse: collapse;
+}
+
+/* En-têtes du tableau */
+.price-break-table thead th {
+    background-color: #f5f5f5;
     font-weight: 600;
     color: #495057;
-    border-bottom: 2px solid #dee2e6;
     padding: 12px 8px;
+    border-bottom: 2px solid #dee2e6;
+    text-align: left;
 }
 
-.price-break-table td {
+/* Cellules du tableau */
+.price-break-table tbody td {
     padding: 10px 8px;
-    vertical-align: middle;
     border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
 }
 
+/* Alignement à droite pour les prix */
+.text-right {
+    text-align: right !important;
+}
+
+/* Lignes cliquables */
 .price-break-clickable {
     cursor: pointer;
     transition: all 0.2s ease;
@@ -44,29 +61,88 @@
     transform: translateX(2px);
 }
 
+/* Ligne active (surlignée) */
 .price-break-active {
-    background-color: #d4edda !important;
-    border-left: 4px solid #28a745;
+    background-color: #e8f5e8 !important;
+    border: 2px solid #28a745 !important;
     font-weight: 600;
+    cursor: pointer;
 }
 
 .price-break-active:hover {
-    background-color: #c3e6cb !important;
+    background-color: #d4edda !important;
 }
 
+/* Animation pour la ligne active */
+@keyframes highlightRow {
+    0% { background-color: #fff3cd; }
+    100% { background-color: #e8f5e8; }
+}
+
+.price-break-active {
+    animation: highlightRow 0.5s ease-in-out;
+}
+
+/* Message d'aide */
+.price-break-help {
+    color: #666;
+    font-style: italic;
+}
+
+/* États de chargement et erreur */
 .price-break-table-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    color: #6c757d;
+    text-align: center;
+    padding: 10px;
+    border: 1px solid #ddd;
+    background: #f9f9f9;
+    color: #666;
 }
 
 .price-break-table-empty {
     text-align: center;
-    padding: 20px;
-    color: #6c757d;
+    padding: 10px;
+    color: #666;
+    border: 1px solid #ddd;
+    background: #f9f9f9;
 }
+
+.price-break-table-error {
+    text-align: center;
+    padding: 10px;
+    color: #d32f2f;
+    border: 1px solid #ddd;
+    background: #f9f9f9;
+}
+
+/* Message de confirmation */
+.price-break-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #28a745;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    z-index: 9999;
+    font-size: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* ========================================
+   ADAPTATIONS POUR DIFFÉRENTS CONTEXTES
+   ======================================== */
 
 /* Styles spécifiques pour le frontend (e-commerce) */
 .oe_website_sale .price-break-table-container {
@@ -77,12 +153,74 @@
 
 .oe_website_sale .price-break-table-title {
     color: #2c3e50;
-    border-bottom-color: #3498db;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 8px;
 }
 
-/* Styles pour les petits écrans */
+/* Styles pour l'intégration dans les formulaires backend */
+.o_form_view .price-break-table-container {
+    margin: 10px 0;
+    background-color: #ffffff;
+    border: 1px solid #ced4da;
+}
+
+.o_form_view .price-break-table-title {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+/* Styles pour les thèmes sombres */
+@media (prefers-color-scheme: dark) {
+    .price-break-table-container {
+        background-color: #2d3748;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    .price-break-table-title {
+        color: #e2e8f0;
+    }
+    
+    .price-break-table thead th {
+        background-color: #4a5568;
+        color: #e2e8f0;
+        border-bottom-color: #718096;
+    }
+    
+    .price-break-table tbody td {
+        border-bottom-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    .price-break-clickable:hover {
+        background-color: #2b6cb0 !important;
+    }
+    
+    .price-break-active {
+        background-color: #22543d !important;
+        border-color: #38a169 !important;
+    }
+    
+    .price-break-active:hover {
+        background-color: #276749 !important;
+    }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Tablettes */
+@media (max-width: 1024px) {
+    .price-break-table-container {
+        width: 70%;
+    }
+}
+
+/* Mobiles */
 @media (max-width: 768px) {
     .price-break-table-container {
+        width: 90%;
         margin: 15px 0;
         padding: 10px;
     }
@@ -95,26 +233,92 @@
     .price-break-table td {
         padding: 8px 6px;
     }
+    
+    .price-break-table-title {
+        font-size: 0.9rem;
+    }
+    
+    .price-break-message {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        font-size: 12px;
+        padding: 8px 12px;
+    }
 }
 
-/* Animation pour la surbrillance */
-@keyframes highlightRow {
-    0% { background-color: #fff3cd; }
-    100% { background-color: #d4edda; }
+/* Très petits écrans */
+@media (max-width: 480px) {
+    .price-break-table-container {
+        width: 95%;
+        padding: 8px;
+    }
+    
+    .price-break-table {
+        font-size: 0.75rem;
+    }
+    
+    .price-break-table th,
+    .price-break-table td {
+        padding: 6px 4px;
+    }
 }
 
-.price-break-active {
-    animation: highlightRow 0.5s ease-in-out;
+/* ========================================
+   COMPATIBILITÉ AVEC DIFFÉRENTS THÈMES
+   ======================================== */
+
+/* Bootstrap */
+.table .price-break-table {
+    margin-bottom: 0;
 }
 
-/* Styles pour l'intégration dans les formulaires */
-.o_form_view .price-break-table-container {
-    margin: 10px 0;
-    background-color: #ffffff;
-    border: 1px solid #ced4da;
+/* Foundation */
+.price-break-table-container .price-break-table {
+    width: 100%;
 }
 
-.o_form_view .price-break-table-title {
-    font-size: 0.9rem;
-    margin-bottom: 10px;
+/* Material Design */
+.price-break-table-container {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+/* Focus visible pour l'accessibilité */
+.price-break-clickable:focus,
+.price-break-active:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+/* Contraste amélioré pour les malvoyants */
+@media (prefers-contrast: high) {
+    .price-break-table-container {
+        border: 2px solid #000;
+        background: #fff;
+    }
+    
+    .price-break-active {
+        background-color: #000 !important;
+        color: #fff !important;
+        border-color: #000 !important;
+    }
+    
+    .price-break-clickable:hover {
+        background-color: #000 !important;
+        color: #fff !important;
+    }
+}
+
+/* Réduction des animations pour les utilisateurs sensibles */
+@media (prefers-reduced-motion: reduce) {
+    .price-break-clickable,
+    .price-break-active,
+    .price-break-message {
+        transition: none;
+        animation: none;
+    }
 }
