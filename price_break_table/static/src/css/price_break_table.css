@@ -79,7 +79,7 @@
 /* Ligne active (surlignée) */
 .price-break-active {
     background-color: #e8f5e8 !important;
-    border: 2px solid #28a745 !important;
+    border: 2px solid #79C8BD !important;
     font-weight: 600;
     cursor: pointer;
     animation: highlightRow 0.5s ease-in-out;
@@ -118,7 +118,7 @@
     position: fixed;
     top: 20px;
     right: 20px;
-    background: #28a745;
+    background: #79C8BD;
     color: white;
     padding: 10px 15px;
     border-radius: 5px;
