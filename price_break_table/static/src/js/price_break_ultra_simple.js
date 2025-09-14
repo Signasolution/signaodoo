@@ -1,9 +1,68 @@
 // Version ultra-simple du tableau de prix dégressifs
 console.log('[PriceBreak] Script chargé');
 
+// Fonction pour vérifier si on est sur une page produit
+function isProductPage() {
+    // Vérifier l'URL
+    const url = window.location.href;
+    console.log('[PriceBreak] URL actuelle:', url);
+    
+    // Patterns d'URL qui indiquent qu'on est sur une page produit
+    const productUrlPatterns = [
+        /\/shop\/product\//,
+        /\/product\//,
+        /\/product\/\d+/,
+        /\/shop\/product\/\d+/,
+        /\?product=/,
+        /#product/
+    ];
+    
+    // Vérifier si l'URL correspond à un pattern de page produit
+    const isProductUrl = productUrlPatterns.some(pattern => pattern.test(url));
+    
+    // Vérifier aussi les éléments DOM spécifiques à une page produit
+    const productPageElements = [
+        'input[name="add_qty"]',
+        '.js_product',
+        '.product_detail',
+        '#product_detail'
+    ];
+    
+    const hasProductElements = productPageElements.some(selector => 
+        document.querySelector(selector) !== null
+    );
+    
+    // Vérifier qu'on n'est PAS sur une page de liste ou panier
+    const nonProductPages = [
+        '/shop', // Page d'accueil shop
+        '/shop/cart', // Panier
+        '/shop/checkout', // Checkout
+        '/category/', // Pages de catégorie
+        '/collection/' // Collections
+    ];
+    
+    const isNonProductPage = nonProductPages.some(path => url.includes(path));
+    
+    const result = (isProductUrl || hasProductElements) && !isNonProductPage;
+    console.log('[PriceBreak] Détection page produit:', {
+        isProductUrl,
+        hasProductElements,
+        isNonProductPage,
+        result
+    });
+    
+    return result;
+}
+
 // Fonction principale
 function initPriceBreak() {
     console.log('[PriceBreak] Initialisation...');
+    
+    // Vérifier si on est sur une page produit
+    if (!isProductPage()) {
+        console.log('[PriceBreak] Pas sur une page produit, arrêt');
+        return;
+    }
     
     // Chercher tous les éléments de page produit
     const productSelectors = [
@@ -397,6 +456,26 @@ class SimplePriceBreakWidget {
             quantityInput.addEventListener('input', updateTable);
             quantityInput.addEventListener('change', updateTable);
             quantityInput.addEventListener('keyup', updateTable);
+            
+            // Écouter aussi les événements sur les boutons +/- (spinner)
+            const quantityContainer = quantityInput.closest('.input-group') || quantityInput.parentNode;
+            if (quantityContainer) {
+                console.log('[PriceBreak] Ajout d\'écouteurs sur le conteneur de quantité');
+                
+                // Écouter les clics sur les boutons
+                quantityContainer.addEventListener('click', (event) => {
+                    if (event.target.classList.contains('btn') || 
+                        event.target.tagName === 'BUTTON' ||
+                        event.target.classList.contains('fa-plus') ||
+                        event.target.classList.contains('fa-minus')) {
+                        console.log('[PriceBreak] Clic sur bouton +/- détecté');
+                        setTimeout(updateTable, 100); // Petit délai pour laisser la valeur se mettre à jour
+                    }
+                });
+                
+                // Écouter aussi les événements de changement sur le conteneur
+                quantityContainer.addEventListener('change', updateTable);
+            }
             
             // Test immédiat pour vérifier que l'écouteur fonctionne
             console.log('[PriceBreak] Test de l\'écouteur - valeur actuelle:', quantityInput.value);
