@@ -6,16 +6,7 @@
         <template id="website_sale_product_price_break" name="Product Price Break Table" inherit_id="website_sale.product">
             <xpath expr="//div[@id='add_to_cart_wrap']" position="after">
                 <t t-set="price_break_data" t-value="product.get_price_break_table_data()"/>
-                <!-- DEBUG: Vérifier les données -->
-                <div style="background: yellow; padding: 10px; margin: 10px 0; border: 2px solid red;">
-                    <strong>DEBUG:</strong><br/>
-                    Product exists: <t t-esc="product is not None"/><br/>
-                    Product ID: <t t-esc="product.id if product else 'None'"/><br/>
-                    Price break data exists: <t t-esc="price_break_data is not None"/><br/>
-                    Rows count: <t t-esc="len(price_break_data.get('rows', [])) if price_break_data else 0"/><br/>
-                    Data: <t t-esc="price_break_data"/>
-                </div>
-                <t t-if="price_break_data and len(price_break_data.get('rows', [])) > 1">
+                <t t-if="price_break_data and price_break_data.get('rows') and len(price_break_data['rows']) > 1">
                     <div class="table-responsive mt-3">
                         <table class="table table-bordered">
                             <thead>
