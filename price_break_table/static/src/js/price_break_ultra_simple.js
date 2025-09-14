@@ -219,18 +219,25 @@ class SimplePriceBreakWidget {
     }
     
     renderTable(data) {
-        const rowsHtml = data.rows.map((row, index) => `
-            <tr style="cursor: pointer; ${row.is_active ? 'background-color: #e8f5e8;' : ''}" 
+        // Trouver la ligne active basée sur la quantité actuelle
+        const currentQuantity = this.getCurrentQuantity();
+        const activeRow = this.findActiveRow(data.rows, currentQuantity);
+        
+        const rowsHtml = data.rows.map((row, index) => {
+            const isActive = activeRow && activeRow.min_quantity === row.min_quantity;
+            return `
+            <tr style="cursor: pointer; ${isActive ? 'background-color: #e8f5e8; border: 2px solid #28a745;' : ''}" 
                 data-quantity="${row.min_quantity}" 
                 data-price="${row.price}"
                 onclick="priceBreakWidget.setQuantity(${row.min_quantity})">
                 <td><strong>${row.quantity_display}</strong></td>
                 <td style="text-align: right;"><strong>${row.price_formatted}</strong></td>
             </tr>
-        `).join('');
+        `;
+        }).join('');
         
         this.element.innerHTML = `
-            <div style="border: 1px solid #ddd; border-radius: 5px; padding: 15px; background: #f9f9f9; margin: 10px 0;">
+            <div style="border: 1px solid #ddd; border-radius: 5px; padding: 15px; background: #f9f9f9; margin: 10px 0; width: 60%;">
                 <h6 style="margin-bottom: 10px; color: #333;">
                     📊 Prix dégressifs par quantité
                 </h6>
@@ -269,6 +276,35 @@ class SimplePriceBreakWidget {
                 <small>Erreur lors du chargement des prix dégressifs.</small>
             </div>
         `;
+    }
+    
+    getCurrentQuantity() {
+        // Récupérer la quantité actuelle depuis le champ de saisie
+        const quantityInput = this.findQuantityInput();
+        if (quantityInput && quantityInput.value) {
+            const quantity = parseFloat(quantityInput.value);
+            console.log('[PriceBreak] Quantité actuelle détectée:', quantity);
+            return quantity;
+        }
+        return 1; // Valeur par défaut
+    }
+    
+    findActiveRow(rows, currentQuantity) {
+        // Trouver la ligne active basée sur la quantité actuelle
+        // La ligne active est celle dont la quantité minimale est la plus élevée
+        // mais qui reste inférieure ou égale à la quantité actuelle
+        let activeRow = null;
+        let maxMinQuantity = 0;
+        
+        for (const row of rows) {
+            if (row.min_quantity <= currentQuantity && row.min_quantity > maxMinQuantity) {
+                activeRow = row;
+                maxMinQuantity = row.min_quantity;
+            }
+        }
+        
+        console.log('[PriceBreak] Ligne active trouvée:', activeRow ? `Qty: ${activeRow.min_quantity}, Prix: ${activeRow.price_formatted}` : 'Aucune');
+        return activeRow;
     }
     
     setQuantity(quantity) {
