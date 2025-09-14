@@ -3,18 +3,13 @@
 
 // Fonction pour vérifier si on est sur une page produit du site web
 function isProductPage() {
-    // Vérifier qu'on est sur le site web (pas le backend)
-    if (document.querySelector('.o_web_client')) {
-        return false; // Backend Odoo
-    }
+    // Vérifier uniquement l'héritage de la vue website_sale.product
+    // Chercher l'attribut data-view-xpath ou data-view-id qui indique l'héritage
+    const hasWebsiteSaleProduct = document.querySelector('[data-view-xpath*="website_sale.product"]') ||
+                                 document.querySelector('[data-view-id*="website_sale.product"]') ||
+                                 document.querySelector('.oe_website_sale[data-view*="product"]');
     
-    // Vérifier spécifiquement la vue website_sale.product
-    // Chercher les éléments spécifiques à cette vue
-    const websiteSaleProduct = document.querySelector('.oe_website_sale') && 
-                              document.querySelector('.js_product') &&
-                              document.querySelector('input[name="add_qty"]');
-    
-    return websiteSaleProduct !== null;
+    return hasWebsiteSaleProduct !== null;
 }
 
 // Fonction principale
