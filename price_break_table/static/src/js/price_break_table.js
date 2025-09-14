@@ -8,10 +8,13 @@ function isProductPage() {
         return false; // Backend Odoo
     }
     
-    // Utiliser la même méthode que product_pricelist_qty_table_fixed
-    // Vérifier la présence de la classe CSS spécifique aux pages produit
-    return document.body.classList.contains('oe_product') || 
-           document.querySelector('.oe_product') !== null;
+    // Vérifier spécifiquement la vue website_sale.product
+    // Chercher les éléments spécifiques à cette vue
+    const websiteSaleProduct = document.querySelector('.oe_website_sale') && 
+                              document.querySelector('.js_product') &&
+                              document.querySelector('input[name="add_qty"]');
+    
+    return websiteSaleProduct !== null;
 }
 
 // Fonction principale
