@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <!--
+      Odoo 18.3 — Insertion d'un bloc à onglets sous la zone principale du produit,
+      juste au-dessus de la description complète. On vise un ancrage stable.
+    -->
+    <template id="product_specs_tabs_block" inherit_id="website_sale.product">
+      <xpath expr="//div[@id='product_full_description']" position="before">
+        <t t-call="website.layout">
+          <div class="container my-4">
+            <t t-set="tmpl" t-value="product.product_tmpl_id"/>
+            <!--
+              MAPPING DES CHAMPS STUDIO (adapter ici si vos noms techniques diffèrent) :
+              - Essence de bois     -> x_wood_species
+              - Mode de scellement  -> x_mounting_method
+              - Longueur            -> x_length
+              - Largeur             -> x_width
+              - Hauteur             -> x_height
+
+              Chaque valeur est recherchée d'abord sur la variante (product.product),
+              puis sur le gabarit (product.template), et tombe à False si inexistant.
+            -->
+            <t t-set="x_wood_species"
+               t-value="(product._fields.get('x_wood_species') and product.x_wood_species) or (tmpl._fields.get('x_wood_species') and tmpl.x_wood_species) or False"/>
+            <t t-set="x_mounting_method"
+               t-value="(product._fields.get('x_mounting_method') and product.x_mounting_method) or (tmpl._fields.get('x_mounting_method') and tmpl.x_mounting_method) or False"/>
+
+            <t t-set="x_length"
+               t-value="(product._fields.get('x_length') and product.x_length) or (tmpl._fields.get('x_length') and tmpl.x_length) or False"/>
+            <t t-set="x_width"
+               t-value="(product._fields.get('x_width') and product.x_width) or (tmpl._fields.get('x_width') and tmpl.x_width) or False"/>
+            <t t-set="x_height"
+               t-value="(product._fields.get('x_height') and product.x_height) or (tmpl._fields.get('x_height') and tmpl.x_height) or False"/>
+
+            <!-- Onglets Bootstrap 5 -->
+            <ul class="nav nav-tabs" id="jlSpecsTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tab-caracteristiques" data-bs-toggle="tab" data-bs-target="#pane-caracteristiques" type="button" role="tab" aria-controls="pane-caracteristiques" aria-selected="true">
+                  Caractéristiques
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-dimensions" data-bs-toggle="tab" data-bs-target="#pane-dimensions" type="button" role="tab" aria-controls="pane-dimensions" aria-selected="false">
+                  Dimensions
+                </button>
+              </li>
+            </ul>
+
+            <div class="tab-content border border-top-0 rounded-bottom p-3" id="jlSpecsTabsContent">
+              <!-- PANE 1: Caractéristiques -->
+              <div class="tab-pane fade show active" id="pane-caracteristiques" role="tabpanel" aria-labelledby="tab-caracteristiques">
+                <div class="table-responsive">
+                  <table class="table table-sm mb-0 align-middle">
+                    <tbody>
+                      <t t-if="x_wood_species">
+                        <tr>
+                          <th class="fw-semibold text-muted" style="width: 30%;">Essence de bois</th>
+                          <td><t t-esc="x_wood_species"/></td>
+                        </tr>
+                      </t>
+                      <t t-if="x_mounting_method">
+                        <tr>
+                          <th class="fw-semibold text-muted">Mode de scellement</th>
+                          <td><t t-esc="x_mounting_method"/></td>
+                        </tr>
+                      </t>
+                      <!-- Si aucun champ n'est rempli, afficher une petite mention -->
+                      <t t-if="not (x_wood_species or x_mounting_method)">
+                        <tr>
+                          <td colspan="2" class="text-muted fst-italic">Aucune caractéristique renseignée.</td>
+                        </tr>
+                      </t>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- PANE 2: Dimensions -->
+              <div class="tab-pane fade" id="pane-dimensions" role="tabpanel" aria-labelledby="tab-dimensions">
+                <div class="table-responsive">
+                  <table class="table table-sm mb-0 align-middle">
+                    <tbody>
+                      <t t-set="has_dims" t-value="bool(x_length or x_width or x_height or product.weight)"/>
+                      <t t-if="x_length">
+                        <tr>
+                          <th class="fw-semibold text-muted" style="width: 30%;">Longueur</th>
+                          <td><t t-esc="x_length"/></td>
+                        </tr>
+                      </t>
+                      <t t-if="x_width">
+                        <tr>
+                          <th class="fw-semibold text-muted">Largeur</th>
+                          <td><t t-esc="x_width"/></td>
+                        </tr>
+                      </t>
+                      <t t-if="x_height">
+                        <tr>
+                          <th class="fw-semibold text-muted">Hauteur</th>
+                          <td><t t-esc="x_height"/></td>
+                        </tr>
+                      </t>
+                      <t t-if="product.weight">
+                        <tr>
+                          <th class="fw-semibold text-muted">Poids</th>
+                          <td>
+                            <t t-esc="formatLang(product.weight)"/>
+                            <t t-esc="product.weight_uom_name"/>
+                          </td>
+                        </tr>
+                      </t>
+                      <t t-if="not has_dims">
+                        <tr>
+                          <td colspan="2" class="text-muted fst-italic">Aucune dimension renseignée.</td>
+                        </tr>
+                      </t>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </t>
+      </xpath>
+    </template>
+  </data>
+</odoo>
