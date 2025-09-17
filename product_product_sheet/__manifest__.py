@@ -1,7 +1,7 @@
 {
     "name": "Fiche Produit PDF (Personnalisée)",
     "summary": "Ajoute un rapport PDF 'Fiche produit' pour product.template avec bouton d'impression",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0.1",
     "author": "Jean-Louis T. & ChatGPT",
     "website": "https://example.com",
     "category": "Product",
