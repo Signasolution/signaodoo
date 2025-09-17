@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
   <data>
-    <!-- Déclaration du rapport PDF -->
     <report
         id="action_report_product_sheet"
         model="product.template"
         string="Fiche produit"
         report_type="qweb-pdf"
-        name="product_product_sheet.report_product_sheet"
-        file="product_product_sheet.report_product_sheet"
+        name="product_product_sheet.report_product_sheet_document_wrapper"
+        file="product_product_sheet.report_product_sheet_document_wrapper"
         print_report_name="'Fiche_%s' % (object.display_name.replace('/', '_'))"
     />
   </data>

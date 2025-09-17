@@ -8,8 +8,6 @@
           <h2 style="margin:0 0 10px 0;">
             <t t-esc="doc.display_name"/>
           </h2>
-
-          <!-- Ligne image + résumé -->
           <div class="row" style="display:flex; gap:16px;">
             <div style="flex:0 0 200px; max-width:200px;">
               <t t-if="doc.image_1920">
@@ -32,13 +30,11 @@
             </div>
           </div>
 
-          <!-- Description -->
           <t t-if="doc.description_sale">
             <h3 style="margin-top:16px;">Description commerciale</h3>
             <div t-raw="doc.description_sale"/>
           </t>
 
-          <!-- Caractéristiques (exemples + champs Studio facultatifs) -->
           <h3 style="margin-top:16px;">Caractéristiques</h3>
           <table class="table table-sm" style="width:100%; border-collapse:collapse;" border="1" cellspacing="0" cellpadding="6">
             <tbody>
@@ -50,7 +46,6 @@
                 <td><strong>Volume (m³)</strong></td>
                 <td><t t-esc="formatLang(doc.volume, dp=3)"/></td>
               </tr>
-              <!-- Champs Studio: remplacez/dupliquez ces lignes selon vos x_studio_* -->
               <tr t-if="getattr(doc, 'x_studio_hauteur_1', False)">
                 <td><strong>Hauteur (H)</strong></td>
                 <td><t t-esc="doc.x_studio_hauteur_1"/></td>
@@ -78,7 +73,6 @@
             </tbody>
           </table>
 
-          <!-- Options / variantes -->
           <t t-if="doc.attribute_line_ids">
             <h3 style="margin-top:16px;">Variantes</h3>
             <ul>
@@ -93,7 +87,6 @@
             </ul>
           </t>
 
-          <!-- Accessoires / articles liés (ex: produits accessoires) -->
           <t t-if="doc.accessory_product_ids">
             <h3 style="margin-top:16px;">Accessoires recommandés</h3>
             <ul>
@@ -103,7 +96,6 @@
             </ul>
           </t>
 
-          <!-- Notes internes -->
           <t t-if="doc.description">
             <h3 style="margin-top:16px;">Notes internes</h3>
             <div t-raw="doc.description"/>
@@ -112,14 +104,6 @@
       </t>
     </template>
 
-    <!-- wrapper de rendu (gère multi-docs) -->
-    <template id="report_product_sheet_document">
-      <t t-call="product_product_sheet.report_product_sheet">
-        <t t-set="doc" t-value="doc"/>
-      </t>
-    </template>
-
-    <!-- mapping pour l'engin de report -->
     <template id="report_product_sheet_document_wrapper">
       <t t-call="web.html_container">
         <t t-foreach="docs" t-as="doc">
