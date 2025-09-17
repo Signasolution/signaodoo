@@ -2,6 +2,7 @@
 <odoo>
   <data>
 
+    <!-- Insertion générique dans le header (vue standard) -->
     <record id="view_product_form_product_sheet_header" model="ir.ui.view">
       <field name="name">product.template.form.product_sheet.header</field>
       <field name="model">product.template</field>
@@ -17,28 +18,14 @@
       </field>
     </record>
 
-    <record id="view_product_form_button_after_qty" model="ir.ui.view">
-      <field name="name">product.template.form.product_sheet_button.after_qty</field>
-      <field name="model">product.template</field>
-      <field name="inherit_id" ref="product.product_template_only_form_view"/>
-      <field name="priority">90</field>
-      <field name="arch" type="xml">
-        <xpath expr="//form/header/button[@name='action_update_quantity_on_hand']" position="after">
-          <button name="action_print_product_sheet"
-                  string="Imprimer la fiche produit"
-                  type="object"
-                  class="oe_highlight"/>
-        </xpath>
-      </field>
-    </record>
-
-    <record id="view_product_form_button_after_qty_alt" model="ir.ui.view">
-      <field name="name">product.template.form.product_sheet_button.after_qty.alt</field>
+    <!-- Variante sûre : autre parent connu, même insertion générique -->
+    <record id="view_product_form_product_sheet_header_alt" model="ir.ui.view">
+      <field name="name">product.template.form.product_sheet.header.alt</field>
       <field name="model">product.template</field>
       <field name="inherit_id" ref="product.product_template_form_view"/>
-      <field name="priority">90</field>
+      <field name="priority">80</field>
       <field name="arch" type="xml">
-        <xpath expr="//form/header/button[@name='action_update_quantity_on_hand']" position="after">
+        <xpath expr="//form/header" position="inside">
           <button name="action_print_product_sheet"
                   string="Imprimer la fiche produit"
                   type="object"
