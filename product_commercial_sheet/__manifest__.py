@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Fiches Commerciales Produits',
-    'version': '18.0.1.0.0',
+    'version': '18.0.2.0.0',
     'category': 'Sales',
     'summary': 'Génération de fiches commerciales personnalisables pour les produits',
     'description': """
@@ -36,7 +36,6 @@
     'assets': {
         'web.assets_backend': [
             'product_commercial_sheet/static/src/css/commercial_sheet.css',
-            'product_commercial_sheet/static/src/js/commercial_sheet.js',
         ],
     },
     'installable': True,

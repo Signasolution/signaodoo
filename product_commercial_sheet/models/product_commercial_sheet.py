@@ -142,16 +142,16 @@ class ProductCommercialSheet(models.Model):
 
     @api.depends('product_id', 'product_id.name', 'product_id.default_code', 'product_id.description_sale')
     def _compute_product_info(self):
-        """Calcule les informations du produit"""
+        """Calcule les informations du produit - Compatible Odoo 18+"""
         for sheet in self:
             if sheet.product_id:
-                sheet.product_name = sheet.product_id.name
-                sheet.product_reference = sheet.product_id.default_code
-                sheet.product_description = sheet.product_id.description_sale
+                sheet.product_name = sheet.product_id.name or ''
+                sheet.product_reference = sheet.product_id.default_code or ''
+                sheet.product_description = sheet.product_id.description_sale or ''
             else:
-                sheet.product_name = False
-                sheet.product_reference = False
-                sheet.product_description = False
+                sheet.product_name = ''
+                sheet.product_reference = ''
+                sheet.product_description = ''
 
     @api.model
     def create_from_product(self, product_id):
@@ -178,13 +178,14 @@ class ProductCommercialSheet(models.Model):
                 'target': 'current',
             }
         
-        # Créer la nouvelle fiche avec support multilingue
+        # Créer la nouvelle fiche avec support multilingue - Compatible Odoo 18+
+        product_name = product.name or 'Produit sans nom'
         sheet_data = {
-            'name': f"Fiche commerciale - {product.name}",
+            'name': f"Fiche commerciale - {product_name}",
             'product_id': product_id,
             'state': 'draft',
-            'name_fr': f"Fiche commerciale - {product.name}",
-            'name_en': f"Commercial sheet - {product.name}",
+            'name_fr': f"Fiche commerciale - {product_name}",
+            'name_en': f"Commercial sheet - {product_name}",
         }
         
         sheet = self.create(sheet_data)

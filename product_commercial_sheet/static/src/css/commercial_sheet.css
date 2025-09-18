@@ -1,4 +1,4 @@
-/* Styles pour les fiches commerciales */
+/* Styles pour les fiches commerciales - Compatible Odoo 18+ */
 
 .o_commercial_sheet_form {
     .oe_title h1 {
@@ -38,7 +38,7 @@
     }
 }
 
-/* Styles pour les boutons d'action */
+/* Styles pour les boutons d'action - Compatible Odoo 18+ */
 .o_form_view .oe_button_box .oe_stat_button {
     width: 100%;
     text-align: left;
@@ -50,7 +50,7 @@
     align-items: flex-start;
 }
 
-/* Styles pour les statuts */
+/* Styles pour les statuts - Compatible Odoo 18+ */
 .o_statusbar_status {
     font-weight: 600;
 }
@@ -67,7 +67,7 @@
     color: #28a745;
 }
 
-/* Styles pour les champs personnalisés */
+/* Styles pour les champs personnalisés - Compatible Odoo 18+ */
 .o_field_custom_field {
     margin-bottom: 12px;
 }
@@ -77,7 +77,7 @@
     color: #495057;
 }
 
-/* Styles pour le tableau dans le rapport */
+/* Styles pour le tableau dans le rapport - Compatible Odoo 18+ */
 .report_commercial_sheet {
     font-family: Arial, sans-serif;
 }
@@ -99,7 +99,7 @@
     width: 30%;
 }
 
-/* Styles pour les groupes de champs */
+/* Styles pour les groupes de champs - Compatible Odoo 18+ */
 .o_group_custom_fields_1,
 .o_group_custom_fields_2,
 .o_group_custom_fields_3 {
@@ -120,4 +120,20 @@
 
 .o_group_custom_fields_3 {
     border-left: 4px solid #ffc107;
+}
+
+/* Styles multilingues - Compatible Odoo 18+ */
+.multilingual_section {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 6px;
+    padding: 12px;
+    margin: 8px 0;
+}
+
+.multilingual_section .o_group {
+    background-color: white;
+    border-radius: 4px;
+    padding: 8px;
+    margin: 4px 0;
 }
