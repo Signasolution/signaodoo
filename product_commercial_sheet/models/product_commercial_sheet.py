@@ -40,7 +40,7 @@ class ProductCommercialSheet(models.Model):
         readonly=True
     )
     
-    product_description = fields.Html(
+    product_description = fields.Text(
         string='Description',
         related='product_id.description_sale',
         readonly=True

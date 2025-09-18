@@ -3,6 +3,7 @@
 import { registry } from "@web/core/registry";
 import { FormController } from "@web/views/form/form_controller";
 import { patch } from "@web/core/utils/patch";
+import { Component } from "@odoo/owl";
 
 // Patch pour ajouter des fonctionnalités spécifiques aux fiches commerciales
 patch(FormController.prototype, {
