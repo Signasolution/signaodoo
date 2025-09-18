@@ -16,10 +16,10 @@
               </t>
             </div>
             <div style="flex:1;">
-              <p t-if="doc.default_code"><strong>Référence :</strong> <t t-esc="doc.default_code"/></p>
-              <p t-if="doc.barcode"><strong>Code-barres :</strong> <t t-esc="doc.barcode"/></p>
+              <p t-if="doc.default_code and doc.default_code.strip()"><strong>Référence :</strong> <t t-esc="doc.default_code"/></p>
+              <p t-if="doc.barcode and doc.barcode.strip()"><strong>Code-barres :</strong> <t t-esc="doc.barcode"/></p>
               <p t-if="doc.categ_id"><strong>Catégorie :</strong> <t t-esc="doc.categ_id.display_name"/></p>
-              <p t-if="doc.list_price is not False"><strong>Prix public :</strong> <t t-esc="formatLang(doc.list_price, monetary=True, dp=2)"/> <t t-esc="doc.currency_id and doc.currency_id.symbol or ''"/></p>
+              <p t-if="doc.list_price is not False and doc.list_price > 0"><strong>Prix public :</strong> <t t-esc="formatLang(doc.list_price, monetary=True, dp=2)"/> <t t-esc="doc.currency_id and doc.currency_id.symbol or ''"/></p>
               <p t-if="doc.type"><strong>Type :</strong> <t t-esc="doc.type"/></p>
               <t t-if="doc.sale_ok or doc.purchase_ok">
                 <p>
@@ -38,35 +38,35 @@
           <h3 style="margin-top:16px;">Caractéristiques</h3>
           <table class="table table-sm" style="width:100%; border-collapse:collapse;" border="1" cellspacing="0" cellpadding="6">
             <tbody>
-              <tr t-if="doc.weight">
+              <tr t-if="doc.weight and doc.weight > 0">
                 <td style="width:35%;"><strong>Poids (kg)</strong></td>
                 <td><t t-esc="formatLang(doc.weight, dp=3)"/></td>
               </tr>
-              <tr t-if="doc.volume">
+              <tr t-if="doc.volume and doc.volume > 0">
                 <td><strong>Volume (m³)</strong></td>
                 <td><t t-esc="formatLang(doc.volume, dp=3)"/></td>
               </tr>
-              <tr t-if="getattr(doc, 'x_studio_hauteur_1', False)">
+              <tr t-if="hasattr(doc, 'x_studio_hauteur_1') and doc.x_studio_hauteur_1">
                 <td><strong>Hauteur (H)</strong></td>
                 <td><t t-esc="doc.x_studio_hauteur_1"/></td>
               </tr>
-              <tr t-if="getattr(doc, 'x_studio_longueur', False)">
+              <tr t-if="hasattr(doc, 'x_studio_longueur') and doc.x_studio_longueur">
                 <td><strong>Longueur (L)</strong></td>
                 <td><t t-esc="doc.x_studio_longueur"/></td>
               </tr>
-              <tr t-if="getattr(doc, 'x_studio_largeur', False)">
+              <tr t-if="hasattr(doc, 'x_studio_largeur') and doc.x_studio_largeur">
                 <td><strong>Largeur (l)</strong></td>
                 <td><t t-esc="doc.x_studio_largeur"/></td>
               </tr>
-              <tr t-if="getattr(doc, 'x_studio_essence_bois', False)">
+              <tr t-if="hasattr(doc, 'x_studio_essence_bois') and doc.x_studio_essence_bois">
                 <td><strong>Essence de bois</strong></td>
                 <td><t t-esc="doc.x_studio_essence_bois"/></td>
               </tr>
-              <tr t-if="getattr(doc, 'x_studio_hcl', False)">
+              <tr t-if="hasattr(doc, 'x_studio_hcl') and doc.x_studio_hcl">
                 <td><strong>HCL</strong></td>
                 <td><t t-esc="doc.x_studio_hcl"/></td>
               </tr>
-              <tr t-if="getattr(doc, 'x_studio_srf', False)">
+              <tr t-if="hasattr(doc, 'x_studio_srf') and doc.x_studio_srf">
                 <td><strong>SRF</strong></td>
                 <td><t t-esc="doc.x_studio_srf"/></td>
               </tr>

@@ -7,7 +7,6 @@
         string="Fiche produit"
         report_type="qweb-pdf"
         name="product_product_sheet.report_product_sheet_document_wrapper"
-        file="product_product_sheet.report_product_sheet_document_wrapper"
         print_report_name="'Fiche_%s' % (object.display_name.replace('/', '_'))"
     />
   </data>
