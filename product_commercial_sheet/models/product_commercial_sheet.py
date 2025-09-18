@@ -28,21 +28,21 @@ class ProductCommercialSheet(models.Model):
     # Champs de base du produit (automatiquement remplis)
     product_name = fields.Char(
         string='Nom du produit',
-        related='product_id.name',
+        compute='_compute_product_info',
         store=True,
         readonly=True
     )
     
     product_reference = fields.Char(
         string='Référence',
-        related='product_id.default_code',
+        compute='_compute_product_info',
         store=True,
         readonly=True
     )
     
     product_description = fields.Text(
         string='Description',
-        related='product_id.description_sale',
+        compute='_compute_product_info',
         readonly=True
     )
     
@@ -88,6 +88,27 @@ class ProductCommercialSheet(models.Model):
         help="Champ personnalisable via Odoo Studio"
     )
     
+    # Support multilingue
+    name_fr = fields.Char(
+        string='Nom (Français)',
+        help="Nom de la fiche en français"
+    )
+    
+    name_en = fields.Char(
+        string='Nom (Anglais)',
+        help="Nom de la fiche en anglais"
+    )
+    
+    description_fr = fields.Text(
+        string='Description (Français)',
+        help="Description en français"
+    )
+    
+    description_en = fields.Text(
+        string='Description (Anglais)',
+        help="Description en anglais"
+    )
+    
     # Champs techniques
     state = fields.Selection([
         ('draft', 'Brouillon'),
@@ -119,6 +140,19 @@ class ProductCommercialSheet(models.Model):
         readonly=True
     )
 
+    @api.depends('product_id', 'product_id.name', 'product_id.default_code', 'product_id.description_sale')
+    def _compute_product_info(self):
+        """Calcule les informations du produit"""
+        for sheet in self:
+            if sheet.product_id:
+                sheet.product_name = sheet.product_id.name
+                sheet.product_reference = sheet.product_id.default_code
+                sheet.product_description = sheet.product_id.description_sale
+            else:
+                sheet.product_name = False
+                sheet.product_reference = False
+                sheet.product_description = False
+
     @api.model
     def create_from_product(self, product_id):
         """
@@ -144,11 +178,13 @@ class ProductCommercialSheet(models.Model):
                 'target': 'current',
             }
         
-        # Créer la nouvelle fiche
+        # Créer la nouvelle fiche avec support multilingue
         sheet_data = {
             'name': f"Fiche commerciale - {product.name}",
             'product_id': product_id,
             'state': 'draft',
+            'name_fr': f"Fiche commerciale - {product.name}",
+            'name_en': f"Commercial sheet - {product.name}",
         }
         
         sheet = self.create(sheet_data)
@@ -187,6 +223,26 @@ class ProductCommercialSheet(models.Model):
             'data': {'ids': self.ids},
             'context': self.env.context,
         }
+
+    def get_localized_name(self, lang_code=None):
+        """Retourne le nom localisé selon la langue"""
+        if not lang_code:
+            lang_code = self.env.context.get('lang', 'fr_FR')
+        
+        if lang_code.startswith('en'):
+            return self.name_en or self.name
+        else:
+            return self.name_fr or self.name
+
+    def get_localized_description(self, lang_code=None):
+        """Retourne la description localisée selon la langue"""
+        if not lang_code:
+            lang_code = self.env.context.get('lang', 'fr_FR')
+        
+        if lang_code.startswith('en'):
+            return self.description_en or self.product_description
+        else:
+            return self.description_fr or self.product_description
 
     @api.model
     def get_custom_fields_config(self):

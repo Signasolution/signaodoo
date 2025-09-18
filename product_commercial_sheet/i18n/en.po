@@ -1,0 +1,55 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+#	* product_commercial_sheet
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-09-18 20:45+0000\n"
+"PO-Revision-Date: 2025-09-18 20:45+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: product_commercial_sheet
+#: model:ir.model,name:product_commercial_sheet.model_product_commercial_sheet
+msgid "Product Commercial Sheet"
+msgstr "Product Commercial Sheet"
+
+#. module: product_commercial_sheet
+#: model:ir.model.fields,field_description:product_commercial_sheet.field_product_commercial_sheet__name
+msgid "Sheet Name"
+msgstr "Sheet Name"
+
+#. module: product_commercial_sheet
+#: model:ir.model.fields,field_description:product_commercial_sheet.field_product_commercial_sheet__product_id
+msgid "Product"
+msgstr "Product"
+
+#. module: product_commercial_sheet
+#: model:ir.model.fields,field_description:product_commercial_sheet.field_product_commercial_sheet__state
+msgid "State"
+msgstr "State"
+
+#. module: product_commercial_sheet
+#: model:ir.model.fields,field_description:product_commercial_sheet.field_product_commercial_sheet__state
+#: selection:product.commercial.sheet,state:0
+msgid "Draft"
+msgstr "Draft"
+
+#. module: product_commercial_sheet
+#: model:ir.model.fields,field_description:product_commercial_sheet.field_product_commercial_sheet__state
+#: selection:product.commercial.sheet,state:0
+msgid "Confirmed"
+msgstr "Confirmed"
+
+#. module: product_commercial_sheet
+#: model:ir.model.fields,field_description:product_commercial_sheet.field_product_commercial_sheet__state
+#: selection:product.commercial.sheet,state:0
+msgid "Published"
+msgstr "Published"

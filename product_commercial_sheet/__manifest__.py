@@ -29,6 +29,10 @@
         'views/product_template_views.xml',
         'reports/product_commercial_sheet_report.xml',
     ],
+    'i18n': [
+        'i18n/fr.po',
+        'i18n/en.po',
+    ],
     'assets': {
         'web.assets_backend': [
             'product_commercial_sheet/static/src/css/commercial_sheet.css',
