@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Fiches Commerciales Produits',
-    'version': '18.0.7.0.0',
+    'version': '18.0.8.0.0',
     'category': 'Sales',
     'summary': 'Génération de fiches commerciales personnalisables pour les produits',
     'description': """
@@ -25,7 +25,6 @@
     'data': [
         'security/ir.model.access.csv',
         'data/ir_ui_view.xml',
-        'data/clear_assets.xml',
         'views/product_commercial_sheet_views.xml',
         'views/product_template_views.xml',
         'reports/product_commercial_sheet_report.xml',
@@ -38,9 +37,6 @@
     'assets': {
         'web.assets_backend': [
             'product_commercial_sheet/static/src/css/commercial_sheet.css',
-            'product_commercial_sheet/static/src/css/force_update.css',
-            'product_commercial_sheet/static/src/css/clear_cache.css',
-            'product_commercial_sheet/static/src/css/force_js_clear.css',
         ],
     },
     'installable': True,
