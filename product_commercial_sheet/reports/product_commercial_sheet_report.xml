@@ -97,6 +97,31 @@
                                 </div>
                             </div>
                             
+                            <!-- Support multilingue -->
+                            <div class="row" t-if="sheet.name_fr or sheet.name_en">
+                                <div class="col-12">
+                                    <h3>Informations Multilingues</h3>
+                                    <table class="table table-bordered">
+                                        <tr t-if="sheet.name_fr">
+                                            <td><strong>Nom (Français):</strong></td>
+                                            <td><span t-field="sheet.name_fr"/></td>
+                                        </tr>
+                                        <tr t-if="sheet.name_en">
+                                            <td><strong>Nom (Anglais):</strong></td>
+                                            <td><span t-field="sheet.name_en"/></td>
+                                        </tr>
+                                        <tr t-if="sheet.description_fr">
+                                            <td><strong>Description (Français):</strong></td>
+                                            <td><span t-field="sheet.description_fr"/></td>
+                                        </tr>
+                                        <tr t-if="sheet.description_en">
+                                            <td><strong>Description (Anglais):</strong></td>
+                                            <td><span t-field="sheet.description_en"/></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            
                         </div>
                     </t>
                 </t>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Rapport de test pour diagnostiquer le problème PDF -->
+        <record id="action_report_test_commercial_sheet" model="ir.actions.report">
+            <field name="name">Test Fiche Commerciale</field>
+            <field name="model">product.commercial.sheet</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">product_commercial_sheet.test_report_commercial_sheet</field>
+            <field name="report_file">product_commercial_sheet.test_report_commercial_sheet</field>
+            <field name="binding_type">report</field>
+        </record>
+
+        <!-- Template de test simple -->
+        <template id="test_report_commercial_sheet">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="sheet">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <div class="oe_structure"/>
+                            
+                            <!-- Test simple -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <h1>Test Fiche Commerciale</h1>
+                                    <p><strong>ID:</strong> <span t-esc="sheet.id"/></p>
+                                    <p><strong>Nom:</strong> <span t-esc="sheet.name"/></p>
+                                    <p><strong>Produit:</strong> <span t-esc="sheet.product_id.name"/></p>
+                                    <p><strong>État:</strong> <span t-esc="sheet.state"/></p>
+                                    <p><strong>Date:</strong> <span t-esc="sheet.create_date"/></p>
+                                </div>
+                            </div>
+                            
+                            <!-- Test des champs calculés -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <h2>Champs Calculés</h2>
+                                    <p><strong>Nom produit:</strong> <span t-esc="sheet.product_name"/></p>
+                                    <p><strong>Référence:</strong> <span t-esc="sheet.product_reference"/></p>
+                                    <p><strong>Description:</strong> <span t-esc="sheet.product_description"/></p>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+    </data>
+</odoo>

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Fiches Commerciales Produits',
-    'version': '18.0.6.0.0',
+    'version': '18.0.7.0.0',
     'category': 'Sales',
     'summary': 'Génération de fiches commerciales personnalisables pour les produits',
     'description': """
@@ -29,6 +29,7 @@
         'views/product_commercial_sheet_views.xml',
         'views/product_template_views.xml',
         'reports/product_commercial_sheet_report.xml',
+        'reports/test_report.xml',
     ],
     'i18n': [
         'i18n/fr.po',
