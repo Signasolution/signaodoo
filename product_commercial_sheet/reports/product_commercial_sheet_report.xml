@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Rapport PDF pour les fiches commerciales -->
+        <record id="action_report_commercial_sheet" model="ir.actions.report">
+            <field name="name">Fiche Commerciale</field>
+            <field name="model">product.commercial.sheet</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">product_commercial_sheet.report_commercial_sheet</field>
+            <field name="report_file">product_commercial_sheet.report_commercial_sheet</field>
+            <field name="binding_model_id" ref="model_product_commercial_sheet"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <!-- Template du rapport -->
+        <template id="report_commercial_sheet">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="sheet">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <div class="oe_structure"/>
+                            
+                            <!-- En-tête -->
+                            <div class="row">
+                                <div class="col-6">
+                                    <h2>Fiche Commerciale</h2>
+                                    <p><strong>Nom:</strong> <span t-field="sheet.name"/></p>
+                                    <p><strong>Date:</strong> <span t-field="sheet.create_date" t-options="{'widget': 'date'}"/></p>
+                                </div>
+                                <div class="col-6 text-right">
+                                    <p><strong>État:</strong> <span t-field="sheet.state"/></p>
+                                    <p><strong>Créé par:</strong> <span t-field="sheet.user_id.name"/></p>
+                                </div>
+                            </div>
+                            
+                            <hr/>
+                            
+                            <!-- Informations produit -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <h3>Informations Produit</h3>
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <td><strong>Nom du produit:</strong></td>
+                                            <td><span t-field="sheet.product_name"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Référence:</strong></td>
+                                            <td><span t-field="sheet.product_reference"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Description:</strong></td>
+                                            <td><span t-field="sheet.product_description"/></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Champs personnalisés -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <h3>Informations Personnalisées</h3>
+                                    <table class="table table-bordered">
+                                        <tr t-if="sheet.custom_field_1">
+                                            <td><strong>Champ personnalisé 1:</strong></td>
+                                            <td><span t-field="sheet.custom_field_1"/></td>
+                                        </tr>
+                                        <tr t-if="sheet.custom_field_2">
+                                            <td><strong>Champ personnalisé 2:</strong></td>
+                                            <td><span t-field="sheet.custom_field_2"/></td>
+                                        </tr>
+                                        <tr t-if="sheet.custom_field_3">
+                                            <td><strong>Champ personnalisé 3:</strong></td>
+                                            <td><span t-field="sheet.custom_field_3"/></td>
+                                        </tr>
+                                        <tr t-if="sheet.custom_field_4">
+                                            <td><strong>Champ personnalisé 4:</strong></td>
+                                            <td><span t-field="sheet.custom_field_4"/></td>
+                                        </tr>
+                                        <tr t-if="sheet.custom_field_5">
+                                            <td><strong>Champ personnalisé 5:</strong></td>
+                                            <td><span t-field="sheet.custom_field_5"/></td>
+                                        </tr>
+                                        <tr t-if="sheet.custom_field_6">
+                                            <td><strong>Champ personnalisé 6:</strong></td>
+                                            <td><span t-field="sheet.custom_field_6" t-options="{'widget': 'date'}"/></td>
+                                        </tr>
+                                        <tr t-if="sheet.custom_field_7">
+                                            <td><strong>Champ personnalisé 7:</strong></td>
+                                            <td><span t-field="sheet.custom_field_7"/></td>
+                                        </tr>
+                                        <tr t-if="sheet.custom_field_8">
+                                            <td><strong>Champ personnalisé 8:</strong></td>
+                                            <td><span t-field="sheet.custom_field_8"/></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+    </data>
+</odoo>

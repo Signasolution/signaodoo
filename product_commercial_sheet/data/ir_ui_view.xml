@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Vue Studio-compatible pour les fiches commerciales -->
+        <record id="view_product_commercial_sheet_studio_form" model="ir.ui.view">
+            <field name="name">product.commercial.sheet.studio.form</field>
+            <field name="model">product.commercial.sheet</field>
+            <field name="arch" type="xml">
+                <form string="Fiche Commerciale (Studio)">
+                    <header>
+                        <button name="action_confirm" string="Confirmer" type="object" 
+                                class="btn-primary" states="draft"/>
+                        <button name="action_publish" string="Publier" type="object" 
+                                class="btn-success" states="confirmed"/>
+                        <button name="action_draft" string="Remettre en brouillon" type="object" 
+                                class="btn-secondary" states="confirmed,published"/>
+                        <button name="action_generate_pdf" string="Générer PDF" type="object" 
+                                class="btn-info" states="confirmed,published"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,published"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" placeholder="Nom de la fiche commerciale"/>
+                            </h1>
+                        </div>
+                        
+                        <!-- Section principale - Personnalisable via Studio -->
+                        <group name="main_section" string="Informations Principales">
+                            <group name="product_info" string="Produit">
+                                <field name="product_id" options="{'no_create': True}"/>
+                                <field name="product_name" readonly="1"/>
+                                <field name="product_reference" readonly="1"/>
+                            </group>
+                            <group name="user_info" string="Utilisateur">
+                                <field name="user_id" readonly="1"/>
+                                <field name="create_date" readonly="1"/>
+                            </group>
+                        </group>
+                        
+                        <!-- Section champs personnalisés - Studio peut réorganiser -->
+                        <group name="custom_fields_section" string="Champs Personnalisés">
+                            <group name="custom_fields_1" string="Groupe 1">
+                                <field name="custom_field_1"/>
+                                <field name="custom_field_2"/>
+                                <field name="custom_field_3"/>
+                            </group>
+                            <group name="custom_fields_2" string="Groupe 2">
+                                <field name="custom_field_4"/>
+                                <field name="custom_field_5"/>
+                                <field name="custom_field_6"/>
+                            </group>
+                            <group name="custom_fields_3" string="Groupe 3">
+                                <field name="custom_field_7"/>
+                                <field name="custom_field_8"/>
+                            </group>
+                        </group>
+                        
+                        <!-- Section description -->
+                        <group name="description_section" string="Description">
+                            <field name="product_description" readonly="1"/>
+                        </group>
+                        
+                        <!-- Section PDF -->
+                        <group name="pdf_section" string="Fichier PDF" invisible="not pdf_file">
+                            <field name="pdf_filename" readonly="1"/>
+                            <field name="pdf_file" readonly="1" filename="pdf_filename"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>

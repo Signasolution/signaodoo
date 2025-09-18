@@ -1,0 +1,123 @@
+/* Styles pour les fiches commerciales */
+
+.o_commercial_sheet_form {
+    .oe_title h1 {
+        color: #2E7D32;
+        font-weight: 600;
+    }
+    
+    .custom_fields_section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0;
+    }
+    
+    .custom_fields_section .o_group {
+        background-color: white;
+        border-radius: 4px;
+        padding: 12px;
+        margin: 8px 0;
+        border: 1px solid #e9ecef;
+    }
+    
+    .pdf_section {
+        background-color: #e3f2fd;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0;
+        border-left: 4px solid #2196f3;
+    }
+    
+    .product_info {
+        background-color: #f3e5f5;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0;
+        border-left: 4px solid #9c27b0;
+    }
+}
+
+/* Styles pour les boutons d'action */
+.o_form_view .oe_button_box .oe_stat_button {
+    width: 100%;
+    text-align: left;
+}
+
+.o_form_view .oe_button_box .oe_stat_button .o_stat_info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+/* Styles pour les statuts */
+.o_statusbar_status {
+    font-weight: 600;
+}
+
+.o_statusbar_status.draft {
+    color: #6c757d;
+}
+
+.o_statusbar_status.confirmed {
+    color: #17a2b8;
+}
+
+.o_statusbar_status.published {
+    color: #28a745;
+}
+
+/* Styles pour les champs personnalisés */
+.o_field_custom_field {
+    margin-bottom: 12px;
+}
+
+.o_field_custom_field label {
+    font-weight: 600;
+    color: #495057;
+}
+
+/* Styles pour le tableau dans le rapport */
+.report_commercial_sheet {
+    font-family: Arial, sans-serif;
+}
+
+.report_commercial_sheet .table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+}
+
+.report_commercial_sheet .table td {
+    padding: 8px 12px;
+    border: 1px solid #dee2e6;
+}
+
+.report_commercial_sheet .table td:first-child {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    width: 30%;
+}
+
+/* Styles pour les groupes de champs */
+.o_group_custom_fields_1,
+.o_group_custom_fields_2,
+.o_group_custom_fields_3 {
+    background-color: white;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 12px;
+    margin: 8px 0;
+}
+
+.o_group_custom_fields_1 {
+    border-left: 4px solid #007bff;
+}
+
+.o_group_custom_fields_2 {
+    border-left: 4px solid #28a745;
+}
+
+.o_group_custom_fields_3 {
+    border-left: 4px solid #ffc107;
+}
