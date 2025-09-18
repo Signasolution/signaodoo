@@ -1,0 +1,15 @@
+/* Clear cache des assets - Compatible Odoo 18+ */
+/* Ce fichier force la mise à jour du cache JavaScript */
+
+.clear-cache-assets {
+    /* Force la régénération des assets */
+    content: "Cache cleared - 2025-09-18 20:57";
+    display: none;
+}
+
+/* Force update des assets JavaScript */
+.force-js-update {
+    /* Ce commentaire force la mise à jour */
+    /* Version: 18.0.2.0.0 */
+    /* Date: 2025-09-18 20:57:20 */
+}

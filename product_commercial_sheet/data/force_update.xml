@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Force update du module pour vider le cache JavaScript -->
+        <record id="force_update_assets" model="ir.ui.view">
+            <field name="name">force.update.assets</field>
+            <field name="model">ir.ui.view</field>
+            <field name="arch" type="xml">
+                <div class="force-update-assets">
+                    <!-- Force la mise à jour des assets -->
+                    <span>Module product_commercial_sheet - Version 18.0.2.0.0</span>
+                </div>
+            </field>
+        </record>
+    </data>
+</odoo>

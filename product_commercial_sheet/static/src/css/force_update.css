@@ -1,0 +1,7 @@
+/* Force update des assets - Compatible Odoo 18+ */
+/* Version: 18.0.2.0.0 - Date: 2025-09-18 */
+
+.force-asset-update {
+    /* Ce fichier force la mise à jour des assets */
+    content: "Module product_commercial_sheet mis à jour";
+}
