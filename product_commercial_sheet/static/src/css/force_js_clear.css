@@ -1,0 +1,16 @@
+/* Force clear JavaScript cache - Version 18.0.5.0.0 */
+/* Ce fichier force la régénération complète des assets JavaScript */
+
+.force-js-clear {
+    /* Force la régénération des assets JavaScript */
+    content: "JavaScript cache cleared - 2025-09-18 21:04";
+    display: none;
+}
+
+/* Force update des assets pour vider le cache */
+.force-asset-regeneration {
+    /* Ce commentaire force la mise à jour */
+    /* Version: 18.0.5.0.0 */
+    /* Date: 2025-09-18 21:04:00 */
+    /* Action: Clear JavaScript cache */
+}
