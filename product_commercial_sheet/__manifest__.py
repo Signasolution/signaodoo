@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Fiches Commerciales Produits',
-    'version': '18.0.3.0.0',
+    'version': '18.0.4.0.0',
     'category': 'Sales',
     'summary': 'Génération de fiches commerciales personnalisables pour les produits',
     'description': """

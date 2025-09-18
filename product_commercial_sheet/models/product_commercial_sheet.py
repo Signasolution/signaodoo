@@ -28,21 +28,21 @@ class ProductCommercialSheet(models.Model):
     # Champs de base du produit (automatiquement remplis)
     product_name = fields.Char(
         string='Nom du produit',
-        compute='_compute_product_info',
+        compute='_compute_product_name',
         store=True,
         readonly=True
     )
     
     product_reference = fields.Char(
         string='Référence',
-        compute='_compute_product_info',
+        compute='_compute_product_reference',
         store=True,
         readonly=True
     )
     
     product_description = fields.Text(
         string='Description',
-        compute='_compute_product_info',
+        compute='_compute_product_description',
         readonly=True
     )
     
@@ -140,17 +140,31 @@ class ProductCommercialSheet(models.Model):
         readonly=True
     )
 
-    @api.depends('product_id', 'product_id.name', 'product_id.default_code', 'product_id.description_sale')
-    def _compute_product_info(self):
-        """Calcule les informations du produit - Compatible Odoo 18+"""
+    @api.depends('product_id', 'product_id.name')
+    def _compute_product_name(self):
+        """Calcule le nom du produit - Compatible Odoo 18+"""
         for sheet in self:
             if sheet.product_id:
                 sheet.product_name = sheet.product_id.name or ''
-                sheet.product_reference = sheet.product_id.default_code or ''
-                sheet.product_description = sheet.product_id.description_sale or ''
             else:
                 sheet.product_name = ''
+
+    @api.depends('product_id', 'product_id.default_code')
+    def _compute_product_reference(self):
+        """Calcule la référence du produit - Compatible Odoo 18+"""
+        for sheet in self:
+            if sheet.product_id:
+                sheet.product_reference = sheet.product_id.default_code or ''
+            else:
                 sheet.product_reference = ''
+
+    @api.depends('product_id', 'product_id.description_sale')
+    def _compute_product_description(self):
+        """Calcule la description du produit - Compatible Odoo 18+"""
+        for sheet in self:
+            if sheet.product_id:
+                sheet.product_description = sheet.product_id.description_sale or ''
+            else:
                 sheet.product_description = ''
 
     @api.model
