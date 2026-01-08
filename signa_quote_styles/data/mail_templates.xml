@@ -18,8 +18,7 @@
             <p>${object.user_id.name or object.company_id.name}</p>
         ]]></field>
         <field name="report_template_ids" eval="[(4, ref('signa_quote_styles.action_report_saleorder_signasolution'))]"/>
-        <field name="report_name">${(object.name or 'Devis')}</field>
-        <field name="lang">${object.partner_id.lang}</field>
+<field name="lang">${object.partner_id.lang}</field>
         <field name="auto_delete" eval="False"/>
     </record>
 
@@ -36,8 +35,7 @@
             <p>${object.user_id.name or object.company_id.name}</p>
         ]]></field>
         <field name="report_template_ids" eval="[(4, ref('signa_quote_styles.action_report_saleorder_signaparc'))]"/>
-        <field name="report_name">${(object.name or 'Devis')}</field>
-        <field name="lang">${object.partner_id.lang}</field>
+<field name="lang">${object.partner_id.lang}</field>
         <field name="auto_delete" eval="False"/>
     </record>
 
@@ -54,8 +52,7 @@
             <p>${object.user_id.name or object.company_id.name}</p>
         ]]></field>
         <field name="report_template_ids" eval="[(4, ref('signa_quote_styles.action_report_saleorder_signagolf'))]"/>
-        <field name="report_name">${(object.name or 'Devis')}</field>
-        <field name="lang">${object.partner_id.lang}</field>
+<field name="lang">${object.partner_id.lang}</field>
         <field name="auto_delete" eval="False"/>
     </record>
 
@@ -72,8 +69,7 @@
             <p>${object.user_id.name or object.company_id.name}</p>
         ]]></field>
         <field name="report_template_ids" eval="[(4, ref('signa_quote_styles.action_report_saleorder_signaindustrie'))]"/>
-        <field name="report_name">${(object.name or 'Devis')}</field>
-        <field name="lang">${object.partner_id.lang}</field>
+<field name="lang">${object.partner_id.lang}</field>
         <field name="auto_delete" eval="False"/>
     </record>
 
