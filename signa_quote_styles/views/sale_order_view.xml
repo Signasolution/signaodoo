@@ -9,7 +9,8 @@
                 <button name="action_print_quotation"
                         type="object"
                         string="Imprimer devis"
-                        class="btn-primary"/ invisible=\"state not in ('draft','sent')\">
+                        class="btn-primary"
+                        invisible="state not in ('draft','sent')"/>
             </xpath>
         </field>
     </record>
