@@ -57,7 +57,7 @@
         <xpath expr="//t[@t-call='web.external_layout']" position="before">
             <t t-set="signa_style" t-value="'SignaSolution'"/>
         </xpath>
-        <xpath expr="//head" position="inside">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' page ')]" position="before">
             <style>
                 /* SignaSolution (exemple) */
                 :root { --signa-accent: #1f6feb; }
@@ -69,7 +69,7 @@
         <xpath expr="//t[@t-call='web.external_layout']" position="before">
             <t t-set="signa_style" t-value="'SignaParc'"/>
         </xpath>
-        <xpath expr="//head" position="inside">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' page ')]" position="before">
             <style>
                 /* SignaParc (exemple) */
                 :root { --signa-accent: #2da44e; }
@@ -81,7 +81,7 @@
         <xpath expr="//t[@t-call='web.external_layout']" position="before">
             <t t-set="signa_style" t-value="'SignaGolf'"/>
         </xpath>
-        <xpath expr="//head" position="inside">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' page ')]" position="before">
             <style>
                 /* SignaGolf (exemple) */
                 :root { --signa-accent: #8a6f00; }
@@ -93,7 +93,7 @@
         <xpath expr="//t[@t-call='web.external_layout']" position="before">
             <t t-set="signa_style" t-value="'SignaIndustrie'"/>
         </xpath>
-        <xpath expr="//head" position="inside">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' page ')]" position="before">
             <style>
                 /* SignaIndustrie (exemple) */
                 :root { --signa-accent: #6e7781; }
