@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sale_order_form_inherit_signa_quote_styles" model="ir.ui.view">
+        <field name="name">sale.order.form.signa.quote.styles</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+
+            <!-- 1) Masquer le bouton standard "Imprimer devis" s'il existe dans le header -->
+            <xpath expr="//header//button[@name='action_print_quotation']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- 2) Ajouter notre bouton (qui appelle la même méthode : action_print_quotation, surchargée en Python) -->
+            <xpath expr="//header" position="inside">
+                <button name="action_print_quotation"
+                        type="object"
+                        string="Imprimer devis"
+                        class="btn-primary"
+                        attrs="{'invisible': [('state', 'not in', ['draft','sent'])]}"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

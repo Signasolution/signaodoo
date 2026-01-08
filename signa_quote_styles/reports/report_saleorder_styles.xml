@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+    4 rapports distincts, 1 par style.
+    Tu peux ensuite personnaliser chaque template QWeb (ou via Studio) sans toucher au code Python.
+    -->
+
+    <record id="action_report_saleorder_signasolution" model="ir.actions.report">
+        <field name="name">Devis - SignaSolution</field>
+        <field name="model">sale.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">signa_quote_styles.report_saleorder_signasolution</field>
+        <field name="report_file">signa_quote_styles.report_saleorder_signasolution</field>
+        <field name="binding_model_id" ref="sale.model_sale_order"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Devis - %s' % (object.name or '')</field>
+    </record>
+
+    <record id="action_report_saleorder_signaparc" model="ir.actions.report">
+        <field name="name">Devis - SignaParc</field>
+        <field name="model">sale.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">signa_quote_styles.report_saleorder_signaparc</field>
+        <field name="report_file">signa_quote_styles.report_saleorder_signaparc</field>
+        <field name="binding_model_id" ref="sale.model_sale_order"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Devis - %s' % (object.name or '')</field>
+    </record>
+
+    <record id="action_report_saleorder_signagolf" model="ir.actions.report">
+        <field name="name">Devis - SignaGolf</field>
+        <field name="model">sale.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">signa_quote_styles.report_saleorder_signagolf</field>
+        <field name="report_file">signa_quote_styles.report_saleorder_signagolf</field>
+        <field name="binding_model_id" ref="sale.model_sale_order"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Devis - %s' % (object.name or '')</field>
+    </record>
+
+    <record id="action_report_saleorder_signaindustrie" model="ir.actions.report">
+        <field name="name">Devis - SignaIndustrie</field>
+        <field name="model">sale.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">signa_quote_styles.report_saleorder_signaindustrie</field>
+        <field name="report_file">signa_quote_styles.report_saleorder_signaindustrie</field>
+        <field name="binding_model_id" ref="sale.model_sale_order"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Devis - %s' % (object.name or '')</field>
+    </record>
+
+    <!-- Templates QWeb : on hérite du document standard et on injecte un marqueur de style + un bloc CSS.
+         Ajuste les couleurs / mise en page ici, ou bien via Studio en ciblant ces templates. -->
+
+    <template id="report_saleorder_signasolution" inherit_id="sale.report_saleorder_document">
+        <xpath expr="//t[@t-call='web.external_layout']" position="before">
+            <t t-set="signa_style" t-value="'SignaSolution'"/>
+        </xpath>
+        <xpath expr="//head" position="inside">
+            <style>
+                /* SignaSolution (exemple) */
+                :root { --signa-accent: #1f6feb; }
+            </style>
+        </xpath>
+    </template>
+
+    <template id="report_saleorder_signaparc" inherit_id="sale.report_saleorder_document">
+        <xpath expr="//t[@t-call='web.external_layout']" position="before">
+            <t t-set="signa_style" t-value="'SignaParc'"/>
+        </xpath>
+        <xpath expr="//head" position="inside">
+            <style>
+                /* SignaParc (exemple) */
+                :root { --signa-accent: #2da44e; }
+            </style>
+        </xpath>
+    </template>
+
+    <template id="report_saleorder_signagolf" inherit_id="sale.report_saleorder_document">
+        <xpath expr="//t[@t-call='web.external_layout']" position="before">
+            <t t-set="signa_style" t-value="'SignaGolf'"/>
+        </xpath>
+        <xpath expr="//head" position="inside">
+            <style>
+                /* SignaGolf (exemple) */
+                :root { --signa-accent: #8a6f00; }
+            </style>
+        </xpath>
+    </template>
+
+    <template id="report_saleorder_signaindustrie" inherit_id="sale.report_saleorder_document">
+        <xpath expr="//t[@t-call='web.external_layout']" position="before">
+            <t t-set="signa_style" t-value="'SignaIndustrie'"/>
+        </xpath>
+        <xpath expr="//head" position="inside">
+            <style>
+                /* SignaIndustrie (exemple) */
+                :root { --signa-accent: #6e7781; }
+            </style>
+        </xpath>
+    </template>
+
+</odoo>
