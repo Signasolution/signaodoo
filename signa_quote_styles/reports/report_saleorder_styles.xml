@@ -2,8 +2,8 @@
 <odoo>
     <!-- Compatibility shim: some customizations (e.g. Studio) expect `doc` in sale order reports.
          In Odoo 17+ the standard variable is usually `o`. We define `doc` from `docs[0]` to avoid KeyError. -->
-    <template id="report_saleorder_doc_alias" inherit_id="sale.report_saleorder_document">
-        <xpath expr="//t[@t-foreach='docs'][1]" position="before">
+    \1
+        <xpath expr="//t[@t-call='web.external_layout']" position="before">
             <t t-set="doc" t-value="docs and docs[0] or False"/>
         </xpath>
     </template>
