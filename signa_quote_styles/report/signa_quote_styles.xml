@@ -1,97 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!--
-      We DO NOT inherit web.external_layout because its internal structure may vary
-      across versions/modules. Instead, we provide our own external layout based on
-      web.basic_layout, while explicitly setting `company` to keep standard variables.
-    -->
-
-    <!-- Router layout: expects `doc` (sale.order record) and wraps body via t-raw="0" -->
-    <template id="external_layout_router">
-        <t t-set="company" t-value="doc.company_id"/>
-        <t t-set="signa_style" t-value="doc._signa_get_quote_style()"/>
-        <t t-call="web.basic_layout">
-            <!-- Header -->
-            <div class="header">
-                <t t-if="signa_style == 'SignaSolution'">
-                    <t t-call="signa_quote_styles.signa_header_signasolution"/>
-                </t>
-                <t t-elif="signa_style == 'SignaParc'">
-                    <t t-call="signa_quote_styles.signa_header_signaparc"/>
-                </t>
-                <t t-elif="signa_style == 'SignaGolf'">
-                    <t t-call="signa_quote_styles.signa_header_signagolf"/>
-                </t>
-                <t t-elif="signa_style == 'SignaIndustrie'">
-                    <t t-call="signa_quote_styles.signa_header_signaindustrie"/>
-                </t>
-                <t t-else="">
-                    <t t-call="signa_quote_styles.signa_header_default"/>
-                </t>
-            </div>
-
-            <!-- Body: keep Odoo standard wrappers for pdf rendering -->
-            <div class="article o_report_layout_standard">
-                <t t-raw="0"/>
-            </div>
-
-            <!-- Footer (simple, can be customized later) -->
-            <div class="footer">
-                <div class="text-center">
-                    <span t-esc="company.name"/>
-                </div>
-            </div>
-        </t>
-    </template>
-
-    <!-- Simple headers - meant to be edited with Studio / Technical > Views -->
-    <template id="signa_header_default">
-        <div style="padding: 8px 0;">
-            <div style="font-size:18px; font-weight:600;">
-                <span t-esc="company.name"/>
-            </div>
-            <div style="height:6px; margin-top:6px; background:#777;"></div>
-        </div>
-    </template>
-
+    <!-- Header snippets -->
     <template id="signa_header_signasolution">
-        <div style="padding: 8px 0;">
-            <div style="font-size:18px; font-weight:700;">LOGO SignaSolution</div>
-            <div style="height:6px; margin-top:6px; background:#1a73e8;"></div>
+        <div class="signa-header">
+            <div style="padding:12px 16px; font-size:18px; font-weight:700; background:#1f4e79; color:#fff;">
+                LOGO SignaSolution
+            </div>
         </div>
     </template>
 
     <template id="signa_header_signaparc">
-        <div style="padding: 8px 0;">
-            <div style="font-size:18px; font-weight:700;">LOGO SignaParc</div>
-            <div style="height:6px; margin-top:6px; background:#2e7d32;"></div>
+        <div class="signa-header">
+            <div style="padding:12px 16px; font-size:18px; font-weight:700; background:#2e7d32; color:#fff;">
+                LOGO SignaParc
+            </div>
         </div>
     </template>
 
     <template id="signa_header_signagolf">
-        <div style="padding: 8px 0;">
-            <div style="font-size:18px; font-weight:700;">LOGO SignaGolf</div>
-            <div style="height:6px; margin-top:6px; background:#c62828;"></div>
+        <div class="signa-header">
+            <div style="padding:12px 16px; font-size:18px; font-weight:700; background:#006064; color:#fff;">
+                LOGO SignaGolf
+            </div>
         </div>
     </template>
 
     <template id="signa_header_signaindustrie">
-        <div style="padding: 8px 0;">
-            <div style="font-size:18px; font-weight:700;">LOGO SignaIndustrie</div>
-            <div style="height:6px; margin-top:6px; background:#6a1b9a;"></div>
+        <div class="signa-header">
+            <div style="padding:12px 16px; font-size:18px; font-weight:700; background:#424242; color:#fff;">
+                LOGO SignaIndustrie
+            </div>
         </div>
     </template>
 
-    <!-- Patch sale report to use our router layout. -->
+    <!-- Robust layout router.
+         It does NOT assume 'o' exists. It relies on docs/docids that the report engine provides. -->
+    <template id="external_layout_router">
+        <!-- Make sure we have docs even if some module altered the report values -->
+        <t t-set="docs2" t-value="docs or env['sale.order'].browse(docids)"/>
+        <t t-set="doc" t-value="(docs2 and docs2[0]) or False"/>
+
+        <t t-set="company" t-value="(doc and doc.company_id) or env.company"/>
+        <t t-set="signa_style" t-value="(doc and doc._signa_get_quote_style()) or False"/>
+
+        <t t-call="web.basic_layout">
+            <div class="header">
+                <t t-if="signa_style == 'SignaSolution'" t-call="signa_quote_styles.signa_header_signasolution"/>
+                <t t-elif="signa_style == 'SignaParc'" t-call="signa_quote_styles.signa_header_signaparc"/>
+                <t t-elif="signa_style == 'SignaGolf'" t-call="signa_quote_styles.signa_header_signagolf"/>
+                <t t-elif="signa_style == 'SignaIndustrie'" t-call="signa_quote_styles.signa_header_signaindustrie"/>
+                <t t-else="">
+                    <div style="padding:12px 16px; font-size:18px; font-weight:700;">
+                        <span t-esc="company.name"/>
+                    </div>
+                </t>
+            </div>
+
+            <div class="article">
+                <t t-out="0"/>
+            </div>
+
+            <div class="footer" style="padding-top:10px; border-top:1px solid #ddd; font-size:12px;">
+                <div><span t-esc="company.name"/></div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Replace any external layout call in the sale order report by our router -->
     <template id="report_saleorder_document_layout_router" inherit_id="sale.report_saleorder_document">
-        <!-- Replace any external layout call with our router layout.
-             We match both web.external_layout and web.external_layout_* variants. -->
-        <xpath expr="//t[starts-with(@t-call, 'web.external_layout')]" position="replace">
-            <!-- Ensure `doc` is defined for the router (no KeyError on o/doc). -->
-            <t t-set="doc" t-value="o"/>
+        <xpath expr="//t[starts-with(@t-call,'web.external_layout')]" position="replace">
             <t t-call="signa_quote_styles.external_layout_router">
-                <t t-raw="0"/>
+                <t t-out="0"/>
             </t>
         </xpath>
     </template>
+
 </odoo>
