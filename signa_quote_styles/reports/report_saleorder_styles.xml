@@ -1,63 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!--
-    Compatibility shim:
-    Some customizations (Studio / other modules) expect a variable named `doc` in the sale order report.
-    In Odoo 17+ the standard variable is usually `o` (inside foreach over `docs`).
-    We define `doc` early from the first record to avoid KeyError in such snippets.
-    -->
-    <template id="report_saleorder_doc_alias" inherit_id="sale.report_saleorder_document">
-        <xpath expr="//t[@t-call='web.external_layout']" position="before">
-            <t t-set="doc" t-value="docs and docs[0] or False"/>
-        </xpath>
-    </template>
+    Odoo 18: the report engine expects the rendered HTML to contain a <main> element.
+    This is provided by web.html_container. Therefore, each style has a WRAPPER template
+    (used by ir.actions.report) that calls web.html_container and then calls our DOCUMENT template.
 
-    <!-- 4 styles distincts : SignaSolution / SignaParc / SignaGolf / SignaIndustrie -->
-    <template id="report_saleorder_signasolution" inherit_id="sale.report_saleorder_document">
+    We also expose both variables:
+      - o : standard sale report variable
+      - doc : used by some Studio/custom snippets
+    -->
+
+    <!-- DOCUMENT templates: inherit the standard document and only inject style/flags -->
+    <template id="report_saleorder_signasolution_document" inherit_id="sale.report_saleorder_document">
         <xpath expr="//t[@t-call='web.external_layout']" position="before">
             <t t-set="signa_style" t-value="'SignaSolution'"/>
         </xpath>
         <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' page ')]" position="before">
             <style>
-                /* SignaSolution (exemple) */
                 :root { --signa-accent: #0b5cad; }
             </style>
         </xpath>
     </template>
 
-    <template id="report_saleorder_signaparc" inherit_id="sale.report_saleorder_document">
+    <template id="report_saleorder_signaparc_document" inherit_id="sale.report_saleorder_document">
         <xpath expr="//t[@t-call='web.external_layout']" position="before">
             <t t-set="signa_style" t-value="'SignaParc'"/>
         </xpath>
         <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' page ')]" position="before">
             <style>
-                /* SignaParc (exemple) */
                 :root { --signa-accent: #2a6b2f; }
             </style>
         </xpath>
     </template>
 
-    <template id="report_saleorder_signagolf" inherit_id="sale.report_saleorder_document">
+    <template id="report_saleorder_signagolf_document" inherit_id="sale.report_saleorder_document">
         <xpath expr="//t[@t-call='web.external_layout']" position="before">
             <t t-set="signa_style" t-value="'SignaGolf'"/>
         </xpath>
         <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' page ')]" position="before">
             <style>
-                /* SignaGolf (exemple) */
                 :root { --signa-accent: #8a6f00; }
             </style>
         </xpath>
     </template>
 
-    <template id="report_saleorder_signaindustrie" inherit_id="sale.report_saleorder_document">
+    <template id="report_saleorder_signaindustrie_document" inherit_id="sale.report_saleorder_document">
         <xpath expr="//t[@t-call='web.external_layout']" position="before">
             <t t-set="signa_style" t-value="'SignaIndustrie'"/>
         </xpath>
         <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' page ')]" position="before">
             <style>
-                /* SignaIndustrie (exemple) */
                 :root { --signa-accent: #6e7781; }
             </style>
         </xpath>
+    </template>
+
+    <!-- WRAPPER templates: used as report_name in ir.actions.report -->
+    <template id="report_saleorder_signasolution">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="doc" t-value="o"/>
+                <t t-call="signa_quote_styles.report_saleorder_signasolution_document"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_saleorder_signaparc">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="doc" t-value="o"/>
+                <t t-call="signa_quote_styles.report_saleorder_signaparc_document"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_saleorder_signagolf">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="doc" t-value="o"/>
+                <t t-call="signa_quote_styles.report_saleorder_signagolf_document"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_saleorder_signaindustrie">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="doc" t-value="o"/>
+                <t t-call="signa_quote_styles.report_saleorder_signaindustrie_document"/>
+            </t>
+        </t>
     </template>
 </odoo>
