@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+      We DO NOT inherit web.external_layout because its internal structure may vary
+      across versions/modules. Instead, we provide our own external layout based on
+      web.basic_layout, while explicitly setting `company` to keep standard variables.
+    -->
+
+    <!-- Router layout: expects `doc` (sale.order record) and wraps body via t-raw="0" -->
+    <template id="external_layout_router">
+        <t t-set="company" t-value="doc.company_id"/>
+        <t t-set="signa_style" t-value="doc._signa_get_quote_style()"/>
+        <t t-call="web.basic_layout">
+            <!-- Header -->
+            <div class="header">
+                <t t-if="signa_style == 'SignaSolution'">
+                    <t t-call="signa_quote_styles.signa_header_signasolution"/>
+                </t>
+                <t t-elif="signa_style == 'SignaParc'">
+                    <t t-call="signa_quote_styles.signa_header_signaparc"/>
+                </t>
+                <t t-elif="signa_style == 'SignaGolf'">
+                    <t t-call="signa_quote_styles.signa_header_signagolf"/>
+                </t>
+                <t t-elif="signa_style == 'SignaIndustrie'">
+                    <t t-call="signa_quote_styles.signa_header_signaindustrie"/>
+                </t>
+                <t t-else="">
+                    <t t-call="signa_quote_styles.signa_header_default"/>
+                </t>
+            </div>
+
+            <!-- Body: keep Odoo standard wrappers for pdf rendering -->
+            <div class="article o_report_layout_standard">
+                <t t-raw="0"/>
+            </div>
+
+            <!-- Footer (simple, can be customized later) -->
+            <div class="footer">
+                <div class="text-center">
+                    <span t-esc="company.name"/>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Simple headers - meant to be edited with Studio / Technical > Views -->
+    <template id="signa_header_default">
+        <div style="padding: 8px 0;">
+            <div style="font-size:18px; font-weight:600;">
+                <span t-esc="company.name"/>
+            </div>
+            <div style="height:6px; margin-top:6px; background:#777;"></div>
+        </div>
+    </template>
+
+    <template id="signa_header_signasolution">
+        <div style="padding: 8px 0;">
+            <div style="font-size:18px; font-weight:700;">LOGO SignaSolution</div>
+            <div style="height:6px; margin-top:6px; background:#1a73e8;"></div>
+        </div>
+    </template>
+
+    <template id="signa_header_signaparc">
+        <div style="padding: 8px 0;">
+            <div style="font-size:18px; font-weight:700;">LOGO SignaParc</div>
+            <div style="height:6px; margin-top:6px; background:#2e7d32;"></div>
+        </div>
+    </template>
+
+    <template id="signa_header_signagolf">
+        <div style="padding: 8px 0;">
+            <div style="font-size:18px; font-weight:700;">LOGO SignaGolf</div>
+            <div style="height:6px; margin-top:6px; background:#c62828;"></div>
+        </div>
+    </template>
+
+    <template id="signa_header_signaindustrie">
+        <div style="padding: 8px 0;">
+            <div style="font-size:18px; font-weight:700;">LOGO SignaIndustrie</div>
+            <div style="height:6px; margin-top:6px; background:#6a1b9a;"></div>
+        </div>
+    </template>
+
+    <!-- Patch sale report to use our router layout. -->
+    <template id="report_saleorder_document_layout_router" inherit_id="sale.report_saleorder_document">
+        <!-- Replace any external layout call with our router layout.
+             We match both web.external_layout and web.external_layout_* variants. -->
+        <xpath expr="//t[starts-with(@t-call, 'web.external_layout')]" position="replace">
+            <!-- Ensure `doc` is defined for the router (no KeyError on o/doc). -->
+            <t t-set="doc" t-value="o"/>
+            <t t-call="signa_quote_styles.external_layout_router">
+                <t t-raw="0"/>
+            </t>
+        </xpath>
+    </template>
+</odoo>
