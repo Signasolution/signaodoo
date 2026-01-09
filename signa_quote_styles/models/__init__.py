@@ -1,1 +1,1 @@
-from . import sale_order
+# no python needed for v4
