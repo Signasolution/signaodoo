@@ -44,7 +44,8 @@ class SaleOrder(models.Model):
         """
         self.ensure_one()
         report_action = self.env.ref(self._get_signa_report_xmlid())
-        return report_action.report_action(self)
+        lang = self.partner_id.lang or self.env.context.get('lang')
+        return report_action.with_context(lang=lang).report_action(self)
 
     def action_quotation_send(self):
         """Remplace automatiquement le modèle d'email utilisé par 'Envoyer par email' (option 1)."""

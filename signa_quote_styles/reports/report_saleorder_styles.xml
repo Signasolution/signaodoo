@@ -1,66 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Compatibility shim: some customizations (e.g. Studio) expect `doc` in sale order reports.
-         In Odoo 17+ the standard variable is usually `o`. We define `doc` from `docs[0]` to avoid KeyError. -->
-    \1
+    <!--
+    Compatibility shim:
+    Some customizations (Studio / other modules) expect a variable named `doc` in the sale order report.
+    In Odoo 17+ the standard variable is usually `o` (inside foreach over `docs`).
+    We define `doc` early from the first record to avoid KeyError in such snippets.
+    -->
+    <template id="report_saleorder_doc_alias" inherit_id="sale.report_saleorder_document">
         <xpath expr="//t[@t-call='web.external_layout']" position="before">
             <t t-set="doc" t-value="docs and docs[0] or False"/>
         </xpath>
     </template>
 
-
-    <!--
-    4 rapports distincts, 1 par style.
-    Tu peux ensuite personnaliser chaque template QWeb (ou via Studio) sans toucher au code Python.
-    -->
-
-    <record id="action_report_saleorder_signasolution" model="ir.actions.report">
-        <field name="name">Devis - SignaSolution</field>
-        <field name="model">sale.order</field>
-        <field name="report_type">qweb-pdf</field>
-        <field name="report_name">signa_quote_styles.report_saleorder_signasolution</field>
-        <field name="report_file">signa_quote_styles.report_saleorder_signasolution</field>
-        <field name="binding_model_id" ref="sale.model_sale_order"/>
-        <field name="binding_type">report</field>
-        <field name="print_report_name">'Devis - %s' % (object.name or '')</field>
-    </record>
-
-    <record id="action_report_saleorder_signaparc" model="ir.actions.report">
-        <field name="name">Devis - SignaParc</field>
-        <field name="model">sale.order</field>
-        <field name="report_type">qweb-pdf</field>
-        <field name="report_name">signa_quote_styles.report_saleorder_signaparc</field>
-        <field name="report_file">signa_quote_styles.report_saleorder_signaparc</field>
-        <field name="binding_model_id" ref="sale.model_sale_order"/>
-        <field name="binding_type">report</field>
-        <field name="print_report_name">'Devis - %s' % (object.name or '')</field>
-    </record>
-
-    <record id="action_report_saleorder_signagolf" model="ir.actions.report">
-        <field name="name">Devis - SignaGolf</field>
-        <field name="model">sale.order</field>
-        <field name="report_type">qweb-pdf</field>
-        <field name="report_name">signa_quote_styles.report_saleorder_signagolf</field>
-        <field name="report_file">signa_quote_styles.report_saleorder_signagolf</field>
-        <field name="binding_model_id" ref="sale.model_sale_order"/>
-        <field name="binding_type">report</field>
-        <field name="print_report_name">'Devis - %s' % (object.name or '')</field>
-    </record>
-
-    <record id="action_report_saleorder_signaindustrie" model="ir.actions.report">
-        <field name="name">Devis - SignaIndustrie</field>
-        <field name="model">sale.order</field>
-        <field name="report_type">qweb-pdf</field>
-        <field name="report_name">signa_quote_styles.report_saleorder_signaindustrie</field>
-        <field name="report_file">signa_quote_styles.report_saleorder_signaindustrie</field>
-        <field name="binding_model_id" ref="sale.model_sale_order"/>
-        <field name="binding_type">report</field>
-        <field name="print_report_name">'Devis - %s' % (object.name or '')</field>
-    </record>
-
-    <!-- Templates QWeb : on hérite du document standard et on injecte un marqueur de style + un bloc CSS.
-         Ajuste les couleurs / mise en page ici, ou bien via Studio en ciblant ces templates. -->
-
+    <!-- 4 styles distincts : SignaSolution / SignaParc / SignaGolf / SignaIndustrie -->
     <template id="report_saleorder_signasolution" inherit_id="sale.report_saleorder_document">
         <xpath expr="//t[@t-call='web.external_layout']" position="before">
             <t t-set="signa_style" t-value="'SignaSolution'"/>
@@ -68,7 +20,7 @@
         <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' page ')]" position="before">
             <style>
                 /* SignaSolution (exemple) */
-                :root { --signa-accent: #1f6feb; }
+                :root { --signa-accent: #0b5cad; }
             </style>
         </xpath>
     </template>
@@ -80,7 +32,7 @@
         <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' page ')]" position="before">
             <style>
                 /* SignaParc (exemple) */
-                :root { --signa-accent: #2da44e; }
+                :root { --signa-accent: #2a6b2f; }
             </style>
         </xpath>
     </template>
@@ -108,5 +60,4 @@
             </style>
         </xpath>
     </template>
-
 </odoo>
