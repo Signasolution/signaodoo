@@ -124,7 +124,14 @@
          par un appel conditionnel à l'un des 4 layouts ci-dessus. -->
     <template id="report_saleorder_document_layout_router" inherit_id="sale.report_saleorder_document">
         <xpath expr="//t[starts-with(@t-call, 'web.external_layout')]" position="replace">
-            <t t-set="signa_style" t-value="(o._signa_get_quote_style() or '')"/>
+            <!--
+            IMPORTANT (Odoo 18): selon la variante du template, la variable "o" n'est pas
+            toujours définie au moment de l'appel du layout.
+            En revanche, "docs" est toujours fourni par le moteur de reporting.
+            On route donc sur la base du premier document (cas standard : impression 1 devis).
+            -->
+            <t t-set="_doc" t-value="(docs and docs[0]) or False"/>
+            <t t-set="signa_style" t-value="(_doc and _doc._signa_get_quote_style()) or ''"/>
 
             <t t-if="signa_style == 'SignaSolution'" t-call="signa_quote_styles.external_layout_signasolution">
                 <t t-out="0"/>

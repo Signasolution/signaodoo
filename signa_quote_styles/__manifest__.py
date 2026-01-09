@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Signa - Styles de devis par client",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.1.0",
     "category": "Sales",
     "summary": "Choix automatique du layout de devis selon res.partner.x_studio_style_de_devis",
     "depends": [
