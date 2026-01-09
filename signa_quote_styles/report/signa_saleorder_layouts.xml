@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+    4 layouts indépendants (éditables séparément avec Studio / éditeur de vues).
+    Chaque layout est volontairement simple : logo + bandeau + infos société.
+    Vous pourrez remplacer le bloc "LOGO" par une image, ajuster les couleurs, etc.
+    -->
+
+    <template id="external_layout_signasolution">
+        <t t-call="web.basic_layout">
+            <div class="header">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <div style="font-size:22px; font-weight:700;">
+                        LOGO SignaSolution
+                    </div>
+                    <div style="text-align:right; font-size:12px;">
+                        <div t-esc="company.name"/>
+                        <div t-if="company.phone" t-esc="company.phone"/>
+                        <div t-if="company.email" t-esc="company.email"/>
+                    </div>
+                </div>
+                <div style="margin-top:8px; height:10px; background:#1f4e79;"></div>
+            </div>
+
+            <div class="article">
+                <t t-out="0"/>
+            </div>
+
+            <div class="footer">
+                <div style="border-top:1px solid #ddd; padding-top:6px; font-size:10px;">
+                    <span t-esc="company.name"/> — <span t-if="company.website" t-esc="company.website"/>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="external_layout_signaparc">
+        <t t-call="web.basic_layout">
+            <div class="header">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <div style="font-size:22px; font-weight:700;">
+                        LOGO SignaParc
+                    </div>
+                    <div style="text-align:right; font-size:12px;">
+                        <div t-esc="company.name"/>
+                        <div t-if="company.phone" t-esc="company.phone"/>
+                        <div t-if="company.email" t-esc="company.email"/>
+                    </div>
+                </div>
+                <div style="margin-top:8px; height:10px; background:#2f7d32;"></div>
+            </div>
+
+            <div class="article">
+                <t t-out="0"/>
+            </div>
+
+            <div class="footer">
+                <div style="border-top:1px solid #ddd; padding-top:6px; font-size:10px;">
+                    <span t-esc="company.name"/> — <span t-if="company.website" t-esc="company.website"/>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="external_layout_signagolf">
+        <t t-call="web.basic_layout">
+            <div class="header">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <div style="font-size:22px; font-weight:700;">
+                        LOGO SignaGolf
+                    </div>
+                    <div style="text-align:right; font-size:12px;">
+                        <div t-esc="company.name"/>
+                        <div t-if="company.phone" t-esc="company.phone"/>
+                        <div t-if="company.email" t-esc="company.email"/>
+                    </div>
+                </div>
+                <div style="margin-top:8px; height:10px; background:#b8860b;"></div>
+            </div>
+
+            <div class="article">
+                <t t-out="0"/>
+            </div>
+
+            <div class="footer">
+                <div style="border-top:1px solid #ddd; padding-top:6px; font-size:10px;">
+                    <span t-esc="company.name"/> — <span t-if="company.website" t-esc="company.website"/>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="external_layout_signaindustrie">
+        <t t-call="web.basic_layout">
+            <div class="header">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <div style="font-size:22px; font-weight:700;">
+                        LOGO SignaIndustrie
+                    </div>
+                    <div style="text-align:right; font-size:12px;">
+                        <div t-esc="company.name"/>
+                        <div t-if="company.phone" t-esc="company.phone"/>
+                        <div t-if="company.email" t-esc="company.email"/>
+                    </div>
+                </div>
+                <div style="margin-top:8px; height:10px; background:#6d6d6d;"></div>
+            </div>
+
+            <div class="article">
+                <t t-out="0"/>
+            </div>
+
+            <div class="footer">
+                <div style="border-top:1px solid #ddd; padding-top:6px; font-size:10px;">
+                    <span t-esc="company.name"/> — <span t-if="company.website" t-esc="company.website"/>
+                </div>
+            </div>
+        </t>
+    </template>
+
+
+    <!-- Router: on remplace l'appel à web.external_layout dans le devis standard
+         par un appel conditionnel à l'un des 4 layouts ci-dessus. -->
+    <template id="report_saleorder_document_layout_router" inherit_id="sale.report_saleorder_document">
+        <xpath expr="//t[starts-with(@t-call, 'web.external_layout')]" position="replace">
+            <t t-set="signa_style" t-value="(o._signa_get_quote_style() or '')"/>
+
+            <t t-if="signa_style == 'SignaSolution'" t-call="signa_quote_styles.external_layout_signasolution">
+                <t t-out="0"/>
+            </t>
+            <t t-elif="signa_style == 'SignaParc'" t-call="signa_quote_styles.external_layout_signaparc">
+                <t t-out="0"/>
+            </t>
+            <t t-elif="signa_style == 'SignaGolf'" t-call="signa_quote_styles.external_layout_signagolf">
+                <t t-out="0"/>
+            </t>
+            <t t-elif="signa_style == 'SignaIndustrie'" t-call="signa_quote_styles.external_layout_signaindustrie">
+                <t t-out="0"/>
+            </t>
+
+            <!-- Fallback : layout standard Odoo si le champ est vide / valeur inattendue -->
+            <t t-else="" t-call="web.external_layout">
+                <t t-out="0"/>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>
