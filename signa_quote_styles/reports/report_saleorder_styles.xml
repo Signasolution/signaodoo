@@ -56,7 +56,7 @@
     </template>
 
     <!-- WRAPPER templates: used as report_name in ir.actions.report -->
-    <template id="report_saleorder_signasolution">
+    <template id="report_saleorder_signasolution_wrapper">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
                 <t t-set="doc" t-value="o"/>
@@ -65,7 +65,7 @@
         </t>
     </template>
 
-    <template id="report_saleorder_signaparc">
+    <template id="report_saleorder_signaparc_wrapper">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
                 <t t-set="doc" t-value="o"/>
@@ -74,7 +74,7 @@
         </t>
     </template>
 
-    <template id="report_saleorder_signagolf">
+    <template id="report_saleorder_signagolf_wrapper">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
                 <t t-set="doc" t-value="o"/>
@@ -83,7 +83,7 @@
         </t>
     </template>
 
-    <template id="report_saleorder_signaindustrie">
+    <template id="report_saleorder_signaindustrie_wrapper">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
                 <t t-set="doc" t-value="o"/>

@@ -5,8 +5,8 @@
         <field name="name">Devis - SignaSolution</field>
         <field name="model">sale.order</field>
         <field name="report_type">qweb-pdf</field>
-        <field name="report_name">signa_quote_styles.report_saleorder_signasolution</field>
-        <field name="report_file">signa_quote_styles.report_saleorder_signasolution</field>
+        <field name="report_name">signa_quote_styles.report_saleorder_signasolution_wrapper</field>
+        <field name="report_file">signa_quote_styles.report_saleorder_signasolution_wrapper</field>
         <field name="binding_model_id" ref="sale.model_sale_order"/>
         <field name="binding_type">report</field>
         <field name="print_report_name">(object.name or 'Devis')</field>
@@ -16,8 +16,8 @@
         <field name="name">Devis - SignaParc</field>
         <field name="model">sale.order</field>
         <field name="report_type">qweb-pdf</field>
-        <field name="report_name">signa_quote_styles.report_saleorder_signaparc</field>
-        <field name="report_file">signa_quote_styles.report_saleorder_signaparc</field>
+        <field name="report_name">signa_quote_styles.report_saleorder_signaparc_wrapper</field>
+        <field name="report_file">signa_quote_styles.report_saleorder_signaparc_wrapper</field>
         <field name="binding_model_id" ref="sale.model_sale_order"/>
         <field name="binding_type">report</field>
         <field name="print_report_name">(object.name or 'Devis')</field>
@@ -27,8 +27,8 @@
         <field name="name">Devis - SignaGolf</field>
         <field name="model">sale.order</field>
         <field name="report_type">qweb-pdf</field>
-        <field name="report_name">signa_quote_styles.report_saleorder_signagolf</field>
-        <field name="report_file">signa_quote_styles.report_saleorder_signagolf</field>
+        <field name="report_name">signa_quote_styles.report_saleorder_signagolf_wrapper</field>
+        <field name="report_file">signa_quote_styles.report_saleorder_signagolf_wrapper</field>
         <field name="binding_model_id" ref="sale.model_sale_order"/>
         <field name="binding_type">report</field>
         <field name="print_report_name">(object.name or 'Devis')</field>
@@ -38,8 +38,8 @@
         <field name="name">Devis - SignaIndustrie</field>
         <field name="model">sale.order</field>
         <field name="report_type">qweb-pdf</field>
-        <field name="report_name">signa_quote_styles.report_saleorder_signaindustrie</field>
-        <field name="report_file">signa_quote_styles.report_saleorder_signaindustrie</field>
+        <field name="report_name">signa_quote_styles.report_saleorder_signaindustrie_wrapper</field>
+        <field name="report_file">signa_quote_styles.report_saleorder_signaindustrie_wrapper</field>
         <field name="binding_model_id" ref="sale.model_sale_order"/>
         <field name="binding_type">report</field>
         <field name="print_report_name">(object.name or 'Devis')</field>
