@@ -8,6 +8,13 @@ import json
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
+    price_break_item_ids = fields.One2many(
+        'product.pricelist.item',
+        'product_tmpl_id',
+        domain=[('min_quantity', '>', 0)],
+        string='Prix dégressifs',
+    )
+
     def get_price_break_table_data(self, pricelist_id=None, partner_id=None, quantity=1.0):
         """
         Retourne les données du tableau de prix dégressifs pour un produit donné.

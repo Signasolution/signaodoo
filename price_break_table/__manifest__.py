@@ -23,6 +23,7 @@
     'depends': ['product', 'sale', 'website_sale'],
     'data': [
         'security/ir.model.access.csv',
+        'views/product_backend_views.xml',
         'views/website_sale_templates.xml',
     ],
     'assets': {
