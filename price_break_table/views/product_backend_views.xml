@@ -19,7 +19,7 @@
                         <field name="price_break_item_ids"
                                nolabel="1"
                                context="{
-                                   'default_product_tmpl_id': active_id,
+                                   'default_product_tmpl_id': id,
                                    'default_compute_price': 'fixed',
                                    'default_min_quantity': 1
                                }">
