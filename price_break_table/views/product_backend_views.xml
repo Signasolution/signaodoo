@@ -20,8 +20,8 @@
                                nolabel="1"
                                context="{
                                    'default_product_tmpl_id': active_id,
-                                   'default_applied_on': '1_product',
-                                   'default_compute_price': 'fixed'
+                                   'default_compute_price': 'fixed',
+                                   'default_min_quantity': 1
                                }">
                             <list editable="bottom"
                                   default_order="pricelist_id, min_quantity"
@@ -53,8 +53,7 @@
 
                                 <field name="savings_percent"
                                        string="Économie %"
-                                       readonly="1"
-                                       widget="percentage"/>
+                                       readonly="1"/>
 
                                 <field name="date_start"
                                        string="Valable du"
