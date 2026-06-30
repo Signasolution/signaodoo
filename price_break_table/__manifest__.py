@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Tableau de Prix Dégressifs',
-    'version': '18.0.5.12.0',
+    'version': '18.0.5.13.0',
     'category': 'Sales',
     'summary': 'Affiche un tableau interactif des prix dégressifs par quantité sur les pages produits',
     'description': """
@@ -20,7 +20,7 @@
     """,
     'author': 'Jean-Louis TROMPF',
     'website': 'https://www.votre-site.com',
-    'depends': ['product', 'sale', 'website_sale'],
+    'depends': ['product', 'sale', 'sale_management', 'website_sale'],
     'data': [
         'security/ir.model.access.csv',
         'views/product_backend_views.xml',

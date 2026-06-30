@@ -14,6 +14,11 @@ class ProductTemplate(models.Model):
         domain=[('min_quantity', '>', 0)],
         string='Prix dégressifs',
     )
+    min_purchase_qty_ids = fields.One2many(
+        'product.min.purchase.qty',
+        'product_tmpl_id',
+        string="Quantités minimales d'achat",
+    )
 
     def get_price_break_table_data(self, pricelist_id=None, partner_id=None, quantity=1.0):
         """
@@ -70,7 +75,6 @@ class ProductTemplate(models.Model):
             # Détermination si cette ligne est active (correspond à la quantité actuelle)
             is_active = min_qty <= quantity and (not max_qty or max_qty >= quantity)
             
-            min_purchase = rule.get('min_purchase_qty', 0)
             table_rows.append({
                 'min_quantity': min_qty,
                 'max_quantity': max_qty,
@@ -79,7 +83,6 @@ class ProductTemplate(models.Model):
                 'price_formatted': pricelist.currency_id.format(price),
                 'is_active': is_active,
                 'rule_id': rule.get('id'),
-                'min_purchase_qty': min_purchase,
             })
             
         
@@ -144,7 +147,6 @@ class ProductTemplate(models.Model):
                         'max_quantity': 999999,  # Valeur JSON valide au lieu d'infinity
                         'price': price,
                         'sequence': rule.id,
-                        'min_purchase_qty': rule.min_purchase_qty,
                     })
             
             # Tri par quantité minimale

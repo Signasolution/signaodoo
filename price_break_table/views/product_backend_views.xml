@@ -10,6 +10,8 @@
                 <notebook position="inside">
                     <page string="Prix dégressifs" name="price_break_tab">
 
+                        <!-- Tableau 1 : Prix dégressifs par palier -->
+                        <separator string="Paliers de prix dégressifs"/>
                         <div class="alert alert-info" role="alert">
                             Gérez ici les paliers de prix par liste de prix (client final, distributeur, installateur…).
                             Chaque ligne crée une règle dans la liste de prix correspondante.
@@ -34,8 +36,6 @@
                                        string="Liste de prix"/>
 
                                 <field name="min_quantity" string="Qté min palier"/>
-
-                                <field name="min_purchase_qty" string="Qté min d'achat" optional="show"/>
 
                                 <field name="compute_price" string="Type de calcul"/>
 
@@ -65,8 +65,32 @@
                                        string="Valable au"
                                        optional="hide"/>
 
-                                <!-- Champs techniques nécessaires au widget monetary -->
                                 <field name="currency_id" column_invisible="1"/>
+
+                            </list>
+                        </field>
+
+                        <!-- Tableau 2 : Quantités minimales d'achat par liste de prix -->
+                        <separator string="Quantités minimales d'achat"/>
+                        <div class="alert alert-info" role="alert">
+                            Définissez ici la quantité minimale de produits que le client doit commander
+                            selon sa liste de prix. La commande sera bloquée si la quantité est inférieure.
+                        </div>
+
+                        <field name="min_purchase_qty_ids"
+                               nolabel="1"
+                               context="{'default_product_tmpl_id': id}">
+                            <list editable="bottom"
+                                  default_order="pricelist_id">
+
+                                <field name="pricelist_id"
+                                       required="1"
+                                       options="{'no_create': True}"
+                                       string="Liste de prix"/>
+
+                                <field name="min_purchase_qty"
+                                       string="Qté min d'achat"
+                                       required="1"/>
 
                             </list>
                         </field>
