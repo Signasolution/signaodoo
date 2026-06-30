@@ -33,7 +33,9 @@
                                        options="{'no_create': True}"
                                        string="Liste de prix"/>
 
-                                <field name="min_quantity" string="Qté min"/>
+                                <field name="min_quantity" string="Qté min palier"/>
+
+                                <field name="min_purchase_qty" string="Qté min d'achat" optional="show"/>
 
                                 <field name="compute_price" string="Type de calcul"/>
 
