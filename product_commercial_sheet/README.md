@@ -175,7 +175,7 @@ product_commercial_sheet/
 
 ## 🔄 **Versions**
 
-### Version 18.0.1.0.0 - Version Initiale
+### Version 18.0.8.0.0 - Version Actuelle
 - ✅ **Création du module** de base
 - ✅ **Intégration** avec les produits Odoo
 - ✅ **Compatibilité Studio** complète
@@ -197,4 +197,4 @@ Ce module est sous licence LGPL-3 comme Odoo.
 
 ---
 
-**Module développé pour Odoo - Compatible Studio - Version 18.0.1.0.0**
+**Module développé pour Odoo - Compatible Studio - Version 18.0.8.0.0**
