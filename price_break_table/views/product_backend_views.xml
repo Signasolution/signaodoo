@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="product_template_form_price_break_tab" model="ir.ui.view">
+            <field name="name">product.template.form.price.break.tab</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_form_view"/>
+            <field name="arch" type="xml">
+                <notebook position="inside">
+                    <page string="Prix dégressifs" name="price_break_tab">
+
+                        <div class="alert alert-info" role="alert">
+                            Gérez ici les paliers de prix par liste de prix (client final, distributeur, installateur…).
+                            Chaque ligne crée une règle dans la liste de prix correspondante.
+                            Le prix de référence pour les calculs d'économie est le prix de vente du produit.
+                        </div>
+
+                        <field name="price_break_item_ids"
+                               nolabel="1"
+                               context="{
+                                   'default_product_tmpl_id': id,
+                                   'default_compute_price': 'fixed',
+                                   'default_min_quantity': 1
+                               }">
+                            <list editable="bottom"
+                                  default_order="pricelist_id, min_quantity"
+                                  decoration-success="savings_percent > 0"
+                                  decoration-muted="savings_percent == 0">
+
+                                <field name="pricelist_id"
+                                       required="1"
+                                       options="{'no_create': True}"
+                                       string="Liste de prix"/>
+
+                                <field name="min_quantity" string="Qté min palier"/>
+
+                                <field name="min_purchase_qty" string="Qté min d'achat" optional="show"/>
+
+                                <field name="compute_price" string="Type de calcul"/>
+
+                                <field name="fixed_price"
+                                       string="Prix fixe (€)"
+                                       optional="show"/>
+
+                                <field name="percent_price"
+                                       string="Remise (%)"
+                                       optional="hide"/>
+
+                                <field name="price_computed"
+                                       string="Prix résultant"
+                                       readonly="1"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"/>
+
+                                <field name="savings_percent"
+                                       string="Économie %"
+                                       readonly="1"/>
+
+                                <field name="date_start"
+                                       string="Valable du"
+                                       optional="hide"/>
+
+                                <field name="date_end"
+                                       string="Valable au"
+                                       optional="hide"/>
+
+                                <!-- Champs techniques nécessaires au widget monetary -->
+                                <field name="currency_id" column_invisible="1"/>
+
+                            </list>
+                        </field>
+
+                    </page>
+                </notebook>
+            </field>
+        </record>
+
+    </data>
+</odoo>
