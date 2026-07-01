@@ -7,11 +7,11 @@
                 <t t-set="price_break_data" t-value="product.get_price_break_table_data()"/>
                 <t t-set="min_purchase_qty" t-value="price_break_data.get('min_purchase_qty', 0) if price_break_data else 0"/>
 
-                <!-- Attribut data pour accès JS (modal, panier) -->
+                <!-- Attribut data pour accès JS -->
                 <span id="price_break_min_qty_value" style="display:none;"
                       t-att-data-min-qty="min_purchase_qty or 0"/>
 
-                <!-- Message d'erreur quantité mini (affiché par JS) -->
+                <!-- Message d'erreur page produit (affiché par JS) -->
                 <div id="price_break_min_qty_error"
                      class="alert alert-warning mt-2 mb-1"
                      style="display:none; font-size:0.9em; clear:both; width:100%;">
@@ -23,11 +23,11 @@
                     unité(s).
                 </div>
 
-                <!-- Tableau des prix dégressifs + texte mini (bloc séparé, 100% largeur) -->
+                <!-- Bloc séparé (clear:both pour sortir du flex) -->
                 <div style="clear:both; width:100%;">
-                    <t t-if="price_break_data and price_break_data.get('rows') and len(price_break_data['rows']) > 1">
 
-                        <!-- Texte quantité mini juste au-dessus du tableau -->
+                    <!-- Tableau des prix dégressifs -->
+                    <t t-if="price_break_data and price_break_data.get('rows') and len(price_break_data['rows']) > 1">
                         <t t-if="min_purchase_qty and min_purchase_qty > 0">
                             <p class="text-muted mb-1 mt-3" style="font-size:0.9em;">
                                 <i class="fa fa-info-circle me-1"/>
@@ -37,7 +37,6 @@
                                 </strong>
                             </p>
                         </t>
-
                         <div class="table-responsive price-break-table-container">
                             <table class="table table-bordered">
                                 <thead>
@@ -60,7 +59,7 @@
                         </div>
                     </t>
 
-                    <!-- Texte mini sans tableau de prix -->
+                    <!-- Texte mini sans tableau -->
                     <t t-if="(not price_break_data or not price_break_data.get('rows') or len(price_break_data['rows']) &lt;= 1) and min_purchase_qty and min_purchase_qty > 0">
                         <p class="text-muted mb-1 mt-2" style="font-size:0.9em;">
                             <i class="fa fa-info-circle me-1"/>
@@ -78,94 +77,131 @@
                     var minQty = minQtyEl ? (parseFloat(minQtyEl.dataset.minQty) || 0) : 0;
                     var errorBox = document.getElementById('price_break_min_qty_error');
                     var errorTimeout = null;
+                    var minQtyLabel = (minQty % 1 === 0 ? parseInt(minQty) : minQty) + ' unité(s)';
 
-                    function showError() {
+                    /* ---- Page produit : erreur visible ---- */
+                    function showPageError() {
                         if (!errorBox || minQty &lt;= 0) return;
                         errorBox.style.display = 'block';
                         clearTimeout(errorTimeout);
-                        errorTimeout = setTimeout(function () {
-                            errorBox.style.display = 'none';
-                        }, 5000);
+                        errorTimeout = setTimeout(function () { errorBox.style.display = 'none'; }, 5000);
                     }
 
-                    function enforceMin(input) {
+                    function enforcePageMin(input) {
                         if (!input || minQty &lt;= 0) return;
                         var val = parseFloat(input.value);
                         if (isNaN(val) || val &lt; minQty) {
-                            showError();
+                            showPageError();
                             input.value = minQty;
-                            ['input', 'change'].forEach(function(ev) {
+                            ['input', 'change'].forEach(function (ev) {
                                 input.dispatchEvent(new Event(ev, { bubbles: true }));
                             });
-                            return true;
                         }
-                        return false;
                     }
 
-                    function applyMinQtyToInput(input) {
+                    function applyMinQtyToPageInput(input) {
                         if (!input || minQty &lt;= 0) return;
                         input.setAttribute('min', minQty);
                         if (!input.value || parseFloat(input.value) &lt; minQty) {
                             input.value = minQty;
                             input.dispatchEvent(new Event('change', { bubbles: true }));
                         }
-                        input.addEventListener('change', function () { enforceMin(input); });
-                        input.addEventListener('blur', function () { enforceMin(input); });
+                        input.addEventListener('change', function () { enforcePageMin(input); });
+                        input.addEventListener('blur', function () { enforcePageMin(input); });
                         setInterval(function () {
-                            var val = parseFloat(input.value);
-                            if (!isNaN(val) &amp;&amp; val &lt; minQty) enforceMin(input);
+                            if (parseFloat(input.value) &lt; minQty) enforcePageMin(input);
                         }, 300);
                     }
 
-                    // Texte "Qté mini" centré sous le sélecteur dans une modal
-                    function injectMinQtyLabel(container) {
-                        if (!container || minQty &lt;= 0) return;
-                        if (container.querySelector('.price-break-modal-min-qty')) return;
-                        var input = container.querySelector('input[name="add_qty"], .js_quantity[type="number"]');
-                        if (!input) return;
-                        var label = document.createElement('div');
-                        label.className = 'price-break-modal-min-qty text-center text-muted mt-1';
-                        label.style.fontSize = '0.82em';
-                        label.innerHTML = 'Qté mini : <strong>' + (minQty % 1 === 0 ? parseInt(minQty) : minQty) + '</strong> unité(s)';
+                    /* ---- Modal : erreur inline + label ---- */
+                    function injectModalLabel(input) {
+                        if (!input || minQty &lt;= 0) return;
                         var cell = input.closest('td') || input.closest('.input-group') || input.parentNode;
-                        if (cell) cell.appendChild(label);
-                        applyMinQtyToInput(input);
+                        if (!cell || cell.querySelector('.pb-modal-label')) return;
+                        var lbl = document.createElement('div');
+                        lbl.className = 'pb-modal-label text-center text-muted mt-1';
+                        lbl.style.fontSize = '0.82em';
+                        lbl.innerHTML = 'Qté mini : <strong>' + minQtyLabel + '</strong>';
+                        cell.appendChild(lbl);
                     }
 
-                    // Observer les modales dynamiques
-                    if (minQty > 0) {
-                        var observer = new MutationObserver(function (mutations) {
-                            mutations.forEach(function (m) {
-                                m.addedNodes.forEach(function (node) {
-                                    if (node.nodeType !== 1) return;
-                                    var inputs = node.querySelectorAll
-                                        ? node.querySelectorAll('input[name="add_qty"], .js_quantity[type="number"]')
-                                        : [];
-                                    inputs.forEach(function (input) {
-                                        applyMinQtyToInput(input);
-                                        injectMinQtyLabel(input.closest('tr, .o_product_row, .modal-body, [class*="product"]') || node);
-                                    });
-                                });
+                    function showModalError(input) {
+                        if (!input || minQty &lt;= 0) return;
+                        var cell = input.closest('td') || input.closest('.input-group') || input.parentNode;
+                        if (!cell || cell.querySelector('.pb-modal-error')) return;
+                        var msg = document.createElement('div');
+                        msg.className = 'pb-modal-error text-center text-danger mt-1';
+                        msg.style.fontSize = '0.82em';
+                        msg.innerHTML = 'Qté minimale : <strong>' + minQtyLabel + '</strong>';
+                        cell.appendChild(msg);
+                        setTimeout(function () { if (msg.parentNode) msg.parentNode.removeChild(msg); }, 4000);
+                    }
+
+                    function enforceModalMin(input) {
+                        var val = parseFloat(input.value);
+                        if (isNaN(val) || val &lt; minQty) {
+                            input.value = minQty;
+                            ['input', 'change'].forEach(function (ev) {
+                                input.dispatchEvent(new Event(ev, { bubbles: true }));
                             });
-                        });
-                        observer.observe(document.body, { childList: true, subtree: true });
+                        }
                     }
 
-                    document.addEventListener('DOMContentLoaded', function () {
-                        // Sélecteur de quantité sur la page produit
-                        var input = document.querySelector('input[name="add_qty"]');
-                        applyMinQtyToInput(input);
+                    /* ---- Surveillance continue des modales (robuste contre Owl) ---- */
+                    if (minQty > 0) {
+                        setInterval(function () {
+                            var selectors = '.modal.show input[name="add_qty"],' +
+                                            '.modal.show .js_quantity,' +
+                                            '.modal-dialog input[name="add_qty"],' +
+                                            '.modal-dialog .js_quantity';
+                            document.querySelectorAll(selectors).forEach(function (input) {
+                                if (input.type !== 'number') return;
 
-                        // Tableau des prix dégressifs — surbrillance
+                                /* Label (une seule fois) */
+                                injectModalLabel(input);
+
+                                /* Listeners (une seule fois via dataset) */
+                                if (!input.dataset.pbMinApplied) {
+                                    input.dataset.pbMinApplied = '1';
+                                    input.setAttribute('min', minQty);
+                                    input.addEventListener('change', function () {
+                                        if (parseFloat(input.value) &lt; minQty) {
+                                            showModalError(input);
+                                            enforceModalMin(input);
+                                        }
+                                    });
+                                    input.addEventListener('blur', function () {
+                                        if (parseFloat(input.value) &lt; minQty) {
+                                            showModalError(input);
+                                            enforceModalMin(input);
+                                        }
+                                    });
+                                }
+
+                                /* Correction permanente si Owl réinitialise la valeur */
+                                var val = parseFloat(input.value);
+                                if (!isNaN(val) &amp;&amp; val &lt; minQty) {
+                                    enforceModalMin(input);
+                                }
+                            });
+                        }, 250);
+                    }
+
+                    /* ---- Page produit au chargement ---- */
+                    document.addEventListener('DOMContentLoaded', function () {
+                        applyMinQtyToPageInput(document.querySelector('input[name="add_qty"]'));
+
+                        /* Tableau prix dégressifs */
                         var rows = document.querySelectorAll('.price-break-row');
+                        var input = document.querySelector('input[name="add_qty"]');
                         var lastValue = input ? input.value : '';
 
                         function highlightMatchingRow(qty) {
                             var matched = null;
-                            rows.forEach(function(row) {
+                            rows.forEach(function (row) {
                                 if (qty >= parseFloat(row.dataset.qty)) matched = row;
                             });
-                            rows.forEach(function(r) { r.classList.remove('price-break-active'); });
+                            rows.forEach(function (r) { r.classList.remove('price-break-active'); });
                             if (matched) matched.classList.add('price-break-active');
                         }
 
@@ -181,18 +217,18 @@
                             input.addEventListener('input', updateHighlight);
                             input.addEventListener('change', updateHighlight);
                             setInterval(updateHighlight, 200);
-                            document.querySelectorAll('button, .btn, .fa-plus, .fa-minus, .btn-plus, .btn-minus').forEach(function(btn) {
-                                btn.addEventListener('click', function() { setTimeout(updateHighlight, 350); });
+                            document.querySelectorAll('button, .btn, .fa-plus, .fa-minus, .btn-plus, .btn-minus').forEach(function (btn) {
+                                btn.addEventListener('click', function () { setTimeout(updateHighlight, 350); });
                             });
                         }
 
-                        rows.forEach(function(row) {
-                            row.addEventListener('click', function() {
+                        rows.forEach(function (row) {
+                            row.addEventListener('click', function () {
                                 var qty = Math.max(parseFloat(row.dataset.qty), minQty || 0);
                                 if (input) {
                                     input.value = qty;
                                     lastValue = qty.toString();
-                                    ['input', 'change', 'blur'].forEach(function(ev) {
+                                    ['input', 'change', 'blur'].forEach(function (ev) {
                                         input.dispatchEvent(new Event(ev, { bubbles: true }));
                                     });
                                 }
