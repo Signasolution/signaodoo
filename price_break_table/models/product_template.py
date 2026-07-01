@@ -168,14 +168,19 @@ class ProductTemplate(models.Model):
             })
             
         
+        min_rule = self.env['product.min.purchase.qty'].sudo().search([
+            ('product_tmpl_id', '=', self.id),
+            ('pricelist_id', '=', pricelist.id),
+            ('min_purchase_qty', '>', 0),
+        ], limit=1)
+
         result = {
             'rows': table_rows,
             'currency': pricelist.currency_id,
             'current_quantity': quantity,
             'pricelist_id': pricelist.id,
+            'min_purchase_qty': min_rule.min_purchase_qty if min_rule else 0,
         }
-        
-        print(f"[DEBUG] Résultat final: {len(table_rows)} ligne(s)")
         return result
 
     def _get_price_break_rules(self, pricelist, partner_id=None):

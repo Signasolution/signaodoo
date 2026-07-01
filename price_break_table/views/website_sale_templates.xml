@@ -4,9 +4,9 @@
 
         <template id="website_sale_product_price_break" name="Product Price Break Table" inherit_id="website_sale.product">
 
-            <!-- Affichage de la quantité minimale et contrainte sur le sélecteur -->
             <xpath expr="//div[@id='add_to_cart_wrap']" position="before">
-                <t t-set="min_purchase_qty" t-value="product.get_website_min_purchase_qty()"/>
+                <t t-set="price_break_data" t-value="product.get_price_break_table_data()"/>
+                <t t-set="min_purchase_qty" t-value="price_break_data.get('min_purchase_qty', 0) if price_break_data else 0"/>
                 <t t-if="min_purchase_qty and min_purchase_qty > 0">
                     <p class="text-muted mb-1" style="font-size:0.9em;">
                         <i class="fa fa-info-circle me-1"/>
@@ -18,9 +18,7 @@
                 </t>
             </xpath>
 
-            <!-- Tableau des prix dégressifs + JS de contrainte quantité -->
             <xpath expr="//div[@id='add_to_cart_wrap']" position="after">
-                <t t-set="min_purchase_qty" t-value="product.get_website_min_purchase_qty()"/>
 
                 <!-- Message d'erreur quantité mini (caché par défaut) -->
                 <div id="price_break_min_qty_error"
@@ -66,9 +64,9 @@
                             // Valeur par défaut = quantité mini
                             if (!input.value || parseFloat(input.value) &lt; minQty) {
                                 input.value = minQty;
+                                input.dispatchEvent(new Event('change', { bubbles: true }));
                             }
                             input.setAttribute('min', minQty);
-
                             input.addEventListener('change', enforceMin);
                             input.addEventListener('blur', enforceMin);
 
@@ -129,7 +127,6 @@
                 </script>
 
                 <!-- Tableau des prix dégressifs -->
-                <t t-set="price_break_data" t-value="product.get_price_break_table_data()"/>
                 <t t-if="price_break_data and price_break_data.get('rows') and len(price_break_data['rows']) > 1">
                     <div class="table-responsive mt-3 price-break-table-container">
                         <table class="table table-bordered">
