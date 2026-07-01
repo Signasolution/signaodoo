@@ -29,7 +29,7 @@
         position="inside" dessus) pour y ajouter le bloc "Suggested
         accessories".
     -->
-    <template id="cart_lines_flex" inherit_id="website_sale.cart_lines" name="Panier - Colonnes alignées">
+    <template id="cart_lines_table" inherit_id="website_sale.cart_lines" name="Panier - Colonnes alignées">
 
         <!-- Étape 1 : insère la colonne "Prix unitaire" juste après le bloc
              nom/description (flex-grow-1). Prix recalculé dynamiquement :
