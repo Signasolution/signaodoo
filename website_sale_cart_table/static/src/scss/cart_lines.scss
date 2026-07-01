@@ -3,6 +3,9 @@
 // views/cart_templates.xml extrait la quantité, le prix total et le bouton
 // supprimer de leur wrapper commun pour en faire des colonnes flex
 // indépendantes, au même niveau que l'image et le bloc nom/description.
+// La largeur de la colonne "Récapitulatif de la commande" est aussi réduite
+// côté XML (cf. checkout_layout_cart_summary_width) pour laisser plus de
+// place ici.
 
 #cart_products {
     // Filet de sécurité : si le contenu d'une colonne ne peut vraiment pas
@@ -33,39 +36,69 @@
 
     .o_cart_col_unitprice {
         flex: 0 0 auto;
-        width: 100px;
+        align-self: center;
+        width: 90px;
         white-space: nowrap;
     }
 
-    // Contrôles +/- de quantité : n'étaient plus stackés au-dessus du prix,
-    // on retire la marge basse héritée de ce contexte et on réduit un peu
-    // leur largeur pour un rendu plus compact.
+    // Contrôles +/- de quantité : la classe Bootstrap .input-group passe à
+    // la ligne (flex-wrap: wrap) dès qu'elle manque de place, ce qui donnait
+    // un bloc anormalement haut (boutons +/- sur une ligne, input en
+    // dessous). On force une seule ligne et on resserre l'input.
     div[name="website_sale_cart_line_quantity"] {
         flex: 0 0 auto;
-        width: 110px;
+        align-self: center;
+        flex-wrap: nowrap !important;
+        width: 96px;
         margin-bottom: 0 !important;
+
+        .js_quantity {
+            width: 32px;
+            min-width: 0;
+            padding-left: 0.25rem;
+            padding-right: 0.25rem;
+            text-align: center;
+        }
+
+        .btn-link {
+            padding-left: 0.4rem;
+            padding-right: 0.4rem;
+        }
     }
 
     div[name="website_sale_cart_line_price"] {
         flex: 0 0 auto;
-        width: 100px;
+        align-self: center;
+        width: 90px;
         white-space: nowrap;
     }
 
+    // Colonne "actions" : bouton supprimer natif + bouton "Save for Later"
+    // du module website_sale_wishlist s'il est installé (les deux sont
+    // déplacés ensemble car le second est injecté par ce module DANS le
+    // même conteneur, cf. commentaire en tête du fichier XML). Les deux
+    // suivent le même schéma responsive (lien texte desktop / bouton icône
+    // mobile) : on force l'icône seule à toutes les tailles pour rester
+    // compact.
     div[name="o_wsale_cart_line_button_container"] {
         flex: 0 0 auto;
-        width: 32px;
-        text-align: center;
+        align-self: center;
+        width: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.125rem;
 
-        // Le lien texte "Remove" (visible seulement en desktop dans le
-        // template d'origine) laisse place à l'icône poubelle seule, plus
-        // compacte, dans cette nouvelle colonne dédiée.
-        a.js_delete_product.d-md-inline-block {
+        a.d-md-inline-block,
+        span.d-md-inline-block {
             display: none !important;
         }
 
-        button.js_delete_product {
-            display: inline-block !important;
+        button.d-md-none {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem 0.5rem;
         }
     }
 }

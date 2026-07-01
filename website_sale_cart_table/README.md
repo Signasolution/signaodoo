@@ -31,6 +31,13 @@ Colonnes affichées :
   existants sont déplacés dans la nouvelle structure
 - ✅ Compatible avec `website_sale.suggested_products_list` (le conteneur
   `#cart_products` d'origine n'est jamais renommé ni supprimé)
+- ✅ Compatible avec `website_sale_wishlist` : son bouton "Save for Later"
+  est injecté dans le même conteneur que le bouton supprimer et suit donc
+  automatiquement le déplacement ; les deux sont affichés en icône seule,
+  côte à côte
+- ✅ Réduit la largeur de la colonne "Récapitulatif de la commande"
+  (`#o_cart_summary`, uniquement sur `/shop/cart`) pour laisser plus de
+  place au panier et éviter le débordement horizontal
 - ✅ Responsive : la description de vente et le prix unitaire sont masqués
   et l'image réduite sous 768px
 
@@ -57,3 +64,12 @@ Colonnes affichées :
 - La colonne "Réf. • attributs" utilise `product_id.default_code` et
   `product_id.product_template_attribute_value_ids` (champs standard du
   module `product`) ; elle ne s'affiche que si l'un des deux est renseigné.
+  Si la référence n'apparaît pas, vérifiez que le champ "Référence interne"
+  est bien renseigné sur la variante commandée (pas seulement sur le
+  produit générique).
+- La réduction de largeur de `#o_cart_summary` touche `website_sale.checkout_layout`,
+  un template partagé avec les étapes livraison/paiement. Elle est scopée à
+  `/shop/cart` en ciblant `div[@id='o_cart_summary']`, qui ne s'affiche
+  (`t-if="show_shorter_cart_summary"`) que sur cette page — mais si un
+  module tiers modifie cette condition, vérifiez que les autres étapes du
+  checkout restent correctement dimensionnées.

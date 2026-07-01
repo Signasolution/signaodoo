@@ -28,6 +28,14 @@
         standard website_sale.suggested_products_list en dépend (xpath
         position="inside" dessus) pour y ajouter le bloc "Suggested
         accessories".
+
+        Compatibilité website_sale_wishlist : ce module officiel ajoute son
+        bouton "Save for Later" (cœur) DANS
+        div[name="o_wsale_cart_line_button_container"] (position="inside"),
+        donc à l'intérieur du même conteneur que le bouton supprimer. Comme
+        ce conteneur est déplacé tel quel (étape 4), le bouton wishlist suit
+        automatiquement sans code supplémentaire ; seul le SCSS a besoin de
+        prévoir la place pour les deux boutons côte à côte.
     -->
     <template id="cart_lines_table" inherit_id="website_sale.cart_lines" name="Panier - Colonnes alignées">
 
@@ -79,13 +87,28 @@
         <xpath expr="//div[@id='cart_products']/div[contains(@t-attf-class, 'o_cart_product')]//t[@t-call='website_sale.cart_line_description_following_lines']" position="after">
             <div t-if="line.product_id.default_code or line.product_id.product_template_attribute_value_ids"
                  class="o_cart_col_meta text-muted small">
-                <span t-if="line.product_id.default_code" class="o_cart_col_meta_item">Réf.: <t t-out="line.product_id.default_code"/></span>
+                <span t-if="line.product_id.default_code" class="o_cart_col_meta_item">Ref. : <t t-out="line.product_id.default_code"/></span>
                 <t t-foreach="line.product_id.product_template_attribute_value_ids" t-as="ptav">
                     <span class="o_cart_col_meta_item"><t t-out="ptav.attribute_id.name"/>: <t t-out="ptav.name"/></span>
                 </t>
             </div>
         </xpath>
 
+    </template>
+
+    <!--
+        Réduit la largeur de la colonne "Récapitulatif de la commande" pour
+        laisser plus de place aux colonnes du panier et éviter le débordement
+        horizontal. <div id="o_cart_summary"> porte déjà
+        t-if="show_shorter_cart_summary", qui n'est mis à True que par
+        website_sale.cart : cette vue ne s'applique donc jamais sur les
+        étapes livraison/paiement du checkout (elles utilisent l'autre
+        branche, #o_wsale_total_accordion).
+    -->
+    <template id="checkout_layout_cart_summary_width" inherit_id="website_sale.checkout_layout" name="Panier - Plus de largeur pour les lignes">
+        <xpath expr="//div[@id='o_cart_summary']" position="attributes">
+            <attribute name="class" remove="offset-xl-1 col-lg-5 col-xl-4" add="col-lg-4 col-xl-3" separator=" "/>
+        </xpath>
     </template>
 
 </odoo>
