@@ -1,0 +1,123 @@
+// Mise en forme du tableau du panier (/shop/cart)
+// Les classes o_cart_table_* sont posées à la fois sur les <th> et les <td>
+// correspondants dans views/cart_templates.xml.
+
+.o_cart_table {
+    border-collapse: collapse;
+    width: 100%;
+
+    thead {
+        border-bottom: 2px solid var(--o-cc1-border, #dee2e6);
+
+        th {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            color: var(--o-cc1-muted, #6c757d);
+            white-space: nowrap;
+        }
+    }
+
+    tbody {
+        tr {
+            border-bottom: 1px solid var(--o-cc1-border, #dee2e6);
+
+            &:last-child {
+                border-bottom: none;
+            }
+
+            // La ligne d'un produit optionnel/lié (combo) est visuellement
+            // rattachée à la ligne principale qui la précède.
+            &.optional_product {
+                border-top: none;
+
+                td {
+                    padding-top: 0;
+                }
+            }
+        }
+
+        td {
+            padding: 1rem 0.75rem;
+            vertical-align: middle;
+        }
+    }
+
+    .o_cart_table_img {
+        width: 80px;
+
+        img, .o_image_64_max {
+            max-width: 64px;
+            max-height: 64px;
+        }
+    }
+
+    .o_cart_table_desc {
+        min-width: 220px;
+
+        h6 {
+            margin-bottom: 0.25rem;
+        }
+    }
+
+    .o_cart_table_qty {
+        width: 1%;
+        white-space: nowrap;
+
+        .css_quantity {
+            justify-content: center;
+        }
+    }
+
+    .o_cart_table_unitprice,
+    .o_cart_table_total {
+        width: 1%;
+        white-space: nowrap;
+    }
+
+    .o_cart_table_remove {
+        width: 1%;
+        text-align: center;
+    }
+}
+
+// Rend le tableau défilable horizontalement plutôt que de casser la mise en
+// page si, malgré la réorganisation ci-dessous, il reste trop large.
+.o_cart_table_wrapper {
+    overflow-x: auto;
+}
+
+@include media-breakpoint-down(md) {
+    .o_cart_table {
+        .o_cart_table_desc {
+            min-width: 0;
+
+            // Masque la description de vente (description_sale), ne garde
+            // que le nom du produit.
+            > div.text-muted {
+                display: none;
+            }
+        }
+
+        .o_cart_table_img {
+            width: 48px;
+
+            img, .o_image_64_max {
+                max-width: 40px;
+                max-height: 40px;
+            }
+        }
+
+        .o_cart_table_unitprice {
+            // Le prix unitaire devient secondaire une fois le total visible ;
+            // on le masque pour laisser la place aux contrôles de quantité.
+            display: none;
+        }
+
+        thead th.o_cart_table_unitprice {
+            display: none;
+        }
+    }
+}
