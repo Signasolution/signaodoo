@@ -88,6 +88,15 @@
             <xpath expr="//div[@id='cart_products']/div[contains(@t-attf-class, 'o_cart_product')]//div[@name='o_wsale_cart_line_button_container']" position="move"/>
         </xpath>
 
+        <!-- Étape 3bis : ajoute la référence interne du produit au-dessus du
+             nom. C'est un ajout (pas une donnée déjà affichée ailleurs dans
+             cart_lines), inséré juste avant le lien produit à l'intérieur du
+             bloc flex-grow-1 : il sera donc déplacé avec le reste de ce bloc
+             à l'étape 4 ci-dessous. -->
+        <xpath expr="//div[@id='cart_products']/div[contains(@t-attf-class, 'o_cart_product')]//t[@t-call='website_sale.cart_line_product_link']" position="before">
+            <div t-if="line.product_id.default_code" class="o_cart_table_ref text-muted small" t-out="line.product_id.default_code"/>
+        </xpath>
+
         <!-- Étape 4 : déplace le bloc nom + description_sale + (le cas
              échéant) lignes de combo. Le lien produit (cart_line_product_link)
              et l'appel à cart_line_description_following_lines restent
