@@ -1,161 +1,65 @@
 # Tableau de Prix Dégressifs pour Odoo
 
-## 📋 **Description**
+Module Odoo (18.0) qui affiche un tableau de prix par palier de quantité sur les pages produits de la boutique en ligne, et fournit un onglet de gestion dans la fiche produit pour configurer ces paliers, des remises par catégorie de client et des quantités minimales de commande.
 
-Module Odoo qui affiche un tableau interactif des prix dégressifs par quantité sur les pages produits. Permet aux clients de voir les prix selon la quantité commandée et d'ajuster automatiquement la quantité en cliquant sur les lignes du tableau.
+## Fonctionnalités
 
-## ✨ **Fonctionnalités**
+### Site web (website_sale)
 
-- ✅ **Affichage intelligent** des prix dégressifs avec formatage propre (1+, 3+, 5+, 7+)
-- ✅ **Clic interactif** sur les lignes pour ajuster la quantité
-- ✅ **Ligne active intelligente** qui se met à jour selon la quantité saisie
-- ✅ **Détection des boutons +/-** pour la mise à jour automatique
-- ✅ **Tableau compact** (40% moins large)
-- ✅ **Restriction aux pages produit** uniquement
-- ✅ **Message de confirmation** lors de la mise à jour de la quantité
-- ✅ **Compatible** avec toutes les versions d'Odoo
+- Tableau de prix dégressifs affiché sur la page produit, calculé à partir des règles de la liste de prix (`product.pricelist.item`) applicable au visiteur/panier courant.
+- Clic sur une ligne du tableau pour ajuster automatiquement le champ quantité.
+- Mise en surbrillance de la ligne correspondant à la quantité saisie (saisie manuelle, boutons +/-, ou clic sur une ligne).
+- Quantité minimale de commande par liste de prix : le champ quantité de la page produit est pré-rempli et contraint à ce minimum, avec un message d'avertissement si l'utilisateur tente de descendre en dessous (page produit et modales de variantes).
+- Application côté serveur du minimum de commande à l'ajout au panier (`cart_update_json` surchargé) : la quantité est corrigée automatiquement et un avertissement est renvoyé au client, affiché sans rechargement de page via une interception de `fetch`/`XMLHttpRequest`.
+- Contrainte de validation (`sale.order.line`) appliquée en backend uniquement (hors contexte site web, où le contrôleur gère déjà l'expérience utilisateur).
 
-## 🚀 **Installation**
+### Fiche produit (backend), onglet "Prix et quantités"
 
-1. **Télécharger le module** dans le dossier `addons` de votre Odoo
-2. **Mettre à jour la liste des modules** dans Odoo
-3. **Installer le module** "Tableau de Prix Dégressifs"
-4. **Configurer les règles de prix** dans les listes de prix Odoo
+- **Paliers de prix dégressifs** : une ligne par liste de prix et palier de quantité (`min_quantity`), avec type de calcul Fixe ou Remise (%), et aperçu du prix résultant et de l'économie réalisée par rapport au prix de vente du produit.
+- **Remises par catégorie de client** : définit une remise en % à appliquer aux paliers d'une liste de prix de base pour générer automatiquement les mêmes paliers dans une liste de prix cible (ex. installateurs = tarif public − 15 %). Le bouton *Générer les tarifs* crée ou met à jour les règles correspondantes dans la liste cible.
+- **Quantités minimales d'achat** : quantité minimale par liste de prix (0 = pas de restriction). Le bouton *Synchroniser les listes de prix* crée une ligne à 0 pour chaque liste de prix active qui n'en a pas encore.
 
-## ⚙️ **Configuration**
+### Multi-site
 
-### Règles de Prix
+Le module est conçu pour fonctionner correctement sur une installation Odoo multi-site (plusieurs sites web partageant la même base de données, chacun avec ses propres listes de prix). La résolution de la liste de prix pour l'affichage du tableau suit en priorité la liste de prix réellement attachée au panier du visiteur (`website.sale_get_order().pricelist_id`), la même que celle utilisée pour l'application du minimum de commande — évitant qu'un site récupère par erreur la liste de prix (et donc les règles) d'un autre site.
 
-Le module utilise les règles de prix dégressifs configurées dans Odoo :
+## Limitation connue
 
-1. **Aller dans** : Ventes > Configuration > Listes de Prix
-2. **Créer ou modifier** une liste de prix
-3. **Ajouter des règles** avec :
-   - **Quantité minimum** : 1, 3, 5, 7, etc.
-   - **Type de prix** : Prix fixe ou Pourcentage
-   - **Produit** : Spécifique ou Global
+Le type de calcul **Formule** (`compute_price = 'formula'`) n'est **pas supporté** par le module : les méthodes qui calculent le tableau de prix et l'aperçu backend (`ProductTemplate._get_price_break_rules`, `ProductPricelistItem._compute_price_computed`) ne reconnaissent que Fixe et Remise (%) ; une règle en Formule retombe silencieusement sur le prix plein, sans remise. N'utilisez pas ce type de calcul pour les paliers gérés par ce module.
 
-### Types de Règles Supportés
+## Installation
 
-- **Prix fixe** : Prix unitaire fixe pour la quantité
-- **Pourcentage** : Réduction en pourcentage sur le prix de base
-- **Règles globales** : Appliquées à tous les produits
-- **Règles spécifiques** : Appliquées à un produit particulier
-- **Règles par catégorie** : Appliquées aux produits d'une catégorie
+1. Copier le dossier `price_break_table` dans les addons de l'instance Odoo.
+2. Mettre à jour la liste des modules, puis installer (ou mettre à niveau après une mise à jour du code) "Tableau de Prix Dégressifs".
+3. Configurer les paliers de prix depuis la fiche produit (onglet "Prix et quantités") ou depuis Ventes > Configuration > Listes de prix.
 
-## 🎯 **Utilisation**
-
-### Pour les Clients
-
-1. **Naviguer** vers une page produit
-2. **Voir le tableau** des prix dégressifs
-3. **Cliquer sur une ligne** pour ajuster la quantité
-4. **Utiliser les boutons +/-** pour voir la ligne active se mettre à jour
-
-### Pour les Administrateurs
-
-- Le tableau s'affiche **automatiquement** sur les pages produit
-- **Aucune configuration** supplémentaire nécessaire
-- Compatible avec **tous les thèmes** Odoo
-
-## 🔧 **Personnalisation**
-
-### Styles CSS
-
-Le tableau utilise des classes CSS standard d'Odoo et peut être personnalisé :
-
-```css
-.price-break-table-widget {
-    /* Personnaliser l'apparence du tableau */
-}
-```
-
-### JavaScript
-
-Le code JavaScript est modulaire et peut être étendu :
-
-```javascript
-// Accéder au widget global
-window.PriceBreak.widget
-
-// Réinitialiser manuellement
-window.PriceBreak.init()
-```
-
-## 📊 **Compatibilité**
-
-- **Odoo** : Toutes versions (testé sur Odoo 18.0)
-- **Thèmes** : Compatible avec tous les thèmes
-- **Modules** : Compatible avec website_sale, sale, product
-- **Navigateurs** : Chrome, Firefox, Safari, Edge
-
-## 🐛 **Dépannage**
-
-### Le tableau ne s'affiche pas
-
-1. **Vérifier** que le module est installé et activé
-2. **Vérifier** qu'il y a des règles de prix dégressifs configurées
-3. **Vérifier** que vous êtes sur une page produit (pas liste ou panier)
-
-### Les prix ne sont pas corrects
-
-1. **Vérifier** la configuration des règles de prix
-2. **Vérifier** que les règles sont actives
-3. **Vérifier** que la liste de prix est correcte
-
-### Le clic sur les lignes ne fonctionne pas
-
-1. **Vérifier** la console du navigateur pour les erreurs JavaScript
-2. **Vérifier** que le champ de quantité existe sur la page
-3. **Recharger** la page si nécessaire
-
-## 📋 **Structure du Module**
+## Structure du module
 
 ```
 price_break_table/
 ├── __init__.py
 ├── __manifest__.py
+├── controllers/
+│   └── main.py                        # Surcharge cart_update_json pour le minimum de commande
 ├── models/
-│   ├── __init__.py
-│   └── product_template.py
-├── views/
-│   ├── product_template_views.xml
-│   └── website_sale_templates.xml
-├── static/
-│   ├── src/
-│   │   ├── css/
-│   │   │   └── price_break_table.css
-│   │   └── js/
-│   │       └── price_break_table.js
-│   └── security/
-│       └── ir.model.access.csv
-└── README.md
+│   ├── product_template.py            # get_price_break_table_data, génération des tarifs par remise
+│   ├── product_pricelist_item.py      # Champs calculés prix résultant / économie %
+│   ├── product_min_purchase_qty.py    # Quantité min d'achat par liste de prix
+│   ├── product_pricelist_discount.py  # Remise par catégorie de client (liste base -> liste cible)
+│   └── sale_order_line.py             # Contrainte de minimum de commande en backend
+├── security/
+│   └── ir.model.access.csv
+├── static/src/css/
+│   └── price_break_table.css
+└── views/
+    ├── product_backend_views.xml      # Onglet "Prix et quantités" sur la fiche produit
+    └── website_sale_templates.xml     # Tableau, contraintes de quantité et toast d'avertissement
 ```
 
-## 🔄 **Versions**
+## Dépendances
 
-### Version 18.0.2.0.0 - Version de Production
-- ✅ **Nettoyage complet du code** - Suppression de tous les fichiers de test et debug
-- ✅ **Code JavaScript optimisé** - Suppression des logs de debug et commentaires inutiles
-- ✅ **Code Python nettoyé** - Suppression des print() de debug
-- ✅ **Version finale** prête pour la production
+`product`, `sale`, `website_sale`.
 
-### Versions précédentes
-- ✅ Développement initial et corrections de compatibilité
-- ✅ Résolution des erreurs d'intégration Odoo
-- ✅ Optimisation des performances et de l'affichage
+## Licence
 
-## 📞 **Support**
-
-Pour toute question ou problème :
-- **Vérifier** ce README
-- **Consulter** les logs Odoo
-- **Tester** sur un environnement de développement
-
-## 📄 **Licence**
-
-Ce module est sous licence LGPL-3 comme Odoo.
-
----
-
-**Module développé pour Odoo - Version de Production 18.0.2.0.0**
+LGPL-3.
