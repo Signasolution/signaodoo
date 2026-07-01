@@ -5,3 +5,5 @@ access_pricelist_item_price_break,pricelist.item.price.break,product.model_produ
 access_pricelist_item_price_break_manager,pricelist.item.price.break.manager,product.model_product_pricelist_item,sales_team.group_sale_manager,1,1,1,1
 access_product_min_purchase_qty,product.min.purchase.qty,model_product_min_purchase_qty,base.group_user,1,0,0,0
 access_product_min_purchase_qty_manager,product.min.purchase.qty.manager,model_product_min_purchase_qty,sales_team.group_sale_manager,1,1,1,1
+access_product_pricelist_discount,product.pricelist.discount,model_product_pricelist_discount,base.group_user,1,0,0,0
+access_product_pricelist_discount_manager,product.pricelist.discount.manager,model_product_pricelist_discount,sales_team.group_sale_manager,1,1,1,1

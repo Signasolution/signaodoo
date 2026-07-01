@@ -19,6 +19,76 @@ class ProductTemplate(models.Model):
         'product_tmpl_id',
         string="Quantités minimales d'achat",
     )
+    pricelist_discount_ids = fields.One2many(
+        'product.pricelist.discount',
+        'product_tmpl_id',
+        string="Remises catégories clients",
+    )
+
+    def action_sync_pricelist_min_qty(self):
+        """Crée une ligne de qté min pour chaque liste de prix active manquante."""
+        self.ensure_one()
+        pricelists = self.env['product.pricelist'].search([('active', '=', True)])
+        existing_ids = self.min_purchase_qty_ids.mapped('pricelist_id').ids
+        to_create = pricelists.filtered(lambda p: p.id not in existing_ids)
+        for pricelist in to_create:
+            self.env['product.min.purchase.qty'].create({
+                'product_tmpl_id': self.id,
+                'pricelist_id': pricelist.id,
+                'min_purchase_qty': 0.0,
+            })
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Synchronisation effectuée',
+                'message': '%d liste(s) de prix ajoutée(s).' % len(to_create),
+                'type': 'success',
+                'sticky': False,
+            },
+        }
+
+    def action_generate_discount_tarifs(self):
+        """Génère/met à jour les règles de prix dans les listes cibles depuis les remises définies."""
+        self.ensure_one()
+        PricelistItem = self.env['product.pricelist.item']
+        count = 0
+        for discount in self.pricelist_discount_ids:
+            base_items = PricelistItem.search([
+                ('pricelist_id', '=', discount.base_pricelist_id.id),
+                ('product_tmpl_id', '=', self.id),
+                ('min_quantity', '>', 0),
+            ], order='min_quantity')
+            for item in base_items:
+                base_price = discount._get_item_base_price(item, self.list_price)
+                target_price = base_price * (1.0 - discount.discount_percent / 100.0)
+                existing = PricelistItem.search([
+                    ('pricelist_id', '=', discount.target_pricelist_id.id),
+                    ('product_tmpl_id', '=', self.id),
+                    ('min_quantity', '=', item.min_quantity),
+                ], limit=1)
+                vals = {
+                    'pricelist_id': discount.target_pricelist_id.id,
+                    'product_tmpl_id': self.id,
+                    'min_quantity': item.min_quantity,
+                    'compute_price': 'fixed',
+                    'fixed_price': target_price,
+                }
+                if existing:
+                    existing.write(vals)
+                else:
+                    PricelistItem.create(vals)
+                count += 1
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Tarifs générés',
+                'message': '%d règle(s) créée(s) ou mise(s) à jour.' % count,
+                'type': 'success',
+                'sticky': False,
+            },
+        }
 
     def get_price_break_table_data(self, pricelist_id=None, partner_id=None, quantity=1.0):
         """

@@ -10,7 +10,7 @@
                 <notebook position="inside">
                     <page string="Prix dégressifs" name="price_break_tab">
 
-                        <!-- Tableau 1 : Prix dégressifs par palier -->
+                        <!-- Tableau 1 : Paliers de prix dégressifs -->
                         <separator string="Paliers de prix dégressifs"/>
                         <div class="alert alert-info" role="alert">
                             Gérez ici les paliers de prix par liste de prix (client final, distributeur, installateur…).
@@ -70,11 +70,62 @@
                             </list>
                         </field>
 
-                        <!-- Tableau 2 : Quantités minimales d'achat par liste de prix -->
+                        <!-- Tableau 2 : Remises par catégorie de client -->
+                        <separator string="Remises par catégorie de client"/>
+                        <div class="alert alert-info" role="alert">
+                            Définissez une remise en % par rapport à une liste de prix de base pour une liste cible
+                            (ex : installateurs = tarif public - 15%). Cliquez sur "Générer les tarifs" pour créer
+                            automatiquement les règles de prix dans chaque liste cible.
+                        </div>
+
+                        <field name="pricelist_discount_ids"
+                               nolabel="1"
+                               context="{'default_product_tmpl_id': id}">
+                            <list editable="bottom"
+                                  default_order="base_pricelist_id, target_pricelist_id">
+
+                                <field name="base_pricelist_id"
+                                       required="1"
+                                       options="{'no_create': True}"
+                                       string="Liste de base"/>
+
+                                <field name="target_pricelist_id"
+                                       required="1"
+                                       options="{'no_create': True}"
+                                       string="Liste cible"/>
+
+                                <field name="discount_percent" string="Remise %"/>
+
+                                <field name="tier_preview"
+                                       string="Aperçu paliers résultants"
+                                       readonly="1"/>
+
+                            </list>
+                        </field>
+
+                        <div class="o_row mt-2">
+                            <button name="action_generate_discount_tarifs"
+                                    type="object"
+                                    string="Générer les tarifs"
+                                    class="btn btn-primary"
+                                    icon="fa-cogs"
+                                    confirm="Cela va créer ou mettre à jour les règles de prix dans les listes cibles. Continuer ?"/>
+                        </div>
+
+                        <!-- Tableau 3 : Quantités minimales d'achat -->
                         <separator string="Quantités minimales d'achat"/>
                         <div class="alert alert-info" role="alert">
-                            Définissez ici la quantité minimale de produits que le client doit commander
-                            selon sa liste de prix. La commande sera bloquée si la quantité est inférieure.
+                            Définissez la quantité minimale de produits que le client doit commander selon
+                            sa liste de prix. La commande sera bloquée si la quantité est inférieure.
+                            Une quantité de 0 signifie aucune restriction.
+                        </div>
+
+                        <div class="o_row mb-2">
+                            <button name="action_sync_pricelist_min_qty"
+                                    type="object"
+                                    string="Synchroniser les listes de prix"
+                                    class="btn btn-secondary"
+                                    icon="fa-refresh"/>
                         </div>
 
                         <field name="min_purchase_qty_ids"
