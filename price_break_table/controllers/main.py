@@ -52,13 +52,19 @@ class WebsiteSalePriceBreak(WebsiteSale):
         return result
 
     def _get_current_pricelist_compat(self):
-        """Récupère la liste de prix courante de façon compatible avec Odoo 18."""
+        """Récupère la liste de prix courante de façon compatible avec Odoo 18.
+
+        Utilise force_create=True pour que le panier soit créé (avec la bonne
+        liste de prix du partenaire) si c'est le premier ajout — c'est de toute
+        façon ce que fait super().cart_update_json() juste après.
+        """
         try:
-            order = request.website.sale_get_order(force_create=False)
+            order = request.website.sale_get_order(force_create=True)
             if order and order.pricelist_id:
                 return order.pricelist_id
         except Exception:
             pass
+        # Dernier recours : liste de prix par défaut du site
         try:
             return request.website.pricelist_id
         except Exception:

@@ -124,15 +124,14 @@
                     }
 
                     /* ---- Modal (Owl dialog / Bootstrap modal) ---- */
+                    /* On cible tout input[type=number] dans un conteneur dialog,
+                       en excluant l'input de la page produit elle-même. */
                     var MODAL_SEL = [
-                        '.modal.show input[name="add_qty"]',
-                        '.modal.show input.js_quantity',
-                        '.modal-dialog input[name="add_qty"]',
-                        '.modal-dialog input.js_quantity',
-                        '.o_dialog input[name="add_qty"]',
-                        '.o_dialog input.js_quantity',
-                        '[role="dialog"] input[name="add_qty"]',
-                        '[role="dialog"] input.js_quantity'
+                        '.modal.show input[type="number"]',
+                        '.modal-dialog input[type="number"]',
+                        '.o_dialog input[type="number"]',
+                        '[role="dialog"] input[type="number"]',
+                        'dialog input[type="number"]'
                     ].join(',');
 
                     function addModalLabel(input) {
