@@ -239,7 +239,7 @@
              Toutes les pages : intercepteur fetch pour afficher le warning
              du contrôleur cart_update_json sans rechargement
              ============================================================ -->
-        <template id="website_sale_cart_warning_interceptor" inherit_id="website_sale.layout">
+        <template id="website_sale_cart_warning_interceptor" inherit_id="website.layout">
             <xpath expr="//head" position="inside">
                 <script type="text/javascript">
                 (function () {
