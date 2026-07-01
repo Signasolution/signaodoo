@@ -3,24 +3,131 @@
     <data>
 
         <template id="website_sale_product_price_break" name="Product Price Break Table" inherit_id="website_sale.product">
+
+            <!-- Affichage de la quantité minimale et contrainte sur le sélecteur -->
             <xpath expr="//div[@id='add_to_cart_wrap']" position="before">
-                <!-- Affichage de la quantité minimale d'achat -->
                 <t t-set="min_purchase_qty" t-value="product.get_website_min_purchase_qty()"/>
                 <t t-if="min_purchase_qty and min_purchase_qty > 0">
-                    <div class="alert alert-warning d-flex align-items-center gap-2 mt-2 mb-2" role="alert">
-                        <i class="fa fa-info-circle"/>
-                        <span>
-                            Quantité minimale de commande :
-                            <strong>
-                                <t t-esc="int(min_purchase_qty) if min_purchase_qty == int(min_purchase_qty) else min_purchase_qty"/>
-                                unité(s)
-                            </strong>
-                        </span>
-                    </div>
+                    <p class="text-muted mb-1" style="font-size:0.9em;">
+                        <i class="fa fa-info-circle me-1"/>
+                        Quantité mini :
+                        <strong>
+                            <t t-esc="int(min_purchase_qty) if min_purchase_qty == int(min_purchase_qty) else min_purchase_qty"/>
+                        </strong>
+                    </p>
                 </t>
             </xpath>
 
+            <!-- Tableau des prix dégressifs + JS de contrainte quantité -->
             <xpath expr="//div[@id='add_to_cart_wrap']" position="after">
+                <t t-set="min_purchase_qty" t-value="product.get_website_min_purchase_qty()"/>
+
+                <!-- Message d'erreur quantité mini (caché par défaut) -->
+                <div id="price_break_min_qty_error"
+                     class="alert alert-danger mt-2 mb-0"
+                     style="display:none; font-size:0.9em;">
+                    <i class="fa fa-exclamation-triangle me-1"/>
+                    La quantité minimale de commande pour ce produit est de
+                    <strong>
+                        <t t-esc="int(min_purchase_qty) if min_purchase_qty and min_purchase_qty == int(min_purchase_qty) else (min_purchase_qty or 0)"/>
+                    </strong>
+                    unité(s).
+                </div>
+
+                <script type="text/javascript">
+                    document.addEventListener('DOMContentLoaded', function () {
+                        var input = document.querySelector('input[name="add_qty"], #quantity');
+                        var errorBox = document.getElementById('price_break_min_qty_error');
+                        var minQty = <t t-esc="min_purchase_qty or 0"/>;
+                        var errorTimeout = null;
+
+                        function showError() {
+                            if (!errorBox || minQty &lt;= 0) return;
+                            errorBox.style.display = 'block';
+                            clearTimeout(errorTimeout);
+                            errorTimeout = setTimeout(function () {
+                                errorBox.style.display = 'none';
+                            }, 4000);
+                        }
+
+                        function enforceMin() {
+                            if (!input || minQty &lt;= 0) return;
+                            var val = parseFloat(input.value);
+                            if (isNaN(val) || val &lt; minQty) {
+                                showError();
+                                input.value = minQty;
+                                ['input', 'change'].forEach(function(ev) {
+                                    input.dispatchEvent(new Event(ev, { bubbles: true }));
+                                });
+                            }
+                        }
+
+                        if (input &amp;&amp; minQty > 0) {
+                            // Valeur par défaut = quantité mini
+                            if (!input.value || parseFloat(input.value) &lt; minQty) {
+                                input.value = minQty;
+                            }
+                            input.setAttribute('min', minQty);
+
+                            input.addEventListener('change', enforceMin);
+                            input.addEventListener('blur', enforceMin);
+
+                            // Surveillance des boutons +/- d'Odoo
+                            setInterval(function () {
+                                var val = parseFloat(input.value);
+                                if (!isNaN(val) &amp;&amp; val &lt; minQty) {
+                                    enforceMin();
+                                }
+                            }, 300);
+                        }
+
+                        // --- Tableau des prix dégressifs ---
+                        var rows = document.querySelectorAll('.price-break-row');
+                        var lastValue = input ? input.value : '';
+
+                        function highlightMatchingRow(qty) {
+                            var matched = null;
+                            rows.forEach(function(row) {
+                                if (qty >= parseFloat(row.dataset.qty)) matched = row;
+                            });
+                            rows.forEach(function(r) { r.classList.remove('price-break-active'); });
+                            if (matched) matched.classList.add('price-break-active');
+                        }
+
+                        function updateHighlight() {
+                            if (input &amp;&amp; input.value !== lastValue) {
+                                lastValue = input.value;
+                                var qty = parseFloat(input.value);
+                                if (!isNaN(qty)) highlightMatchingRow(qty);
+                            }
+                        }
+
+                        if (input) {
+                            input.addEventListener('input', updateHighlight);
+                            input.addEventListener('change', updateHighlight);
+                            setInterval(updateHighlight, 200);
+
+                            document.querySelectorAll('button, .btn, .fa-plus, .fa-minus, .btn-plus, .btn-minus').forEach(function(btn) {
+                                btn.addEventListener('click', function() { setTimeout(updateHighlight, 350); });
+                            });
+                        }
+
+                        rows.forEach(function(row) {
+                            row.addEventListener('click', function() {
+                                var qty = Math.max(parseFloat(row.dataset.qty), minQty || 0);
+                                if (input) {
+                                    input.value = qty;
+                                    lastValue = qty.toString();
+                                    ['input', 'change', 'blur'].forEach(function(ev) {
+                                        input.dispatchEvent(new Event(ev, { bubbles: true }));
+                                    });
+                                }
+                                highlightMatchingRow(qty);
+                            });
+                        });
+                    });
+                </script>
+
                 <!-- Tableau des prix dégressifs -->
                 <t t-set="price_break_data" t-value="product.get_price_break_table_data()"/>
                 <t t-if="price_break_data and price_break_data.get('rows') and len(price_break_data['rows']) > 1">
@@ -44,113 +151,17 @@
                             </tbody>
                         </table>
                     </div>
-
-                    <script type="text/javascript">
-                        document.addEventListener('DOMContentLoaded', function () {
-                            var rows = document.querySelectorAll('.price-break-row');
-                            var input = document.querySelector('input[name="add_qty"], #quantity');
-                            var lastValue = '';
-
-                            // Contrainte de quantité minimale d'achat
-                            var minPurchaseQty = <t t-esc="min_purchase_qty or 0"/>;
-                            if (input &amp;&amp; minPurchaseQty > 0) {
-                                input.setAttribute('min', minPurchaseQty);
-                                if (parseFloat(input.value || 0) &lt; minPurchaseQty) {
-                                    input.value = minPurchaseQty;
-                                }
-                                input.addEventListener('change', function () {
-                                    if (parseFloat(input.value) &lt; minPurchaseQty) {
-                                        input.value = minPurchaseQty;
-                                    }
-                                });
-                                input.addEventListener('blur', function () {
-                                    if (parseFloat(input.value) &lt; minPurchaseQty) {
-                                        input.value = minPurchaseQty;
-                                    }
-                                });
-                            }
-
-                            function highlightMatchingRow(qty) {
-                                var matched = null;
-                                rows.forEach(function(row) {
-                                    var rowQty = parseFloat(row.dataset.qty);
-                                    if (qty >= rowQty) {
-                                        matched = row;
-                                    }
-                                });
-                                rows.forEach(function(r) {
-                                    r.classList.remove('price-break-active');
-                                });
-                                if (matched) {
-                                    matched.classList.add('price-break-active');
-                                }
-                            }
-
-                            function updateHighlight() {
-                                if (input &amp;&amp; input.value !== lastValue) {
-                                    lastValue = input.value;
-                                    var qty = parseFloat(input.value);
-                                    if (!isNaN(qty)) {
-                                        highlightMatchingRow(qty);
-                                    }
-                                }
-                            }
-
-                            if (input) {
-                                input.addEventListener('input', updateHighlight);
-                                input.addEventListener('change', updateHighlight);
-                                setInterval(updateHighlight, 200);
-
-                                var allButtons = document.querySelectorAll('button, .btn, [onclick*="qty"], .fa-plus, .fa-minus, .btn-plus, .btn-minus');
-                                allButtons.forEach(function(btn) {
-                                    btn.addEventListener('click', function() {
-                                        setTimeout(updateHighlight, 300);
-                                    });
-                                });
-
-                                if (input.parentNode) {
-                                    input.parentNode.addEventListener('click', function(e) {
-                                        if (e.target.tagName === 'BUTTON' || e.target.classList.contains('btn') || e.target.classList.contains('fa')) {
-                                            setTimeout(updateHighlight, 300);
-                                        }
-                                    });
-                                }
-                            }
-
-                            rows.forEach(function (row) {
-                                row.addEventListener('click', function () {
-                                    var qty = parseFloat(row.dataset.qty);
-                                    if (minPurchaseQty > 0) {
-                                        qty = Math.max(qty, minPurchaseQty);
-                                    }
-                                    if (input) {
-                                        input.value = qty;
-                                        lastValue = qty.toString();
-                                        ['input', 'change', 'blur'].forEach(function(ev) {
-                                            input.dispatchEvent(new Event(ev, { bubbles: true }));
-                                        });
-                                    }
-                                    highlightMatchingRow(qty);
-                                });
-                            });
-                        });
-                    </script>
-
-                    <style>
-                        .price-break-table-container {
-                            width: 70%;
-                            max-width: 500px;
-                        }
-                        .price-break-row:hover {
-                            background-color: #c7eae5;
-                        }
-                        .price-break-active {
-                            background-color: #c7eae5 !important;
-                            border: 2px solid #79C8BD !important;
-                            font-weight: bold;
-                        }
-                    </style>
                 </t>
+
+                <style>
+                    .price-break-table-container { width: 70%; max-width: 500px; }
+                    .price-break-row:hover { background-color: #c7eae5; }
+                    .price-break-active {
+                        background-color: #c7eae5 !important;
+                        border: 2px solid #79C8BD !important;
+                        font-weight: bold;
+                    }
+                </style>
             </xpath>
         </template>
 
