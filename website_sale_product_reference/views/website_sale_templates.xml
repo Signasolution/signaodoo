@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Affiche la référence interne (default_code) devant le nom du produit
+        sur les cartes produit des pages de liste (boutique, catégories,
+        listes de souhaits, snippets "produits recommandés", etc.), sous la
+        forme : (référence) Nom du produit
+    -->
+    <template id="products_item_show_reference"
+              inherit_id="website_sale.products_item"
+              name="Référence produit devant le nom">
+        <xpath expr="//h6[hasclass('o_wsale_products_item_title')]/a[@t-field='product.name']"
+               position="before">
+            <span t-if="product.default_code"
+                  class="text-muted me-1"
+                  t-esc="'(%s)' % product.default_code"/>
+        </xpath>
+    </template>
+
+</odoo>
