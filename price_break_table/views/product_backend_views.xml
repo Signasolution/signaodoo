@@ -41,11 +41,13 @@
 
                                 <field name="fixed_price"
                                        string="Prix fixe (€)"
-                                       optional="show"/>
+                                       optional="show"
+                                       readonly="compute_price != 'fixed'"/>
 
                                 <field name="percent_price"
                                        string="Remise (%)"
-                                       optional="hide"/>
+                                       optional="show"
+                                       readonly="compute_price != 'percentage'"/>
 
                                 <field name="price_computed"
                                        string="Prix résultant"
