@@ -8,7 +8,7 @@
             <field name="inherit_id" ref="product.product_template_form_view"/>
             <field name="arch" type="xml">
                 <notebook position="inside">
-                    <page string="Prix dégressifs" name="price_break_tab">
+                    <page string="Prix et quantités" name="price_break_tab">
 
                         <!-- Tableau 1 : Paliers de prix dégressifs -->
                         <separator string="Paliers de prix dégressifs"/>

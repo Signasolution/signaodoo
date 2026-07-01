@@ -1,10 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        
-        <!-- Template pour le tableau de prix dégressifs sur les pages produit -->
+
         <template id="website_sale_product_price_break" name="Product Price Break Table" inherit_id="website_sale.product">
+            <xpath expr="//div[@id='add_to_cart_wrap']" position="before">
+                <!-- Affichage de la quantité minimale d'achat -->
+                <t t-set="min_purchase_qty" t-value="product.get_website_min_purchase_qty()"/>
+                <t t-if="min_purchase_qty and min_purchase_qty > 0">
+                    <div class="alert alert-warning d-flex align-items-center gap-2 mt-2 mb-2" role="alert">
+                        <i class="fa fa-info-circle"/>
+                        <span>
+                            Quantité minimale de commande :
+                            <strong>
+                                <t t-esc="int(min_purchase_qty) if min_purchase_qty == int(min_purchase_qty) else min_purchase_qty"/>
+                                unité(s)
+                            </strong>
+                        </span>
+                    </div>
+                </t>
+            </xpath>
+
             <xpath expr="//div[@id='add_to_cart_wrap']" position="after">
+                <!-- Tableau des prix dégressifs -->
                 <t t-set="price_break_data" t-value="product.get_price_break_table_data()"/>
                 <t t-if="price_break_data and price_break_data.get('rows') and len(price_break_data['rows']) > 1">
                     <div class="table-responsive mt-3 price-break-table-container">
@@ -34,6 +51,25 @@
                             var input = document.querySelector('input[name="add_qty"], #quantity');
                             var lastValue = '';
 
+                            // Contrainte de quantité minimale d'achat
+                            var minPurchaseQty = <t t-esc="min_purchase_qty or 0"/>;
+                            if (input &amp;&amp; minPurchaseQty > 0) {
+                                input.setAttribute('min', minPurchaseQty);
+                                if (parseFloat(input.value || 0) &lt; minPurchaseQty) {
+                                    input.value = minPurchaseQty;
+                                }
+                                input.addEventListener('change', function () {
+                                    if (parseFloat(input.value) &lt; minPurchaseQty) {
+                                        input.value = minPurchaseQty;
+                                    }
+                                });
+                                input.addEventListener('blur', function () {
+                                    if (parseFloat(input.value) &lt; minPurchaseQty) {
+                                        input.value = minPurchaseQty;
+                                    }
+                                });
+                            }
+
                             function highlightMatchingRow(qty) {
                                 var matched = null;
                                 rows.forEach(function(row) {
@@ -42,7 +78,6 @@
                                         matched = row;
                                     }
                                 });
-
                                 rows.forEach(function(r) {
                                     r.classList.remove('price-break-active');
                                 });
@@ -62,22 +97,17 @@
                             }
 
                             if (input) {
-                                // Événement pour la saisie manuelle
                                 input.addEventListener('input', updateHighlight);
                                 input.addEventListener('change', updateHighlight);
-                                
-                                // Surveillance continue de la valeur
                                 setInterval(updateHighlight, 200);
-                                
-                                // Événements sur tous les boutons possibles
+
                                 var allButtons = document.querySelectorAll('button, .btn, [onclick*="qty"], .fa-plus, .fa-minus, .btn-plus, .btn-minus');
                                 allButtons.forEach(function(btn) {
                                     btn.addEventListener('click', function() {
                                         setTimeout(updateHighlight, 300);
                                     });
                                 });
-                                
-                                // Événements sur les éléments parents
+
                                 if (input.parentNode) {
                                     input.parentNode.addEventListener('click', function(e) {
                                         if (e.target.tagName === 'BUTTON' || e.target.classList.contains('btn') || e.target.classList.contains('fa')) {
@@ -90,6 +120,9 @@
                             rows.forEach(function (row) {
                                 row.addEventListener('click', function () {
                                     var qty = parseFloat(row.dataset.qty);
+                                    if (minPurchaseQty > 0) {
+                                        qty = Math.max(qty, minPurchaseQty);
+                                    }
                                     if (input) {
                                         input.value = qty;
                                         lastValue = qty.toString();

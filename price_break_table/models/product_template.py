@@ -37,16 +37,28 @@ class ProductTemplate(models.Model):
                 'pricelist_id': pricelist.id,
                 'min_purchase_qty': 0.0,
             })
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': 'Synchronisation effectuée',
-                'message': '%d liste(s) de prix ajoutée(s).' % len(to_create),
-                'type': 'success',
-                'sticky': False,
-            },
-        }
+        # Retourner False recharge le formulaire et rafraîchit le tableau sans rechargement de page
+        return False
+
+    def get_website_min_purchase_qty(self):
+        """Retourne la quantité minimale d'achat pour la liste de prix active sur le site."""
+        self.ensure_one()
+        pricelist_id = self.env.context.get('pricelist_id')
+        if not pricelist_id:
+            try:
+                website = self.env['website'].get_current_website()
+                pricelist = website.get_current_pricelist()
+                pricelist_id = pricelist.id if pricelist else None
+            except Exception:
+                return 0
+        if not pricelist_id:
+            return 0
+        rule = self.env['product.min.purchase.qty'].sudo().search([
+            ('product_tmpl_id', '=', self.id),
+            ('pricelist_id', '=', pricelist_id),
+            ('min_purchase_qty', '>', 0),
+        ], limit=1)
+        return rule.min_purchase_qty if rule else 0
 
     def action_generate_discount_tarifs(self):
         """Génère/met à jour les règles de prix dans les listes cibles depuis les remises définies."""
