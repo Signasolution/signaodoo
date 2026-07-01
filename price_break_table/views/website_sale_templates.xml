@@ -2,16 +2,28 @@
 <odoo>
     <data>
 
+        <!-- ============================================================
+             Page produit : valeur et minimum du sélecteur (server-side)
+             ============================================================ -->
+        <template id="website_sale_product_qty_min_attr" inherit_id="website_sale.product" priority="20">
+            <xpath expr="//input[@name='add_qty']" position="attributes">
+                <attribute name="t-att-min">product.get_price_break_table_data().get('min_purchase_qty') or 1</attribute>
+                <attribute name="t-att-value">product.get_price_break_table_data().get('min_purchase_qty') or 1</attribute>
+            </xpath>
+        </template>
+
+        <!-- ============================================================
+             Page produit : tableau de prix + messages + JS contrainte
+             ============================================================ -->
         <template id="website_sale_product_price_break" name="Product Price Break Table" inherit_id="website_sale.product">
             <xpath expr="//div[@id='add_to_cart_wrap']" position="after">
                 <t t-set="price_break_data" t-value="product.get_price_break_table_data()"/>
                 <t t-set="min_purchase_qty" t-value="price_break_data.get('min_purchase_qty', 0) if price_break_data else 0"/>
 
-                <!-- Attribut data pour accès JS -->
                 <span id="price_break_min_qty_value" style="display:none;"
                       t-att-data-min-qty="min_purchase_qty or 0"/>
 
-                <!-- Message d'erreur page produit (affiché par JS) -->
+                <!-- Message d'erreur page produit -->
                 <div id="price_break_min_qty_error"
                      class="alert alert-warning mt-2 mb-1"
                      style="display:none; font-size:0.9em; clear:both; width:100%;">
@@ -23,10 +35,8 @@
                     unité(s).
                 </div>
 
-                <!-- Bloc séparé (clear:both pour sortir du flex) -->
+                <!-- Tableau + texte mini (bloc séparé) -->
                 <div style="clear:both; width:100%;">
-
-                    <!-- Tableau des prix dégressifs -->
                     <t t-if="price_break_data and price_break_data.get('rows') and len(price_break_data['rows']) > 1">
                         <t t-if="min_purchase_qty and min_purchase_qty > 0">
                             <p class="text-muted mb-1 mt-3" style="font-size:0.9em;">
@@ -40,16 +50,13 @@
                         <div class="table-responsive price-break-table-container">
                             <table class="table table-bordered">
                                 <thead>
-                                    <tr>
-                                        <th>Quantité</th>
-                                        <th>Prix unitaire</th>
-                                    </tr>
+                                    <tr><th>Quantité</th><th>Prix unitaire</th></tr>
                                 </thead>
                                 <tbody>
                                     <t t-foreach="price_break_data['rows']" t-as="row">
                                         <tr class="price-break-row"
                                             t-att-data-qty="row['min_quantity']"
-                                            style="cursor: pointer;">
+                                            style="cursor:pointer;">
                                             <td><t t-esc="row['quantity_display']"/></td>
                                             <td><t t-esc="row['price_formatted']"/></td>
                                         </tr>
@@ -58,8 +65,6 @@
                             </table>
                         </div>
                     </t>
-
-                    <!-- Texte mini sans tableau -->
                     <t t-if="(not price_break_data or not price_break_data.get('rows') or len(price_break_data['rows']) &lt;= 1) and min_purchase_qty and min_purchase_qty > 0">
                         <p class="text-muted mb-1 mt-2" style="font-size:0.9em;">
                             <i class="fa fa-info-circle me-1"/>
@@ -74,165 +79,148 @@
                 <script type="text/javascript">
                 (function () {
                     var minQtyEl = document.getElementById('price_break_min_qty_value');
-                    var minQty = minQtyEl ? (parseFloat(minQtyEl.dataset.minQty) || 0) : 0;
+                    var minQty   = minQtyEl ? (parseFloat(minQtyEl.dataset.minQty) || 0) : 0;
                     var errorBox = document.getElementById('price_break_min_qty_error');
-                    var errorTimeout = null;
-                    var minQtyLabel = (minQty % 1 === 0 ? parseInt(minQty) : minQty) + ' unité(s)';
+                    var errorTm  = null;
+                    var minLabel = (minQty % 1 === 0 ? parseInt(minQty) : minQty) + ' unité(s)';
 
-                    /* ---- Page produit : erreur visible ---- */
+                    /* Setter natif : contourne le cache Owl/React */
+                    function setNative(input, val) {
+                        try {
+                            var setter = Object.getOwnPropertyDescriptor(
+                                window.HTMLInputElement.prototype, 'value').set;
+                            setter.call(input, val);
+                        } catch (e) { input.value = val; }
+                        ['input','change'].forEach(function(ev) {
+                            input.dispatchEvent(new Event(ev, { bubbles: true }));
+                        });
+                    }
+
+                    /* ---- Page produit ---- */
                     function showPageError() {
                         if (!errorBox || minQty &lt;= 0) return;
                         errorBox.style.display = 'block';
-                        clearTimeout(errorTimeout);
-                        errorTimeout = setTimeout(function () { errorBox.style.display = 'none'; }, 5000);
+                        clearTimeout(errorTm);
+                        errorTm = setTimeout(function () { errorBox.style.display = 'none'; }, 5000);
                     }
 
                     function enforcePageMin(input) {
                         if (!input || minQty &lt;= 0) return;
-                        var val = parseFloat(input.value);
-                        if (isNaN(val) || val &lt; minQty) {
+                        if (parseFloat(input.value) &lt; minQty) {
                             showPageError();
-                            input.value = minQty;
-                            ['input', 'change'].forEach(function (ev) {
-                                input.dispatchEvent(new Event(ev, { bubbles: true }));
-                            });
+                            setNative(input, minQty);
                         }
                     }
 
-                    function applyMinQtyToPageInput(input) {
+                    function initPageInput(input) {
                         if (!input || minQty &lt;= 0) return;
                         input.setAttribute('min', minQty);
-                        if (!input.value || parseFloat(input.value) &lt; minQty) {
-                            input.value = minQty;
-                            input.dispatchEvent(new Event('change', { bubbles: true }));
-                        }
+                        if (!input.value || parseFloat(input.value) &lt; minQty) setNative(input, minQty);
                         input.addEventListener('change', function () { enforcePageMin(input); });
-                        input.addEventListener('blur', function () { enforcePageMin(input); });
+                        input.addEventListener('blur',   function () { enforcePageMin(input); });
                         setInterval(function () {
                             if (parseFloat(input.value) &lt; minQty) enforcePageMin(input);
                         }, 300);
                     }
 
-                    /* ---- Modal : erreur inline + label ---- */
-                    function injectModalLabel(input) {
-                        if (!input || minQty &lt;= 0) return;
+                    /* ---- Modal (Owl dialog / Bootstrap modal) ---- */
+                    var MODAL_SEL = [
+                        '.modal.show input[name="add_qty"]',
+                        '.modal.show input.js_quantity',
+                        '.modal-dialog input[name="add_qty"]',
+                        '.modal-dialog input.js_quantity',
+                        '.o_dialog input[name="add_qty"]',
+                        '.o_dialog input.js_quantity',
+                        '[role="dialog"] input[name="add_qty"]',
+                        '[role="dialog"] input.js_quantity'
+                    ].join(',');
+
+                    function addModalLabel(input) {
                         var cell = input.closest('td') || input.closest('.input-group') || input.parentNode;
-                        if (!cell || cell.querySelector('.pb-modal-label')) return;
-                        var lbl = document.createElement('div');
-                        lbl.className = 'pb-modal-label text-center text-muted mt-1';
-                        lbl.style.fontSize = '0.82em';
-                        lbl.innerHTML = 'Qté mini : <strong>' + minQtyLabel + '</strong>';
-                        cell.appendChild(lbl);
+                        if (!cell || cell.querySelector('.pb-modal-lbl')) return;
+                        var d = document.createElement('div');
+                        d.className = 'pb-modal-lbl text-center text-muted mt-1';
+                        d.style.fontSize = '0.82em';
+                        d.innerHTML = 'Qté mini : <strong>' + minLabel + '</strong>';
+                        cell.appendChild(d);
                     }
 
-                    function showModalError(input) {
-                        if (!input || minQty &lt;= 0) return;
+                    function showModalErr(input) {
                         var cell = input.closest('td') || input.closest('.input-group') || input.parentNode;
-                        if (!cell || cell.querySelector('.pb-modal-error')) return;
-                        var msg = document.createElement('div');
-                        msg.className = 'pb-modal-error text-center text-danger mt-1';
-                        msg.style.fontSize = '0.82em';
-                        msg.innerHTML = 'Qté minimale : <strong>' + minQtyLabel + '</strong>';
-                        cell.appendChild(msg);
-                        setTimeout(function () { if (msg.parentNode) msg.parentNode.removeChild(msg); }, 4000);
+                        if (!cell || cell.querySelector('.pb-modal-err')) return;
+                        var d = document.createElement('div');
+                        d.className = 'pb-modal-err text-center text-danger mt-1';
+                        d.style.fontSize = '0.82em';
+                        d.innerHTML = 'Qté minimale : <strong>' + minLabel + '</strong>';
+                        cell.appendChild(d);
+                        setTimeout(function () { if (d.parentNode) d.parentNode.removeChild(d); }, 4000);
                     }
 
-                    function enforceModalMin(input) {
-                        var val = parseFloat(input.value);
-                        if (isNaN(val) || val &lt; minQty) {
-                            input.value = minQty;
-                            ['input', 'change'].forEach(function (ev) {
-                                input.dispatchEvent(new Event(ev, { bubbles: true }));
-                            });
-                        }
-                    }
-
-                    /* ---- Surveillance continue des modales (robuste contre Owl) ---- */
                     if (minQty > 0) {
                         setInterval(function () {
-                            var selectors = '.modal.show input[name="add_qty"],' +
-                                            '.modal.show .js_quantity,' +
-                                            '.modal-dialog input[name="add_qty"],' +
-                                            '.modal-dialog .js_quantity';
-                            document.querySelectorAll(selectors).forEach(function (input) {
-                                if (input.type !== 'number') return;
-
-                                /* Label (une seule fois) */
-                                injectModalLabel(input);
-
-                                /* Listeners (une seule fois via dataset) */
-                                if (!input.dataset.pbMinApplied) {
-                                    input.dataset.pbMinApplied = '1';
-                                    input.setAttribute('min', minQty);
-                                    input.addEventListener('change', function () {
-                                        if (parseFloat(input.value) &lt; minQty) {
-                                            showModalError(input);
-                                            enforceModalMin(input);
-                                        }
+                            var inputs;
+                            try { inputs = document.querySelectorAll(MODAL_SEL); } catch(e) { return; }
+                            inputs.forEach(function (inp) {
+                                if (inp.type !== 'number' &amp;&amp; inp.type !== 'text') return;
+                                addModalLabel(inp);
+                                if (!inp.dataset.pbInit) {
+                                    inp.dataset.pbInit = '1';
+                                    inp.setAttribute('min', minQty);
+                                    inp.addEventListener('change', function () {
+                                        if (parseFloat(inp.value) &lt; minQty) { showModalErr(inp); setNative(inp, minQty); }
                                     });
-                                    input.addEventListener('blur', function () {
-                                        if (parseFloat(input.value) &lt; minQty) {
-                                            showModalError(input);
-                                            enforceModalMin(input);
-                                        }
+                                    inp.addEventListener('blur', function () {
+                                        if (parseFloat(inp.value) &lt; minQty) { showModalErr(inp); setNative(inp, minQty); }
                                     });
                                 }
-
-                                /* Correction permanente si Owl réinitialise la valeur */
-                                var val = parseFloat(input.value);
-                                if (!isNaN(val) &amp;&amp; val &lt; minQty) {
-                                    enforceModalMin(input);
-                                }
+                                var v = parseFloat(inp.value);
+                                if (!isNaN(v) &amp;&amp; v &lt; minQty) setNative(inp, minQty);
                             });
-                        }, 250);
+                        }, 150);
                     }
 
-                    /* ---- Page produit au chargement ---- */
+                    /* ---- Tableau prix dégressifs ---- */
                     document.addEventListener('DOMContentLoaded', function () {
-                        applyMinQtyToPageInput(document.querySelector('input[name="add_qty"]'));
+                        initPageInput(document.querySelector('input[name="add_qty"]'));
 
-                        /* Tableau prix dégressifs */
                         var rows = document.querySelectorAll('.price-break-row');
-                        var input = document.querySelector('input[name="add_qty"]');
-                        var lastValue = input ? input.value : '';
+                        var inp  = document.querySelector('input[name="add_qty"]');
+                        var last = inp ? inp.value : '';
 
-                        function highlightMatchingRow(qty) {
-                            var matched = null;
-                            rows.forEach(function (row) {
-                                if (qty >= parseFloat(row.dataset.qty)) matched = row;
+                        function highlight(qty) {
+                            var best = null;
+                            rows.forEach(function (r) {
+                                if (qty >= parseFloat(r.dataset.qty)) best = r;
                             });
                             rows.forEach(function (r) { r.classList.remove('price-break-active'); });
-                            if (matched) matched.classList.add('price-break-active');
+                            if (best) best.classList.add('price-break-active');
                         }
 
-                        function updateHighlight() {
-                            if (input &amp;&amp; input.value !== lastValue) {
-                                lastValue = input.value;
-                                var qty = parseFloat(input.value);
-                                if (!isNaN(qty)) highlightMatchingRow(qty);
+                        function onQtyChange() {
+                            if (inp &amp;&amp; inp.value !== last) {
+                                last = inp.value;
+                                var q = parseFloat(inp.value);
+                                if (!isNaN(q)) highlight(q);
                             }
                         }
 
-                        if (input) {
-                            input.addEventListener('input', updateHighlight);
-                            input.addEventListener('change', updateHighlight);
-                            setInterval(updateHighlight, 200);
-                            document.querySelectorAll('button, .btn, .fa-plus, .fa-minus, .btn-plus, .btn-minus').forEach(function (btn) {
-                                btn.addEventListener('click', function () { setTimeout(updateHighlight, 350); });
+                        if (inp) {
+                            inp.addEventListener('input',  onQtyChange);
+                            inp.addEventListener('change', onQtyChange);
+                            setInterval(onQtyChange, 200);
+                            document.querySelectorAll('button,.btn,.fa-plus,.fa-minus,.btn-plus,.btn-minus').forEach(function (b) {
+                                b.addEventListener('click', function () { setTimeout(onQtyChange, 350); });
                             });
                         }
 
                         rows.forEach(function (row) {
                             row.addEventListener('click', function () {
                                 var qty = Math.max(parseFloat(row.dataset.qty), minQty || 0);
-                                if (input) {
-                                    input.value = qty;
-                                    lastValue = qty.toString();
-                                    ['input', 'change', 'blur'].forEach(function (ev) {
-                                        input.dispatchEvent(new Event(ev, { bubbles: true }));
-                                    });
+                                if (inp) {
+                                    setNative(inp, qty);
+                                    last = qty.toString();
                                 }
-                                highlightMatchingRow(qty);
+                                highlight(qty);
                             });
                         });
                     });
@@ -240,14 +228,84 @@
                 </script>
 
                 <style>
-                    .price-break-table-container { width: 70%; max-width: 500px; }
-                    .price-break-row:hover { background-color: #c7eae5; }
-                    .price-break-active {
-                        background-color: #c7eae5 !important;
-                        border: 2px solid #79C8BD !important;
-                        font-weight: bold;
-                    }
+                    .price-break-table-container { width:70%; max-width:500px; }
+                    .price-break-row:hover { background-color:#c7eae5; }
+                    .price-break-active { background-color:#c7eae5 !important; border:2px solid #79C8BD !important; font-weight:bold; }
                 </style>
+            </xpath>
+        </template>
+
+        <!-- ============================================================
+             Toutes les pages : intercepteur fetch pour afficher le warning
+             du contrôleur cart_update_json sans rechargement
+             ============================================================ -->
+        <template id="website_sale_cart_warning_interceptor" inherit_id="website_sale.layout">
+            <xpath expr="//head" position="inside">
+                <script type="text/javascript">
+                (function () {
+                    function showCartWarning(msg) {
+                        var id = 'pb_cart_warning_toast';
+                        var box = document.getElementById(id);
+                        if (!box) {
+                            box = document.createElement('div');
+                            box.id = id;
+                            box.style.cssText = [
+                                'position:fixed','top:80px','right:20px','z-index:99999',
+                                'max-width:420px','padding:12px 16px','border-radius:6px',
+                                'background:#fff3cd','border:1px solid #ffc107',
+                                'color:#664d03','font-size:0.9em','box-shadow:0 2px 8px rgba(0,0,0,.15)'
+                            ].join(';');
+                            document.body.appendChild(box);
+                        }
+                        box.innerHTML = '<span style="margin-right:8px">&#9888;</span>' + msg;
+                        box.style.display = 'block';
+                        clearTimeout(box._t);
+                        box._t = setTimeout(function () { box.style.display = 'none'; }, 6000);
+                    }
+
+                    /* Interception fetch (Odoo 18 utilise fetch pour les appels JSON-RPC) */
+                    var _fetch = window.fetch;
+                    window.fetch = function (url, opts) {
+                        var p = _fetch.apply(this, arguments);
+                        try {
+                            var u = (url &amp;&amp; url.toString) ? url.toString() : '';
+                            if (u.indexOf('cart/update_json') !== -1 || u.indexOf('cart_update_json') !== -1) {
+                                p.then(function (resp) {
+                                    var clone = resp.clone();
+                                    clone.json().then(function (data) {
+                                        var w = (data &amp;&amp; data.result &amp;&amp; data.result.warning)
+                                             || (data &amp;&amp; data.warning);
+                                        if (w) showCartWarning(w);
+                                    }).catch(function () {});
+                                }).catch(function () {});
+                            }
+                        } catch(e) {}
+                        return p;
+                    };
+
+                    /* Interception XMLHttpRequest (fallback) */
+                    var _open = XMLHttpRequest.prototype.open;
+                    XMLHttpRequest.prototype.open = function (method, url) {
+                        this._pbUrl = url || '';
+                        return _open.apply(this, arguments);
+                    };
+                    var _send = XMLHttpRequest.prototype.send;
+                    XMLHttpRequest.prototype.send = function () {
+                        if (this._pbUrl &amp;&amp; (this._pbUrl.indexOf('cart/update_json') !== -1 || this._pbUrl.indexOf('cart_update_json') !== -1)) {
+                            var self = this;
+                            this.addEventListener('load', function () {
+                                try {
+                                    var data = JSON.parse(self.responseText);
+                                    var w = (data &amp;&amp; data.result &amp;&amp; data.result.warning)
+                                         || (data &amp;&amp; data.warning);
+                                    if (w) showCartWarning(w);
+                                } catch(e) {}
+                            });
+                        }
+                        return _send.apply(this, arguments);
+                    };
+                })();
+                </script>
             </xpath>
         </template>
 
