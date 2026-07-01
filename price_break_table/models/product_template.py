@@ -2,6 +2,7 @@
 
 from odoo import models, fields, api
 from odoo.tools import float_round
+from odoo.http import request
 import json
 
 
@@ -114,11 +115,13 @@ class ProductTemplate(models.Model):
         self.ensure_one()
         
         
-        # Récupération de la liste de prix : priorité au paramètre explicite,
-        # puis au contexte standard Odoo ('pricelist' est la clé utilisée par
-        # website_sale pour propager la pricelist du visiteur, pas 'pricelist_id'),
-        # puis à la pricelist du site web courant (comme get_website_min_purchase_qty)
-        # pour éviter de récupérer la pricelist d'un autre site en configuration multi-site.
+        # Récupération de la liste de prix : priorité au paramètre explicite, puis au
+        # contexte standard Odoo ('pricelist' est la clé utilisée par website_sale pour
+        # propager la pricelist du visiteur, pas 'pricelist_id'), puis à la pricelist du
+        # panier courant (même résolution que WebsiteSalePriceBreak.cart_update_json, qui
+        # applique déjà correctement le minimum de commande), puis à la pricelist "courante"
+        # du site web. Sans ça, on peut récupérer une pricelist différente de celle
+        # réellement appliquée au panier du visiteur sur ce site.
         if not pricelist_id:
             pricelist_id = self.env.context.get('pricelist') or self.env.context.get('pricelist_id')
 
@@ -127,8 +130,11 @@ class ProductTemplate(models.Model):
         else:
             pricelist = False
             try:
-                website = self.env['website'].get_current_website()
-                pricelist = website.get_current_pricelist()
+                order = request.website.sale_get_order()
+                if order and order.pricelist_id:
+                    pricelist = order.pricelist_id
+                else:
+                    pricelist = request.website.get_current_pricelist()
             except Exception:
                 pass
             if not pricelist:
