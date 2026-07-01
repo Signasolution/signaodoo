@@ -114,15 +114,26 @@ class ProductTemplate(models.Model):
         self.ensure_one()
         
         
-        # Récupération de la liste de prix
+        # Récupération de la liste de prix : priorité au paramètre explicite,
+        # puis au contexte standard Odoo ('pricelist' est la clé utilisée par
+        # website_sale pour propager la pricelist du visiteur, pas 'pricelist_id'),
+        # puis à la pricelist du site web courant (comme get_website_min_purchase_qty)
+        # pour éviter de récupérer la pricelist d'un autre site en configuration multi-site.
         if not pricelist_id:
-            pricelist_id = self.env.context.get('pricelist_id')
-        
+            pricelist_id = self.env.context.get('pricelist') or self.env.context.get('pricelist_id')
+
         if pricelist_id:
             pricelist = self.env['product.pricelist'].browse(pricelist_id)
         else:
-            pricelist = self.env['product.pricelist'].search([('active', '=', True)], limit=1)
-        
+            pricelist = False
+            try:
+                website = self.env['website'].get_current_website()
+                pricelist = website.get_current_pricelist()
+            except Exception:
+                pass
+            if not pricelist:
+                pricelist = self.env['product.pricelist'].search([('active', '=', True)], limit=1)
+
         if not pricelist.exists():
             pricelist = self.env['product.pricelist'].search([('active', '=', True)], limit=1)
         
