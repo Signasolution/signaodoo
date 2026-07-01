@@ -6,12 +6,6 @@ from odoo import models, fields, api
 class ProductPricelistItem(models.Model):
     _inherit = 'product.pricelist.item'
 
-    min_purchase_qty = fields.Float(
-        string='Qté min d\'achat',
-        digits='Product Unit of Measure',
-        default=0.0,
-        help="Quantité minimale d'unités que le client doit acheter pour bénéficier de ce tarif.",
-    )
     price_computed = fields.Float(
         string='Prix résultant',
         compute='_compute_price_computed',
