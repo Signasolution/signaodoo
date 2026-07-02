@@ -146,13 +146,29 @@ class ProductTemplate(models.Model):
             pricelist = self.env['product.pricelist'].search([('active', '=', True)], limit=1)
         
         if not pricelist:
-            return {'rows': [], 'currency': False, 'current_quantity': quantity}
-        
+            return {'rows': [], 'currency': False, 'current_quantity': quantity, 'min_purchase_qty': 0}
+
+        # Quantité minimale d'achat : calculée avant les retours anticipés ci-dessous,
+        # sinon elle disparaissait du résultat pour tout produit sans palier de prix
+        # dégressif configuré (le cas le plus courant quand seule la quantité minimale
+        # est utilisée), même si une règle product.min.purchase.qty existe bien.
+        min_rule = self.env['product.min.purchase.qty'].sudo().search([
+            ('product_tmpl_id', '=', self.id),
+            ('pricelist_id', '=', pricelist.id),
+            ('min_purchase_qty', '>', 0),
+        ], limit=1)
+        min_purchase_qty = min_rule.min_purchase_qty if min_rule else 0
+
         # Récupération des règles de prix pour ce produit
         price_rules = self._get_price_break_rules(pricelist, partner_id)
-        
+
         if not price_rules:
-            return {'rows': [], 'currency': pricelist.currency_id, 'current_quantity': quantity}
+            return {
+                'rows': [],
+                'currency': pricelist.currency_id,
+                'current_quantity': quantity,
+                'min_purchase_qty': min_purchase_qty,
+            }
         
         # Construction des lignes du tableau
         table_rows = []
@@ -187,18 +203,12 @@ class ProductTemplate(models.Model):
             })
             
         
-        min_rule = self.env['product.min.purchase.qty'].sudo().search([
-            ('product_tmpl_id', '=', self.id),
-            ('pricelist_id', '=', pricelist.id),
-            ('min_purchase_qty', '>', 0),
-        ], limit=1)
-
         result = {
             'rows': table_rows,
             'currency': pricelist.currency_id,
             'current_quantity': quantity,
             'pricelist_id': pricelist.id,
-            'min_purchase_qty': min_rule.min_purchase_qty if min_rule else 0,
+            'min_purchase_qty': min_purchase_qty,
         }
         return result
 
