@@ -118,10 +118,12 @@ class ProductTemplate(models.Model):
         # Récupération de la liste de prix : priorité au paramètre explicite, puis au
         # contexte standard Odoo ('pricelist' est la clé utilisée par website_sale pour
         # propager la pricelist du visiteur, pas 'pricelist_id'), puis à la pricelist du
-        # panier courant (même résolution que WebsiteSalePriceBreak.cart_update_json, qui
-        # applique déjà correctement le minimum de commande), puis à la pricelist "courante"
-        # du site web. Sans ça, on peut récupérer une pricelist différente de celle
-        # réellement appliquée au panier du visiteur sur ce site.
+        # panier courant. On force la création du panier (force_create=True) pour obtenir
+        # exactement la même pricelist que celle utilisée par
+        # WebsiteSalePriceBreak.cart_update_json lors de l'ajout au panier : sans ça,
+        # une page produit visitée avant tout ajout au panier peut afficher une pricelist
+        # différente de celle qui sera in fine appliquée à la commande (et donc un mauvais
+        # tableau de prix / une mauvaise quantité minimale).
         if not pricelist_id:
             pricelist_id = self.env.context.get('pricelist') or self.env.context.get('pricelist_id')
 
@@ -130,7 +132,7 @@ class ProductTemplate(models.Model):
         else:
             pricelist = False
             try:
-                order = request.website.sale_get_order()
+                order = request.website.sale_get_order(force_create=True)
                 if order and order.pricelist_id:
                     pricelist = order.pricelist_id
                 else:
