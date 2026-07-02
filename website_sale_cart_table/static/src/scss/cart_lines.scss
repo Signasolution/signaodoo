@@ -1,0 +1,128 @@
+// Mise en forme des lignes du panier (/shop/cart) — structure native en
+// <div> flex (o_cart_product) de website_sale, pas de <table>.
+// views/cart_templates.xml extrait la quantité, le prix total et le bouton
+// supprimer de leur wrapper commun pour en faire des colonnes flex
+// indépendantes, au même niveau que l'image et le bloc nom/description.
+// La largeur de la colonne "Récapitulatif de la commande" est aussi réduite
+// côté XML (cf. checkout_layout_cart_summary_width) pour laisser plus de
+// place ici.
+
+#cart_products {
+    // Filet de sécurité : si le contenu d'une colonne ne peut vraiment pas
+    // se compresser (mot très long, zoom navigateur important), le
+    // débordement reste confiné ici plutôt que d'élargir toute la page.
+    overflow-x: auto;
+
+    .o_cart_product {
+        align-items: center;
+
+        // Le bloc nom/description prend toute la place restante et peut se
+        // rétrécir sous sa largeur naturelle (nécessaire pour que les noms
+        // de produit longs passent à la ligne au lieu de forcer un
+        // débordement horizontal de la ligne entière).
+        > .flex-grow-1 {
+            min-width: 0;
+        }
+    }
+
+    // Ligne "Réf.: XXX • Attribut: Valeur • ..." ajoutée sous la description.
+    .o_cart_col_meta {
+        margin-top: 0.125rem;
+
+        .o_cart_col_meta_item + .o_cart_col_meta_item::before {
+            content: " • ";
+        }
+    }
+
+    .o_cart_col_unitprice {
+        flex: 0 0 auto;
+        align-self: center;
+        width: 90px;
+        white-space: nowrap;
+    }
+
+    // Contrôles +/- de quantité : la classe Bootstrap .input-group passe à
+    // la ligne (flex-wrap: wrap) dès qu'elle manque de place, ce qui donnait
+    // un bloc anormalement haut (boutons +/- sur une ligne, input en
+    // dessous). On force une seule ligne et on resserre l'input.
+    div[name="website_sale_cart_line_quantity"] {
+        flex: 0 0 auto;
+        align-self: center;
+        flex-wrap: nowrap !important;
+        width: 96px;
+        margin-bottom: 0 !important;
+
+        .js_quantity {
+            width: 32px;
+            min-width: 0;
+            padding-left: 0.25rem;
+            padding-right: 0.25rem;
+            text-align: center;
+        }
+
+        .btn-link {
+            padding-left: 0.4rem;
+            padding-right: 0.4rem;
+        }
+    }
+
+    div[name="website_sale_cart_line_price"] {
+        flex: 0 0 auto;
+        align-self: center;
+        width: 90px;
+        white-space: nowrap;
+    }
+
+    // Colonne "actions" : bouton supprimer natif + bouton "Save for Later"
+    // du module website_sale_wishlist s'il est installé (les deux sont
+    // déplacés ensemble car le second est injecté par ce module DANS le
+    // même conteneur, cf. commentaire en tête du fichier XML). Les deux
+    // suivent le même schéma responsive (lien texte desktop / bouton icône
+    // mobile) : on force l'icône seule à toutes les tailles pour rester
+    // compact.
+    div[name="o_wsale_cart_line_button_container"] {
+        flex: 0 0 auto;
+        align-self: center;
+        width: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.125rem;
+
+        a.d-md-inline-block,
+        span.d-md-inline-block {
+            display: none !important;
+        }
+
+        button.d-md-none {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem 0.5rem;
+        }
+    }
+}
+
+@include media-breakpoint-down(md) {
+    #cart_products .o_cart_product {
+        // Sous 768px : masque la description de vente et le prix unitaire
+        // pour laisser la place aux contrôles de quantité et au total,
+        // réduit l'image.
+        > div[style*="width: 64px"] {
+            width: 48px !important;
+
+            img, .o_image_64_max {
+                max-width: 40px;
+                max-height: 40px;
+            }
+        }
+
+        .flex-grow-1 > div.text-muted:not(.o_cart_col_meta) {
+            display: none;
+        }
+
+        .o_cart_col_unitprice {
+            display: none;
+        }
+    }
+}

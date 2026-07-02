@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Réorganise l'affichage des lignes du panier (website_sale.cart_lines)
+        en colonnes alignées (image / produit / prix unitaire / quantité /
+        total / suppression) SANS utiliser de <table> HTML : on garde la
+        structure native en <div> flex (o_cart_product) de website_sale et on
+        se contente d'y ajouter des colonnes flex supplémentaires.
+
+        Contrairement à une première version qui reconstruisait toute la ligne
+        en <table>, ici le <div t-foreach="..."> d'origine n'est JAMAIS
+        supprimé ni recréé : il reste le même nœud tout du long, avec ses
+        attributs t-foreach / t-attf-class / t-attf-data-product-id intacts.
+        On extrait seulement la quantité, le prix total et le bouton
+        supprimer du wrapper qui les regroupait (d-flex flex-column
+        align-items-end) pour en faire 3 colonnes flex indépendantes et
+        alignées, au même niveau que l'image et le bloc nom/description.
+
+        Aucun t-field/t-esc/t-out/t-call existant n'est dupliqué : tout est
+        déplacé via position="move" (cf. le module précédent pour le détail
+        du fonctionnement de ce mécanisme dans le moteur d'héritage Odoo).
+        Seuls le prix unitaire et la ligne "Réf. • attributs" sont de
+        nouveaux éléments, chacun appelant uniquement des champs/méthodes
+        publics déjà utilisés ailleurs par website_sale.
+
+        Le <div id="cart_products"> parent n'est pas touché : le template
+        standard website_sale.suggested_products_list en dépend (xpath
+        position="inside" dessus) pour y ajouter le bloc "Suggested
+        accessories".
+
+        Compatibilité website_sale_wishlist : ce module officiel ajoute son
+        bouton "Save for Later" (cœur) DANS
+        div[name="o_wsale_cart_line_button_container"] (position="inside"),
+        donc à l'intérieur du même conteneur que le bouton supprimer. Comme
+        ce conteneur est déplacé tel quel (étape 4), le bouton wishlist suit
+        automatiquement sans code supplémentaire ; seul le SCSS a besoin de
+        prévoir la place pour les deux boutons côte à côte.
+    -->
+    <template id="cart_lines_table" inherit_id="website_sale.cart_lines" name="Panier - Colonnes alignées">
+
+        <!-- Étape 1 : insère la colonne "Prix unitaire" juste après le bloc
+             nom/description (flex-grow-1). Prix recalculé dynamiquement :
+             même méthode que celle utilisée par le prix barré du template
+             d'origine (line._get_displayed_unit_price()), qui applique les
+             règles de pricelist (paliers min_quantity) selon la quantité
+             actuelle de la ligne. -->
+        <xpath expr="//div[@id='cart_products']/div[contains(@t-attf-class, 'o_cart_product')]//div[contains(@class, 'flex-grow-1')]" position="after">
+            <div class="o_cart_col_unitprice text-end">
+                <span t-out="line._get_displayed_unit_price()"
+                      t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+            </div>
+        </xpath>
+
+        <!-- Étape 2 : déplace le bloc quantité (+/-, input, avertissement)
+             juste après la colonne prix unitaire. Aucune modification :
+             website_sale.js cible ces éléments par classes (.js_quantity,
+             .js_add_cart_json) et par data-line-id/data-product-id, jamais
+             par leur position dans le DOM. -->
+        <xpath expr="//div[@id='cart_products']/div[contains(@t-attf-class, 'o_cart_product')]//div[contains(@class, 'o_cart_col_unitprice')]" position="after">
+            <xpath expr="//div[@id='cart_products']/div[contains(@t-attf-class, 'o_cart_product')]//div[@name='website_sale_cart_line_quantity']" position="move"/>
+        </xpath>
+
+        <!-- Étape 3 : déplace le prix total de la ligne juste après la
+             quantité (désormais elle-même une colonne indépendante). -->
+        <xpath expr="//div[@id='cart_products']/div[contains(@t-attf-class, 'o_cart_product')]//div[@name='website_sale_cart_line_quantity']" position="after">
+            <xpath expr="//div[@id='cart_products']/div[contains(@t-attf-class, 'o_cart_product')]//div[@name='website_sale_cart_line_price']" position="move"/>
+        </xpath>
+
+        <!-- Étape 4 : déplace le bouton supprimer (jusqu'ici imbriqué dans le
+             bloc nom/description) juste après le total, en toute dernière
+             colonne. -->
+        <xpath expr="//div[@id='cart_products']/div[contains(@t-attf-class, 'o_cart_product')]//div[@name='website_sale_cart_line_price']" position="after">
+            <xpath expr="//div[@id='cart_products']/div[contains(@t-attf-class, 'o_cart_product')]//div[@name='o_wsale_cart_line_button_container']" position="move"/>
+        </xpath>
+
+        <!-- Étape 5 : l'ancien wrapper "d-flex flex-column align-items-end"
+             qui regroupait quantité + prix est maintenant vide (ses deux
+             enfants ont été déplacés) ; on le supprime. -->
+        <xpath expr="//div[@id='cart_products']/div[contains(@t-attf-class, 'o_cart_product')]//div[contains(@class, 'd-flex') and contains(@class, 'flex-column') and contains(@class, 'align-items-end')]" position="replace"/>
+
+        <!-- Étape 6 : ajoute, sous la description, une ligne "Réf. • attribut:
+             valeur • attribut: valeur" (référence interne + attributs de
+             variante de la combinaison commandée). Les séparateurs "•" sont
+             ajoutés en CSS (sélecteur de frères adjacents), pas ici, pour
+             s'adapter automatiquement au nombre d'éléments présents. -->
+        <xpath expr="//div[@id='cart_products']/div[contains(@t-attf-class, 'o_cart_product')]//t[@t-call='website_sale.cart_line_description_following_lines']" position="after">
+            <div t-if="line.product_id.default_code or line.product_id.product_template_attribute_value_ids"
+                 class="o_cart_col_meta text-muted small">
+                <span t-if="line.product_id.default_code" class="o_cart_col_meta_item">Ref. : <t t-out="line.product_id.default_code"/></span>
+                <t t-foreach="line.product_id.product_template_attribute_value_ids" t-as="ptav">
+                    <span class="o_cart_col_meta_item"><t t-out="ptav.attribute_id.name"/>: <t t-out="ptav.name"/></span>
+                </t>
+            </div>
+        </xpath>
+
+    </template>
+
+    <!--
+        Réduit la largeur de la colonne "Récapitulatif de la commande" pour
+        laisser plus de place aux colonnes du panier et éviter le débordement
+        horizontal. <div id="o_cart_summary"> porte déjà
+        t-if="show_shorter_cart_summary", qui n'est mis à True que par
+        website_sale.cart : cette vue ne s'applique donc jamais sur les
+        étapes livraison/paiement du checkout (elles utilisent l'autre
+        branche, #o_wsale_total_accordion).
+    -->
+    <template id="checkout_layout_cart_summary_width" inherit_id="website_sale.checkout_layout" name="Panier - Plus de largeur pour les lignes">
+        <xpath expr="//div[@id='o_cart_summary']" position="attributes">
+            <attribute name="class" remove="offset-xl-1 col-lg-5 col-xl-4" add="col-lg-4 col-xl-3" separator=" "/>
+        </xpath>
+    </template>
+
+</odoo>
