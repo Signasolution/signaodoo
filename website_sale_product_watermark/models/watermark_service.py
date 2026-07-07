@@ -12,6 +12,19 @@ import os
 
 from PIL import Image, ImageDraw, ImageFont, ImageFile, ImageOps
 
+# Odoo fige l'initialisation des plugins Pillow à un sous-ensemble minimal
+# (odoo/tools/image.py : Image.preinit() puis Image._initialized = 2, soit
+# BMP/GIF/JPEG/PPM/PNG uniquement) : le décodeur WebP n'est donc jamais
+# enregistré dans les workers Odoo, même quand libwebp est disponible — or
+# Odoo 18 stocke justement les images produits en WebP. L'import explicite
+# du plugin l'enregistre immédiatement, indépendamment de ce gel.
+try:
+    from PIL import WebPImagePlugin  # noqa: F401
+except ImportError:
+    # Build Pillow sans support WebP : les images WebP resteront ignorées
+    # (avec le diagnostic détaillé dans les logs), sans casser le module.
+    pass
+
 # Tolère les fichiers légèrement tronqués/imparfaits (cas fréquent avec des
 # photos produits venant de sources diverses) plutôt que de faire échouer
 # tout le traitement pour un octet manquant en fin de fichier.
@@ -183,6 +196,9 @@ def composite(base_bytes, layer, config):
     output = io.BytesIO()
     if original_format == 'PNG':
         result.save(output, format='PNG')
+    elif original_format == 'WEBP':
+        # WebP supporte le canal alpha : on le conserve, comme pour le PNG.
+        result.save(output, format='WEBP', quality=95)
     else:
         result = result.convert('RGB')
         result.save(output, format=original_format, quality=95)
