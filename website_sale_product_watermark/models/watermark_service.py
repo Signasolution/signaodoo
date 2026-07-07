@@ -189,6 +189,35 @@ def composite(base_bytes, layer, config):
     return output.getvalue()
 
 
+_KNOWN_SIGNATURES = (
+    (b'\x89PNG\r\n\x1a\n', "PNG"),
+    (b'\xff\xd8\xff', "JPEG"),
+    (b'GIF87a', "GIF"),
+    (b'GIF89a', "GIF"),
+    (b'BM', "BMP"),
+)
+
+
+def _describe_bytes(data):
+    """Décrit sommairement des octets illisibles par Pillow, pour aider au
+    diagnostic dans les logs (WebP/HEIC ne sont pas des formats reconnus par
+    tous les builds de Pillow, contrairement au JPEG/PNG).
+    """
+    if not data:
+        return "0 octet (image vide)"
+    header_hex = data[:16].hex()
+    if data[:4] == b'RIFF' and data[8:12] == b'WEBP':
+        return "%d octets, format WebP (RIFF/WEBP) : nécessite le support WebP dans Pillow" % len(data)
+    if data[4:8] == b'ftyp':
+        return "%d octets, conteneur ISOBMFF (HEIC/HEIF/AVIF probable) : non supporté par Pillow" % len(data)
+    if data.lstrip()[:1] in (b'<',) and b'svg' in data[:200].lower():
+        return "%d octets, semble être un SVG (non supporté par Pillow)" % len(data)
+    for signature, name in _KNOWN_SIGNATURES:
+        if data.startswith(signature):
+            return "%d octets, en-tête %s reconnu mais fichier corrompu/tronqué" % (len(data), name)
+    return "%d octets, en-tête inconnu (hex: %s)" % (len(data), header_hex)
+
+
 def apply_watermark_to_image(image_b64, config):
     """Point d'entrée pratique : image source encodée en base64 (tel que
     stocké dans un champ Binary Odoo) -> image filigranée encodée en base64.
@@ -200,12 +229,14 @@ def apply_watermark_to_image(image_b64, config):
     """
     if not image_b64:
         return image_b64
+    base_bytes = base64.b64decode(image_b64)
     try:
-        base_bytes = base64.b64decode(image_b64)
         layer = build_layer(config)
         result_bytes = composite(base_bytes, layer, config)
     except WatermarkError:
         raise
     except Exception as exc:
-        raise WatermarkError("Image illisible ou format non pris en charge (%s)." % exc) from exc
+        raise WatermarkError(
+            "Image illisible ou format non pris en charge (%s) - %s" % (exc, _describe_bytes(base_bytes))
+        ) from exc
     return base64.b64encode(result_bytes)
