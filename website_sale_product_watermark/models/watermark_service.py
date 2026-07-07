@@ -180,10 +180,20 @@ def composite(base_bytes, layer, config):
 def apply_watermark_to_image(image_b64, config):
     """Point d'entrée pratique : image source encodée en base64 (tel que
     stocké dans un champ Binary Odoo) -> image filigranée encodée en base64.
+
+    Toute erreur de décodage/lecture Pillow (fichier corrompu, format non
+    supporté...) est convertie en WatermarkError afin que l'appelant (batch
+    ou aperçu) puisse l'ignorer proprement au lieu de faire planter tout le
+    traitement.
     """
     if not image_b64:
         return image_b64
-    base_bytes = base64.b64decode(image_b64)
-    layer = build_layer(config)
-    result_bytes = composite(base_bytes, layer, config)
+    try:
+        base_bytes = base64.b64decode(image_b64)
+        layer = build_layer(config)
+        result_bytes = composite(base_bytes, layer, config)
+    except WatermarkError:
+        raise
+    except Exception as exc:
+        raise WatermarkError("Image illisible ou format non pris en charge (%s)." % exc) from exc
     return base64.b64encode(result_bytes)
