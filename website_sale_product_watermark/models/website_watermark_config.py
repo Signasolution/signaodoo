@@ -54,8 +54,9 @@ class WebsiteWatermarkConfig(models.Model):
     font_color = fields.Char(string="Couleur du texte", default='#FFFFFF')
 
     watermark_image = fields.Image(
-        string="Image du filigrane (PNG)", max_width=0, max_height=0, attachment=True,
-        help="Doit être un PNG avec transparence (RGBA) pour un rendu correct.",
+        string="Image du filigrane (PNG ou JPEG)", max_width=0, max_height=0, attachment=True,
+        help="PNG recommandé pour un détourage avec transparence (RGBA). Un JPEG est "
+             "aussi accepté, mais son fond (opaque) sera visible sur le produit.",
     )
 
     position = fields.Selection(_POSITION_SELECTION, string="Position", default='bottom_right', required=True)
@@ -92,11 +93,11 @@ class WebsiteWatermarkConfig(models.Model):
                 record.preview_image = sample_b64
 
     @api.constrains('watermark_image')
-    def _check_watermark_image_is_png(self):
+    def _check_watermark_image_format(self):
         for record in self:
             if record.watermark_image:
                 try:
-                    watermark_service.validate_png_rgba(base64.b64decode(record.watermark_image))
+                    watermark_service.validate_watermark_image(base64.b64decode(record.watermark_image))
                 except watermark_service.WatermarkError as exc:
                     raise ValidationError(str(exc)) from exc
 

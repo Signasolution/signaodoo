@@ -14,8 +14,9 @@ appliqué sur les images des produits (fiche produit et variantes) :
 * Rotation, opacité et ratio de redimensionnement configurables.
 * Prévisualisation en temps réel sur une image produit d'exemple.
 * Application en lot à tous les templates produits et variantes du site.
-* Validation du format PNG et support de la transparence RGBA pour les
-  filigranes image.
+* Filigrane image au format PNG (transparence RGBA) ou JPEG (fond opaque).
+* Images produits supportées : PNG, JPEG/JPG (et tout format reconnu par
+  Pillow), avec gestion de l'orientation EXIF.
 * Police, couleur et taille configurables pour les filigranes texte.
 
 L'application est destructive : l'image du produit (image_1920 /

@@ -9,7 +9,8 @@ Module Odoo (18.0) qui incruste un filigrane (texte ou image) sur les images des
 - Rotation (-180° à 180°), opacité (0-255) et ratio de redimensionnement (par rapport à la largeur de l'image cible).
 - Prévisualisation en temps réel sur une image produit d'exemple, sans toucher aux vraies données.
 - Police, couleur et taille pour les filigranes texte (police personnalisée possible via upload d'un fichier .ttf).
-- Validation du format PNG et support de la transparence RGBA pour les filigranes image.
+- Filigrane image au format PNG (transparence RGBA) ou JPEG (fond opaque, sans détourage).
+- Images produits : PNG, JPEG/JPG (et tout format reconnu par Pillow), orientation EXIF respectée.
 - Application en lot à tous les templates produits et variantes rattachés au site.
 - Bouton "Restaurer l'image d'origine" sur la fiche produit.
 

@@ -10,7 +10,14 @@ import base64
 import io
 import os
 
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageFont, ImageFile, ImageOps
+
+# Tolère les fichiers légèrement tronqués/imparfaits (cas fréquent avec des
+# photos produits venant de sources diverses) plutôt que de faire échouer
+# tout le traitement pour un octet manquant en fin de fichier.
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
+_SUPPORTED_WATERMARK_FORMATS = {'PNG', 'JPEG'}
 
 FONTS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'fonts')
 
@@ -56,20 +63,25 @@ def _resolve_font_path(font_family, custom_font_file=None):
     return os.path.join(FONTS_DIR, filename)
 
 
-def validate_png_rgba(image_bytes):
-    """Vérifie que les octets fournis représentent bien un PNG, et renvoie
-    l'image chargée convertie en RGBA (support transparence garanti).
+def validate_watermark_image(image_bytes):
+    """Vérifie que les octets fournis représentent une image PNG ou JPEG, et
+    renvoie l'image chargée convertie en RGBA.
 
-    Lève WatermarkError si le fichier n'est pas un PNG valide.
+    Le PNG conserve sa transparence par pixel (RGBA d'origine). Le JPEG n'a
+    pas de canal alpha : il devient une image RGBA entièrement opaque, sur
+    laquelle le réglage global d'opacité du filigrane s'applique toujours,
+    mais sans détourage (le fond de l'image JPEG sera visible).
+
+    Lève WatermarkError si le fichier n'est ni un PNG ni un JPEG valide.
     """
     try:
         img = Image.open(io.BytesIO(image_bytes))
         img.load()
     except Exception as exc:
         raise WatermarkError("Le fichier fourni n'est pas une image valide.") from exc
-    if img.format != 'PNG':
+    if img.format not in _SUPPORTED_WATERMARK_FORMATS:
         raise WatermarkError(
-            "Le filigrane image doit être au format PNG (format détecté : %s)." % (img.format or 'inconnu')
+            "Le filigrane image doit être au format PNG ou JPEG (format détecté : %s)." % (img.format or 'inconnu')
         )
     return img.convert('RGBA')
 
@@ -88,7 +100,7 @@ def build_layer(config):
     if config['watermark_type'] == 'image':
         if not config.get('watermark_image_bytes'):
             raise WatermarkError("Aucune image de filigrane configurée.")
-        return validate_png_rgba(config['watermark_image_bytes'])
+        return validate_watermark_image(config['watermark_image_bytes'])
 
     text = (config.get('text_content') or '').strip()
     if not text:
