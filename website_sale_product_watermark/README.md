@@ -4,7 +4,7 @@ Module Odoo (18.0) qui incruste un filigrane (texte ou image) sur les images des
 
 ## Fonctionnalités
 
-- Filigrane texte ou image, bascule facile entre les deux modes (`Site Web > Configuration > Filigranes`).
+- Filigrane texte ou image, bascule facile entre les deux modes (`Site Web > Site > Filigranes`).
 - 9 positions : centre, 4 coins, 4 bords, avec marge configurable.
 - Rotation (-180° à 180°), opacité (0-255) et ratio de redimensionnement (par rapport à la largeur de l'image cible).
 - Prévisualisation en temps réel sur une image produit d'exemple, sans toucher aux vraies données.
@@ -50,7 +50,7 @@ sans onglet dédié sur la fiche variante.
 
 1. Copier le dossier `website_sale_product_watermark` dans les addons de l'instance Odoo.
 2. Mettre à jour la liste des modules, puis installer "Filigrane des Images Produits par Site Web".
-3. Configurer un filigrane par site depuis `Site Web > Configuration > Filigranes`.
+3. Configurer un filigrane par site depuis `Site Web > Site > Filigranes`.
 4. Lancer "Appliquer à tous les produits du site" depuis la fiche de configuration.
 
 ## Structure du module

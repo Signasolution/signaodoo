@@ -69,9 +69,9 @@
 
     <menuitem id="menu_website_watermark_config"
               name="Filigranes"
-              parent="website.menu_website_global_configuration"
+              parent="website.menu_site"
               action="action_website_watermark_config"
-              groups="base.group_system"
+              groups="website.group_website_designer"
               sequence="60"/>
 
 </odoo>
