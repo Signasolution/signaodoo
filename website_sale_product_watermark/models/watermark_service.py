@@ -198,6 +198,48 @@ _KNOWN_SIGNATURES = (
 )
 
 
+_WEBP_VP8X_FLAGS = (
+    (0x04, "ICC"),
+    (0x08, "Alpha"),
+    (0x10, "EXIF"),
+    (0x20, "XMP"),
+    (0x40, "Animation"),
+)
+
+
+def _describe_webp(data):
+    """Diagnostic détaillé d'un fichier WebP que Pillow n'a pas su ouvrir :
+    version de libwebp vue par Pillow, sous-format (simple/étendu) et
+    tentative d'ouverture en forçant explicitement le plugin WEBP (le
+    message d'erreur brut est parfois plus précis que le générique
+    "cannot identify image file").
+    """
+    parts = []
+    try:
+        from PIL import features
+        parts.append("Pillow features.version('webp') = %s" % features.version('webp'))
+    except Exception as exc:
+        parts.append("features.version('webp') a échoué : %s" % exc)
+
+    chunk = data[12:16]
+    if chunk == b'VP8X':
+        flags = data[20] if len(data) > 20 else 0
+        active = [name for bit, name in _WEBP_VP8X_FLAGS if flags & bit]
+        parts.append("format WebP étendu (VP8X), options : %s" % (", ".join(active) or "aucune"))
+    elif chunk in (b'VP8 ', b'VP8L'):
+        parts.append("format WebP simple (%s)" % chunk.decode(errors='replace').strip())
+    else:
+        parts.append("chunk après RIFF/WEBP inattendu : %r" % chunk)
+
+    try:
+        Image.open(io.BytesIO(data), formats=['WEBP']).load()
+        parts.append("réouverture forcée avec formats=['WEBP'] : SUCCÈS (étrange, revérifier)")
+    except Exception as exc:
+        parts.append("réouverture forcée avec formats=['WEBP'] : %s" % exc)
+
+    return " | ".join(parts)
+
+
 def _describe_bytes(data):
     """Décrit sommairement des octets illisibles par Pillow, pour aider au
     diagnostic dans les logs (WebP/HEIC ne sont pas des formats reconnus par
@@ -207,7 +249,7 @@ def _describe_bytes(data):
         return "0 octet (image vide)"
     header_hex = data[:16].hex()
     if data[:4] == b'RIFF' and data[8:12] == b'WEBP':
-        return "%d octets, format WebP (RIFF/WEBP) : nécessite le support WebP dans Pillow" % len(data)
+        return "%d octets, format WebP (RIFF/WEBP) : %s" % (len(data), _describe_webp(data))
     if data[4:8] == b'ftyp':
         return "%d octets, conteneur ISOBMFF (HEIC/HEIF/AVIF probable) : non supporté par Pillow" % len(data)
     if data.lstrip()[:1] in (b'<',) and b'svg' in data[:200].lower():
