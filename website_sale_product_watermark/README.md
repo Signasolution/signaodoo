@@ -12,9 +12,10 @@ Module Odoo (18.0) qui incruste un filigrane (texte ou image) sur les images des
 - Filigrane image au format PNG (transparence RGBA) ou JPEG (fond opaque, sans détourage).
 - Images produits : PNG, JPEG/JPG (et tout format reconnu par Pillow), orientation EXIF respectée.
 - Application en lot à tous les templates produits et variantes rattachés au site,
-  depuis l'écran de configuration du filigrane (pas de bouton sur la fiche produit,
-  pour éviter tout conflit avec des vues personnalisées via Odoo Studio — voir
-  "Limitation connue" ci-dessous).
+  depuis l'écran de configuration du filigrane.
+- Onglet "Filigrane" sur la fiche produit (boutons "Appliquer le filigrane" et
+  "Restaurer l'image d'origine", état du filigranage) — voir "Note technique"
+  ci-dessous pour le choix d'héritage de vue.
 
 ## Fonctionnement (application destructive)
 
@@ -27,17 +28,23 @@ Pour éviter tout effet cumulatif (filigrane appliqué sur un filigrane déjà p
 - Toute réapplication (changement de configuration puis nouveau passage du lot) repart toujours de cette sauvegarde.
 - Si un utilisateur remplace manuellement l'image d'un produit déjà filigrané, la sauvegarde est invalidée automatiquement : la nouvelle image devient la nouvelle référence "originale" pour le prochain filigranage.
 
-## Limitation connue
+## Note technique (héritage de vue)
 
-Il n'y a volontairement pas de vue ajoutée sur la fiche produit (ni template, ni
-variante) : `product.product_template_form_view`, la vue de base partagée entre
-la fiche produit et la fiche variante, est un point d'extension fragile dès que
-des personnalisations Odoo Studio existent sur ces fiches (une vue Studio peut
-dépendre de la position exacte d'un champ dans l'arch combiné, et casser dès
-qu'un autre module y ajoute du contenu). Les méthodes `action_apply_watermark`
-et `action_restore_original_image` existent toujours sur `product.template` et
-`product.product` et restent utilisables (bouton serveur, action automatisée,
-autre vue), seul le bouton visible par défaut sur la fiche produit a été retiré.
+L'onglet "Filigrane" hérite de `product.product_template_only_form_view` (la vue
+PRIMAIRE réservée à la fiche « Modèle de produit ») et **non** de la vue de base
+`product.product_template_form_view` partagée avec la fiche variante. Ce choix
+est délibéré : sur une installation avec des personnalisations Odoo Studio (cas
+fréquent), la vue de base partagée est un point d'extension fragile — un ajout
+par un module tiers peut décaler la structure et faire échouer une vue Studio
+qui dépend d'une position précise. En ciblant la vue « fiche produit uniquement »
+et en ajoutant une page nommée en fin de notebook, l'onglet n'impacte ni les
+fiches variantes ni les index positionnels utilisés par d'éventuelles vues
+Studio.
+
+Les méthodes `action_apply_watermark` et `action_restore_original_image` existent
+aussi bien sur `product.template` que sur `product.product`, donc elles restent
+utilisables sur les variantes via une action serveur ou une automatisation, même
+sans onglet dédié sur la fiche variante.
 
 ## Installation
 
