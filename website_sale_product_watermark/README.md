@@ -11,7 +11,10 @@ Module Odoo (18.0) qui incruste un filigrane (texte ou image) sur les images des
 - Police, couleur et taille pour les filigranes texte (police personnalisée possible via upload d'un fichier .ttf).
 - Filigrane image au format PNG (transparence RGBA) ou JPEG (fond opaque, sans détourage).
 - Images produits : PNG, JPEG/JPG (et tout format reconnu par Pillow), orientation EXIF respectée.
-- Application en lot à tous les templates produits et variantes rattachés au site,
+- Filigranage de **toutes les images** de chaque produit : l'image principale
+  et toutes les images supplémentaires de la galerie (`product.image`), aussi
+  bien pour le modèle produit que pour ses variantes.
+- Application en lot à tous les produits et variantes rattachés au site,
   depuis l'écran de configuration du filigrane.
 - Onglet "Filigrane" sur la fiche produit (boutons "Appliquer le filigrane" et
   "Restaurer l'image d'origine", état du filigranage) — voir "Note technique"
@@ -19,7 +22,7 @@ Module Odoo (18.0) qui incruste un filigrane (texte ou image) sur les images des
 
 ## Fonctionnement (application destructive)
 
-Le bouton "Appliquer à tous les produits du site" **réécrit directement** le champ image du produit (`image_1920`, ou `image_variant_1920` pour les variantes qui ont leur propre image). Ce n'est pas un rendu à la volée : l'image stockée en base est modifiée.
+Le bouton "Appliquer à tous les produits du site" **réécrit directement** les images du produit : l'image principale (`image_1920`, ou `image_variant_1920` pour les variantes) et chaque image de la galerie (`product.image.image_1920`). Ce n'est pas un rendu à la volée : les images stockées en base sont modifiées.
 
 Conséquence assumée : un produit rattaché à plusieurs sites ne peut porter qu'un seul filigrane à la fois (le dernier appliqué). Pour limiter ce risque, le lot ne traite **que les produits dont le champ `Site Web` (`website_id`) pointe explicitement vers le site traité** — les produits visibles sur tous les sites (`website_id` vide) sont ignorés par défaut.
 
@@ -63,8 +66,9 @@ website_sale_product_watermark/
 │   ├── __init__.py
 │   ├── watermark_service.py       # logique Pillow pure (aucune dépendance ORM)
 │   ├── website_watermark_config.py
-│   ├── product_template.py
-│   └── product_product.py
+│   ├── product_template.py        # image principale + galerie du modèle
+│   ├── product_product.py         # image + galerie propres à la variante
+│   └── product_image.py           # images de galerie (product.image)
 ├── views/
 │   └── website_watermark_config_views.xml
 ├── security/

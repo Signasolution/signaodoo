@@ -134,9 +134,13 @@ class WebsiteWatermarkConfig(models.Model):
                 self.env.cr.commit()
         self.env.cr.commit()
 
+        # Variantes ayant soit une image propre, soit une galerie propre :
+        # les deux sont filigranées par variant._apply_watermark.
         variants = self.env['product.product'].search([
             ('product_tmpl_id', 'in', templates.ids),
+            '|',
             ('image_variant_1920', '!=', False),
+            ('product_variant_image_ids', '!=', False),
         ])
         variants_processed = 0
         for index, variant in enumerate(variants, start=1):

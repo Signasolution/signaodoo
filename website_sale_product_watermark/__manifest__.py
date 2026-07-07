@@ -13,16 +13,19 @@ appliqué sur les images des produits (fiche produit et variantes) :
 * 9 positions (centre, coins, bords).
 * Rotation, opacité et ratio de redimensionnement configurables.
 * Prévisualisation en temps réel sur une image produit d'exemple.
-* Application en lot à tous les templates produits et variantes du site.
+* Filigranage de toutes les images de chaque produit : image principale et
+  images supplémentaires de la galerie (product.image), modèle et variantes.
+* Application en lot à tous les produits et variantes du site.
 * Filigrane image au format PNG (transparence RGBA) ou JPEG (fond opaque).
 * Images produits supportées : PNG, JPEG/JPG (et tout format reconnu par
   Pillow), avec gestion de l'orientation EXIF.
 * Police, couleur et taille configurables pour les filigranes texte.
 
-L'application est destructive : l'image du produit (image_1920 /
-image_variant_1920) est directement réécrite par le lot d'application. Une
-sauvegarde de l'image d'origine est conservée pour permettre une
-réapplication propre (sans effet cumulatif) ou une restauration.
+L'application est destructive : les images du produit (image_1920 /
+image_variant_1920 et les images de galerie product.image) sont directement
+réécrites par le lot d'application. Une sauvegarde de chaque image d'origine
+est conservée pour permettre une réapplication propre (sans effet cumulatif)
+ou une restauration.
     """,
     'version': '18.0.1.0.0',
     'category': 'Website/Website',
