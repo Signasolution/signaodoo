@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_website_watermark_config_user,website.watermark.config.user,model_website_watermark_config,base.group_user,1,0,0,0
+access_website_watermark_config_designer,website.watermark.config.designer,model_website_watermark_config,website.group_website_designer,1,1,1,1

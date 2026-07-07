@@ -1,0 +1,40 @@
+# -*- coding: utf-8 -*-
+{
+    'name': "Filigrane des Images Produits par Site Web",
+    'summary': "Incruste un filigrane (texte ou image) sur les images des produits, avec une configuration différente par site web.",
+    'description': """
+Filigrane des Images Produits par Site Web
+===========================================
+
+Permet de configurer, pour chaque site web (multi-site Odoo), un filigrane
+appliqué sur les images des produits (fiche produit et variantes) :
+
+* Filigrane texte ou image, avec bascule facile entre les deux modes.
+* 9 positions (centre, coins, bords).
+* Rotation, opacité et ratio de redimensionnement configurables.
+* Prévisualisation en temps réel sur une image produit d'exemple.
+* Application en lot à tous les templates produits et variantes du site.
+* Validation du format PNG et support de la transparence RGBA pour les
+  filigranes image.
+* Police, couleur et taille configurables pour les filigranes texte.
+
+L'application est destructive : l'image du produit (image_1920 /
+image_variant_1920) est directement réécrite par le lot d'application. Une
+sauvegarde de l'image d'origine est conservée pour permettre une
+réapplication propre (sans effet cumulatif) ou une restauration.
+    """,
+    'version': '18.0.1.0.0',
+    'category': 'Website/Website',
+    'author': 'Jean-Louis TROMPF',
+    'license': 'LGPL-3',
+    'depends': ['website_sale'],
+    'data': [
+        'security/ir.model.access.csv',
+        'views/website_watermark_config_views.xml',
+        'views/product_template_views.xml',
+        'views/product_product_views.xml',
+    ],
+    'installable': True,
+    'application': False,
+    'auto_install': False,
+}

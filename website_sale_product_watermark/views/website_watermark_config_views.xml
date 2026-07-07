@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_website_watermark_config_form" model="ir.ui.view">
+        <field name="name">website.watermark.config.form</field>
+        <field name="model">website.watermark.config</field>
+        <field name="arch" type="xml">
+            <form string="Configuration du filigrane">
+                <header>
+                    <button name="action_apply_to_website_products" type="object"
+                            string="Appliquer à tous les produits du site"
+                            class="oe_highlight"
+                            confirm="Cette action va réécrire l'image de tous les produits (et variantes) rattachés à ce site. Une sauvegarde de l'image d'origine est conservée. Continuer ?"/>
+                </header>
+                <sheet>
+                    <div class="row">
+                        <div class="col-7">
+                            <group>
+                                <field name="website_id"/>
+                                <field name="watermark_type" widget="radio" options="{'horizontal': true}"/>
+                            </group>
+                            <group string="Filigrane texte" invisible="watermark_type != 'text'">
+                                <field name="text_content"/>
+                                <field name="font_family"/>
+                                <field name="custom_font_file" filename="custom_font_filename"
+                                       invisible="font_family != 'custom'"/>
+                                <field name="custom_font_filename" invisible="1"/>
+                                <field name="font_color" widget="color"/>
+                            </group>
+                            <group string="Filigrane image" invisible="watermark_type != 'image'">
+                                <field name="watermark_image" widget="image" class="oe_avatar"/>
+                            </group>
+                            <group string="Position et rendu">
+                                <field name="position"/>
+                                <field name="margin"/>
+                                <field name="rotation"/>
+                                <field name="opacity"/>
+                                <field name="resize_ratio"/>
+                            </group>
+                        </div>
+                        <div class="col-5">
+                            <label for="preview_image" string="Aperçu en temps réel"/>
+                            <field name="preview_image" widget="image" class="oe_avatar" nolabel="1"/>
+                        </div>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_website_watermark_config_tree" model="ir.ui.view">
+        <field name="name">website.watermark.config.tree</field>
+        <field name="model">website.watermark.config</field>
+        <field name="arch" type="xml">
+            <list string="Configurations de filigrane">
+                <field name="website_id"/>
+                <field name="watermark_type"/>
+                <field name="position"/>
+                <field name="opacity"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_website_watermark_config" model="ir.actions.act_window">
+        <field name="name">Filigranes</field>
+        <field name="res_model">website.watermark.config</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_website_watermark_config"
+              name="Filigranes"
+              parent="website.menu_website_configuration"
+              action="action_website_watermark_config"
+              sequence="60"/>
+
+</odoo>
