@@ -11,8 +11,10 @@ Module Odoo (18.0) qui incruste un filigrane (texte ou image) sur les images des
 - Police, couleur et taille pour les filigranes texte (police personnalisée possible via upload d'un fichier .ttf).
 - Filigrane image au format PNG (transparence RGBA) ou JPEG (fond opaque, sans détourage).
 - Images produits : PNG, JPEG/JPG (et tout format reconnu par Pillow), orientation EXIF respectée.
-- Application en lot à tous les templates produits et variantes rattachés au site.
-- Bouton "Restaurer l'image d'origine" sur la fiche produit.
+- Application en lot à tous les templates produits et variantes rattachés au site,
+  depuis l'écran de configuration du filigrane (pas de bouton sur la fiche produit,
+  pour éviter tout conflit avec des vues personnalisées via Odoo Studio — voir
+  "Limitation connue" ci-dessous).
 
 ## Fonctionnement (application destructive)
 
@@ -24,7 +26,18 @@ Pour éviter tout effet cumulatif (filigrane appliqué sur un filigrane déjà p
 
 - Toute réapplication (changement de configuration puis nouveau passage du lot) repart toujours de cette sauvegarde.
 - Si un utilisateur remplace manuellement l'image d'un produit déjà filigrané, la sauvegarde est invalidée automatiquement : la nouvelle image devient la nouvelle référence "originale" pour le prochain filigranage.
-- Le bouton "Restaurer l'image d'origine" sur la fiche produit revient à l'image sauvegardée et retire le filigrane.
+
+## Limitation connue
+
+Il n'y a volontairement pas de vue ajoutée sur la fiche produit (ni template, ni
+variante) : `product.product_template_form_view`, la vue de base partagée entre
+la fiche produit et la fiche variante, est un point d'extension fragile dès que
+des personnalisations Odoo Studio existent sur ces fiches (une vue Studio peut
+dépendre de la position exacte d'un champ dans l'arch combiné, et casser dès
+qu'un autre module y ajoute du contenu). Les méthodes `action_apply_watermark`
+et `action_restore_original_image` existent toujours sur `product.template` et
+`product.product` et restent utilisables (bouton serveur, action automatisée,
+autre vue), seul le bouton visible par défaut sur la fiche produit a été retiré.
 
 ## Installation
 
@@ -46,10 +59,7 @@ website_sale_product_watermark/
 │   ├── product_template.py
 │   └── product_product.py
 ├── views/
-│   ├── website_watermark_config_views.xml
-│   └── product_template_views.xml     # l'onglet "Filigrane" apparaît aussi sur la
-│                                       # fiche variante (formulaire produit/variante
-│                                       # partagé), pas besoin de vue dédiée
+│   └── website_watermark_config_views.xml
 ├── security/
 │   └── ir.model.access.csv
 └── static/
