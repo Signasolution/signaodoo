@@ -46,8 +46,9 @@ website_sale_product_watermark/
 │   └── product_product.py
 ├── views/
 │   ├── website_watermark_config_views.xml
-│   ├── product_template_views.xml
-│   └── product_product_views.xml
+│   └── product_template_views.xml     # l'onglet "Filigrane" apparaît aussi sur la
+│                                       # fiche variante (formulaire produit/variante
+│                                       # partagé), pas besoin de vue dédiée
 ├── security/
 │   └── ir.model.access.csv
 └── static/

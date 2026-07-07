@@ -32,7 +32,6 @@ réapplication propre (sans effet cumulatif) ou une restauration.
         'security/ir.model.access.csv',
         'views/website_watermark_config_views.xml',
         'views/product_template_views.xml',
-        'views/product_product_views.xml',
     ],
     'installable': True,
     'application': False,
