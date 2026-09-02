@@ -50,6 +50,16 @@
     font-weight: bold;
 }
 
+/* ---- Cartes produit des pages de liste : « À partir de » ---- */
+
+.price-break-from-prefix {
+    margin-right: 0.25rem;
+}
+
+.price-break-from-qty {
+    line-height: 1.2;
+}
+
 /* ---- Avertissement de quantité minimale au panier ---- */
 
 .pb-cart-warning-toast {

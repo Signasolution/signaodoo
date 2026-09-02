@@ -68,5 +68,34 @@
             </xpath>
         </template>
 
+        <!-- ============================================================
+             Pages de liste (boutique, catégorie, snippets) : annonce du
+             meilleur tarif dégressif à la place du prix unitaire
+             ============================================================ -->
+        <template id="products_item_price_break_from" inherit_id="website_sale.products_item"
+                  name="Prix dégressif « à partir de » sur les cartes produit">
+            <xpath expr="//div[hasclass('product_price')]" position="before">
+                <t t-set="price_break_from" t-value="product.get_price_break_from_price()"/>
+            </xpath>
+
+            <!-- Le bloc de prix standard cède la place quand un palier est à annoncer. -->
+            <xpath expr="//div[hasclass('product_price')]" position="attributes">
+                <attribute name="t-if">not price_break_from</attribute>
+            </xpath>
+
+            <xpath expr="//div[hasclass('product_price')]" position="after">
+                <div t-if="price_break_from" class="product_price price-break-from"
+                     itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer">
+                    <span class="price-break-from-prefix small text-muted">À partir de</span>
+                    <span class="h6 mb-0" t-esc="price_break_from['price_formatted']"/>
+                    <span class="price-break-from-qty d-block small text-muted"
+                          t-esc="price_break_from['quantity_label']"/>
+                    <span itemprop="price" style="display:none;" t-esc="price_break_from['price']"/>
+                    <span itemprop="priceCurrency" style="display:none;"
+                          t-esc="price_break_from['currency_name']"/>
+                </div>
+            </xpath>
+        </template>
+
     </data>
 </odoo>

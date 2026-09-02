@@ -14,6 +14,19 @@ Module Odoo (18.0) qui affiche un tableau de prix par palier de quantité sur le
 - Application côté serveur du minimum de commande à l'ajout au panier (`cart_update_json` surchargé) : la quantité est corrigée automatiquement et un avertissement est renvoyé au client, affiché sans rechargement de page via une interception de `fetch`/`XMLHttpRequest`.
 - Contrainte de validation (`sale.order.line`) appliquée en backend uniquement (hors contexte site web, où le contrôleur gère déjà l'expérience utilisateur).
 
+### Cartes produit des pages de liste
+
+Sur la boutique, les pages de catégorie, les listes de souhaits et les snippets « produits recommandés » — tout ce qui passe par `website_sale.products_item` — un produit à paliers annonce son meilleur tarif au lieu de son prix unitaire :
+
+```
+À partir de 66,67 €
+dès 100 unités
+```
+
+Le prix retenu est le **plus bas de tous les paliers** de la liste de prix du visiteur (pas nécessairement celui du dernier palier, si la grille tarifaire n'est pas strictement décroissante), et la quantité affichée est celle à atteindre pour l'obtenir. Le bloc de prix standard d'Odoo reprend sa place dès qu'il n'y a rien à annoncer : produit sans palier, palier unique, ou paliers n'apportant aucun gain par rapport au premier.
+
+Attention : la carte n'affiche alors plus le prix à l'unité. Un visiteur qui n'achète qu'une pièce paiera le prix du premier palier, visible sur la fiche produit.
+
 ### Fiche produit (backend), onglet "Prix et quantités"
 
 - **Paliers de prix dégressifs** : une ligne par liste de prix et palier de quantité (`min_quantity`), avec type de calcul Fixe ou Remise (%), et aperçu du prix résultant et de l'économie réalisée par rapport au prix de vente du produit. Attention : cette colonne « Économie % » du backend se calcule par rapport au prix de vente du produit, contrairement à la colonne « Remise » du site qui se calcule par rapport au premier palier.
@@ -27,6 +40,12 @@ Le module est conçu pour fonctionner correctement sur une installation Odoo mul
 ## Règles prises en compte dans le tableau
 
 `ProductTemplate._get_price_break_rules` retient les règles de la liste de prix ayant `min_quantity > 0` et portant sur : ce modèle de produit, une de ses variantes, sa catégorie (ou une catégorie parente), ou aucun produit en particulier (règle globale de la liste).
+
+## Notes d'implémentation
+
+**Mémoïsation par requête.** Une page de liste rend des dizaines de cartes produit, chacune demandant le meilleur palier. `_price_break_cache()` stocke sur l'objet `request` la liste de prix résolue et les règles à palier de cette liste, de sorte qu'une page entière ne coûte qu'une résolution et une recherche, quel que soit le nombre de produits affichés. Le cache vit le temps de la requête HTTP et se désactive hors contexte web (appels backend, crons).
+
+**Pas de scrutation côté client.** Le sélecteur de quantité de la page produit est un composant Owl (`sale.QuantityButtons`) qui réécrit la valeur de l'input en patchant le DOM, sans émettre d'évènement — d'où la scrutation périodique des premières versions du module. `price_break_table.js` intercepte désormais la propriété `value` de l'input (plus un observateur sur l'attribut `value`, et les évènements habituels), et découvre les modales de variantes via un `MutationObserver`. Il ne reste qu'un `setInterval`, en filet de sécurité si l'interception ne peut pas être posée.
 
 ## Limitation connue
 
@@ -61,7 +80,7 @@ price_break_table/
 │       └── price_break_cart_warning.js # Toast d'avertissement à l'ajout au panier
 └── views/
     ├── product_backend_views.xml      # Onglet "Prix et quantités" sur la fiche produit
-    └── website_sale_templates.xml     # Markup du tableau et des contraintes de quantité
+    └── website_sale_templates.xml     # Tableau, contraintes de quantité, « à partir de »
 ```
 
 Le JS et le CSS sont chargés via `web.assets_frontend` sur toutes les pages du site ; `price_break_table.js` ne fait rien tant que le markup de la page produit n'est pas présent.

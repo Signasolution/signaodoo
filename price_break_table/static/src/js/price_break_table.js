@@ -3,9 +3,16 @@
  *
  * Chargé sur toutes les pages du site, mais ne fait rien tant que le markup
  * injecté par views/website_sale_templates.xml n'est pas présent.
+ *
+ * Le sélecteur de quantité est un composant Owl (sale.QuantityButtons) : il
+ * réécrit la valeur de l'input en patchant le DOM, sans émettre d'évènement.
+ * On intercepte donc la propriété « value » de l'input pour être notifié de ces
+ * écritures programmatiques, plutôt que de scruter la valeur en boucle.
  */
 (function () {
     "use strict";
+
+    var nativeValue = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value");
 
     function onReady(fn) {
         if (document.readyState === "loading") {
@@ -15,18 +22,66 @@
         }
     }
 
-    /* Setter natif : contourne le cache de valeur d'Owl. */
+    /* Écrit une valeur en contournant le cache d'Owl, et prévient la page. */
     function setNative(input, val) {
         try {
-            var setter = Object.getOwnPropertyDescriptor(
-                window.HTMLInputElement.prototype, "value").set;
-            setter.call(input, val);
+            nativeValue.set.call(input, val);
         } catch (e) {
             input.value = val;
         }
         ["input", "change"].forEach(function (ev) {
             input.dispatchEvent(new Event(ev, { bubbles: true }));
         });
+    }
+
+    /*
+     * Appelle `callback` à chaque changement de valeur de l'input, qu'il vienne
+     * de l'utilisateur ou d'une écriture programmatique. Renvoie false si
+     * l'interception n'a pas pu être posée, pour que l'appelant prévoie un
+     * filet de sécurité.
+     */
+    function watchValue(input, callback) {
+        ["input", "change", "blur"].forEach(function (ev) {
+            input.addEventListener(ev, callback);
+        });
+        /* Couvre le cas où la valeur est posée via setAttribute plutôt que
+           par la propriété interceptée ci-dessous. */
+        try {
+            new MutationObserver(callback).observe(input, {
+                attributes: true,
+                attributeFilter: ["value"]
+            });
+        } catch (e) {}
+        try {
+            Object.defineProperty(input, "value", {
+                configurable: true,
+                get: function () {
+                    return nativeValue.get.call(this);
+                },
+                set: function (v) {
+                    nativeValue.set.call(this, v);
+                    callback();
+                }
+            });
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    /* Regroupe les appels rapprochés et laisse Owl finir son rendu avant d'agir. */
+    function debounced(fn) {
+        var pending = false;
+        return function () {
+            if (pending) {
+                return;
+            }
+            pending = true;
+            setTimeout(function () {
+                pending = false;
+                fn();
+            }, 0);
+        };
     }
 
     function init() {
@@ -53,26 +108,74 @@
             errorTm = setTimeout(function () { errorBox.style.display = "none"; }, 5000);
         }
 
-        function enforcePageMin() {
-            if (parseFloat(input.value) < minQty) {
-                showPageError();
-                setNative(input, minQty);
+        /* ---- Tableau de prix dégressifs ---- */
+        function highlight(qty) {
+            var best = null;
+            rows.forEach(function (r) {
+                if (qty >= parseFloat(r.dataset.qty)) {
+                    best = r;
+                }
+            });
+            rows.forEach(function (r) { r.classList.remove("price-break-active"); });
+            if (best) {
+                best.classList.add("price-break-active");
             }
         }
 
-        if (input && minQty > 0) {
-            input.setAttribute("min", minQty);
-            if (!input.value || parseFloat(input.value) < minQty) {
-                setNative(input, minQty);
+        /* Seul point d'entrée réagissant à un changement de quantité. */
+        var syncing = false;
+        function sync() {
+            if (syncing || !input) {
+                return;
             }
-            input.addEventListener("change", enforcePageMin);
-            input.addEventListener("blur", enforcePageMin);
-            setInterval(enforcePageMin, 300);
+            syncing = true;
+            try {
+                var qty = parseFloat(input.value);
+                if (minQty > 0 && qty < minQty) {
+                    showPageError();
+                    setNative(input, minQty);
+                    qty = minQty;
+                }
+                if (!isNaN(qty)) {
+                    highlight(qty);
+                }
+            } finally {
+                syncing = false;
+            }
         }
+        var scheduleSync = debounced(sync);
+
+        if (input) {
+            if (minQty > 0) {
+                input.setAttribute("min", minQty);
+                if (!input.value || parseFloat(input.value) < minQty) {
+                    setNative(input, minQty);
+                }
+            }
+            if (!watchValue(input, scheduleSync)) {
+                // L'interception a échoué : on retombe sur une surveillance lente.
+                setInterval(sync, 500);
+            }
+            sync();
+        }
+
+        rows.forEach(function (row) {
+            row.addEventListener("click", function () {
+                var qty = Math.max(parseFloat(row.dataset.qty), minQty || 0);
+                if (input) {
+                    setNative(input, qty);
+                }
+                highlight(qty);
+            });
+        });
 
         /* ---- Minimum de commande : modales de variantes ---- */
-        /* On cible tout input[type=number] dans un conteneur dialog ; l'input de
-           la page produit elle-même n'est jamais dans un dialog. */
+        /* Les modales sont montées à la volée : on les découvre via un observer
+           plutôt qu'en scrutant le DOM en boucle. */
+        if (minQty <= 0) {
+            return;
+        }
+
         var MODAL_SEL = [
             '.modal.show input[type="number"]',
             '.modal-dialog input[type="number"]',
@@ -112,85 +215,37 @@
             }, 4000);
         }
 
-        function enforceModalMin(inp) {
-            if (parseFloat(inp.value) < minQty) {
-                showModalErr(inp);
-                setNative(inp, minQty);
+        function scanModals() {
+            var inputs;
+            try {
+                inputs = document.querySelectorAll(MODAL_SEL);
+            } catch (e) {
+                return;
             }
-        }
-
-        if (minQty > 0) {
-            setInterval(function () {
-                var inputs;
-                try {
-                    inputs = document.querySelectorAll(MODAL_SEL);
-                } catch (e) {
-                    return;
+            inputs.forEach(function (inp) {
+                addModalLabel(inp);
+                if (!inp.dataset.pbInit) {
+                    inp.dataset.pbInit = "1";
+                    inp.setAttribute("min", minQty);
+                    var enforce = debounced(function () {
+                        if (parseFloat(inp.value) < minQty) {
+                            showModalErr(inp);
+                            setNative(inp, minQty);
+                        }
+                    });
+                    watchValue(inp, enforce);
                 }
-                inputs.forEach(function (inp) {
-                    addModalLabel(inp);
-                    if (!inp.dataset.pbInit) {
-                        inp.dataset.pbInit = "1";
-                        inp.setAttribute("min", minQty);
-                        inp.addEventListener("change", function () { enforceModalMin(inp); });
-                        inp.addEventListener("blur", function () { enforceModalMin(inp); });
-                    }
-                    var v = parseFloat(inp.value);
-                    if (!isNaN(v) && v < minQty) {
-                        setNative(inp, minQty);
-                    }
-                });
-            }, 150);
-        }
-
-        /* ---- Tableau de prix dégressifs ---- */
-        if (!rows.length) {
-            return;
-        }
-        var last = input ? input.value : "";
-
-        function highlight(qty) {
-            var best = null;
-            rows.forEach(function (r) {
-                if (qty >= parseFloat(r.dataset.qty)) {
-                    best = r;
+                if (parseFloat(inp.value) < minQty) {
+                    setNative(inp, minQty);
                 }
-            });
-            rows.forEach(function (r) { r.classList.remove("price-break-active"); });
-            if (best) {
-                best.classList.add("price-break-active");
-            }
-        }
-
-        function onQtyChange() {
-            if (input.value !== last) {
-                last = input.value;
-                var q = parseFloat(input.value);
-                if (!isNaN(q)) {
-                    highlight(q);
-                }
-            }
-        }
-
-        if (input) {
-            input.addEventListener("input", onQtyChange);
-            input.addEventListener("change", onQtyChange);
-            setInterval(onQtyChange, 200);
-            document.querySelectorAll("button,.btn,.fa-plus,.fa-minus,.btn-plus,.btn-minus").forEach(function (b) {
-                b.addEventListener("click", function () { setTimeout(onQtyChange, 350); });
             });
         }
 
-        rows.forEach(function (row) {
-            row.addEventListener("click", function () {
-                var qty = Math.max(parseFloat(row.dataset.qty), minQty || 0);
-                if (input) {
-                    setNative(input, qty);
-                    last = qty.toString();
-                }
-                highlight(qty);
-            });
+        new MutationObserver(debounced(scanModals)).observe(document.body, {
+            childList: true,
+            subtree: true
         });
+        scanModals();
     }
 
     onReady(init);

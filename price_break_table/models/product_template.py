@@ -81,6 +81,28 @@ class ProductTemplate(models.Model):
             },
         }
 
+    @staticmethod
+    def _price_break_cache():
+        """Cache à l'échelle de la requête HTTP, ou None hors contexte web.
+
+        Les pages de liste (boutique, catégorie, snippets) rendent des dizaines de
+        produits : sans mémoïsation, la résolution de la liste de prix et la
+        recherche de ses paliers seraient relancées pour chacun d'eux.
+        """
+        try:
+            if not request:
+                return None
+        except Exception:
+            return None
+        cache = getattr(request, '_price_break_cache', None)
+        if cache is None:
+            cache = {}
+            try:
+                request._price_break_cache = cache
+            except Exception:
+                return None
+        return cache
+
     def _get_price_break_pricelist(self, pricelist_id=None):
         """Liste de prix à utiliser pour l'affichage site de ce produit.
 
@@ -103,6 +125,10 @@ class ProductTemplate(models.Model):
             if pricelist:
                 return pricelist
 
+        cache = self._price_break_cache()
+        if cache is not None and 'pricelist' in cache:
+            return cache['pricelist']
+
         pricelist = False
         try:
             order = request.website.sale_get_order()
@@ -114,6 +140,9 @@ class ProductTemplate(models.Model):
             pass
         if not pricelist:
             pricelist = self.env['product.pricelist'].search([('active', '=', True)], limit=1)
+
+        if cache is not None:
+            cache['pricelist'] = pricelist
         return pricelist
 
     def _get_min_purchase_qty(self, pricelist):
@@ -182,6 +211,60 @@ class ProductTemplate(models.Model):
             return ''
         return ('-%g %%' % rounded).replace('.', ',')
 
+    def _get_price_break_items(self, pricelist):
+        """Toutes les règles à palier de la liste de prix, mémoïsées pour la requête.
+
+        Le filtrage par produit se fait ensuite en Python (voir
+        _get_price_break_rules) : une seule recherche sert ainsi tous les produits
+        d'une page de liste.
+        """
+        cache = self._price_break_cache()
+        key = ('items', pricelist.id)
+        if cache is not None and key in cache:
+            return cache[key]
+
+        items = self.env['product.pricelist.item'].search([
+            ('pricelist_id', '=', pricelist.id),
+            ('min_quantity', '>', 0),
+        ])
+
+        if cache is not None:
+            cache[key] = items
+        return items
+
+    def get_price_break_from_price(self):
+        """Meilleur palier à annoncer sur les cartes produit des pages de liste.
+
+        :return: dict (prix, quantité, libellés) ou False si le produit n'a pas de
+            palier avantageux — auquel cas la carte garde son prix habituel.
+        """
+        self.ensure_one()
+
+        pricelist = self._get_price_break_pricelist()
+        if not pricelist:
+            return False
+
+        rules = self._get_price_break_rules(pricelist)
+        if len(rules) < 2:
+            return False
+
+        best = min(rules, key=lambda rule: rule['price'])
+        # Rien à annoncer si le meilleur palier ne fait pas mieux que le premier.
+        if best['price'] >= rules[0]['price']:
+            return False
+
+        min_qty = best['min_quantity']
+        qty_display = int(min_qty) if min_qty == int(min_qty) else min_qty
+        uom = (self.uom_name or '').lower()
+
+        return {
+            'price': round(best['price'], 2),
+            'price_formatted': pricelist.currency_id.format(best['price']),
+            'currency_name': pricelist.currency_id.name,
+            'min_quantity': min_qty,
+            'quantity_label': 'dès %s %s' % (qty_display, uom) if uom else 'dès %s' % qty_display,
+        }
+
     def _get_price_break_rules(self, pricelist):
         """Paliers de la liste de prix applicables à ce produit, triés par quantité.
 
@@ -190,10 +273,7 @@ class ProductTemplate(models.Model):
         """
         self.ensure_one()
 
-        items = self.env['product.pricelist.item'].search([
-            ('pricelist_id', '=', pricelist.id),
-            ('min_quantity', '>', 0),
-        ])
+        items = self._get_price_break_items(pricelist)
 
         # parent_path vaut « 1/5/12/ » : les ids de la catégorie et de ses parents.
         categ_path = (self.categ_id.parent_path or '').split('/')
