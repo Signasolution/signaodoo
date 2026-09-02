@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
-from odoo.tools import float_round
+from odoo import models, fields
 from odoo.http import request
-import json
 
 
 class ProductTemplate(models.Model):
@@ -40,26 +38,6 @@ class ProductTemplate(models.Model):
             })
         # Retourner False recharge le formulaire et rafraîchit le tableau sans rechargement de page
         return False
-
-    def get_website_min_purchase_qty(self):
-        """Retourne la quantité minimale d'achat pour la liste de prix active sur le site."""
-        self.ensure_one()
-        pricelist_id = self.env.context.get('pricelist_id')
-        if not pricelist_id:
-            try:
-                website = self.env['website'].get_current_website()
-                pricelist = website.get_current_pricelist()
-                pricelist_id = pricelist.id if pricelist else None
-            except Exception:
-                return 0
-        if not pricelist_id:
-            return 0
-        rule = self.env['product.min.purchase.qty'].sudo().search([
-            ('product_tmpl_id', '=', self.id),
-            ('pricelist_id', '=', pricelist_id),
-            ('min_purchase_qty', '>', 0),
-        ], limit=1)
-        return rule.min_purchase_qty if rule else 0
 
     def action_generate_discount_tarifs(self):
         """Génère/met à jour les règles de prix dans les listes cibles depuis les remises définies."""
@@ -103,219 +81,144 @@ class ProductTemplate(models.Model):
             },
         }
 
-    def get_price_break_table_data(self, pricelist_id=None, partner_id=None, quantity=1.0):
+    def _get_price_break_pricelist(self, pricelist_id=None):
+        """Liste de prix à utiliser pour l'affichage site de ce produit.
+
+        Priorité au paramètre explicite, puis au contexte standard Odoo
+        ('pricelist' est la clé utilisée par website_sale pour propager la
+        pricelist du visiteur, pas 'pricelist_id'), puis à la pricelist du panier
+        courant s'il existe déjà (même résolution que
+        WebsiteSalePriceBreak.cart_update_json), puis à la pricelist "courante" du
+        site web. Sans ça, on peut récupérer une pricelist différente de celle
+        réellement appliquée au panier du visiteur sur ce site.
+
+        On ne force pas la création du panier ici : ce serait un effet de bord
+        (panier vide créé à chaque simple visite de page produit) pour un cas qui
+        n'est plus nécessaire une fois min_purchase_qty calculé correctement.
         """
-        Retourne les données du tableau de prix dégressifs pour un produit donné.
-        
-        :param pricelist_id: ID de la liste de prix à utiliser
-        :param partner_id: ID du partenaire pour les prix spécifiques
-        :param quantity: Quantité actuelle pour la surbrillance
-        :return: dict avec les données du tableau
-        """
-        self.ensure_one()
-        
-        
-        # Récupération de la liste de prix : priorité au paramètre explicite, puis au
-        # contexte standard Odoo ('pricelist' est la clé utilisée par website_sale pour
-        # propager la pricelist du visiteur, pas 'pricelist_id'), puis à la pricelist du
-        # panier courant s'il existe déjà (même résolution que
-        # WebsiteSalePriceBreak.cart_update_json), puis à la pricelist "courante" du site
-        # web. On ne force pas la création du panier ici : ce serait un effet de bord
-        # (panier vide créé à chaque simple visite de page produit) pour un cas qui n'est
-        # plus nécessaire une fois min_purchase_qty calculé correctement (voir plus bas).
         if not pricelist_id:
             pricelist_id = self.env.context.get('pricelist') or self.env.context.get('pricelist_id')
-
         if pricelist_id:
-            pricelist = self.env['product.pricelist'].browse(pricelist_id)
-        else:
-            pricelist = False
-            try:
-                order = request.website.sale_get_order()
-                if order and order.pricelist_id:
-                    pricelist = order.pricelist_id
-                else:
-                    pricelist = request.website.get_current_pricelist()
-            except Exception:
-                pass
-            if not pricelist:
-                pricelist = self.env['product.pricelist'].search([('active', '=', True)], limit=1)
+            pricelist = self.env['product.pricelist'].browse(pricelist_id).exists()
+            if pricelist:
+                return pricelist
 
-        if not pricelist.exists():
-            pricelist = self.env['product.pricelist'].search([('active', '=', True)], limit=1)
-        
+        pricelist = False
+        try:
+            order = request.website.sale_get_order()
+            if order and order.pricelist_id:
+                pricelist = order.pricelist_id
+            else:
+                pricelist = request.website.get_current_pricelist()
+        except Exception:
+            pass
         if not pricelist:
-            return {'rows': [], 'currency': False, 'current_quantity': quantity, 'min_purchase_qty': 0}
+            pricelist = self.env['product.pricelist'].search([('active', '=', True)], limit=1)
+        return pricelist
 
-        # Quantité minimale d'achat : calculée avant les retours anticipés ci-dessous,
-        # sinon elle disparaissait du résultat pour tout produit sans palier de prix
-        # dégressif configuré (le cas le plus courant quand seule la quantité minimale
-        # est utilisée), même si une règle product.min.purchase.qty existe bien.
-        min_rule = self.env['product.min.purchase.qty'].sudo().search([
+    def _get_min_purchase_qty(self, pricelist):
+        """Quantité minimale de commande de ce produit pour une liste de prix (0 = aucune)."""
+        self.ensure_one()
+        if not pricelist:
+            return 0
+        rule = self.env['product.min.purchase.qty'].sudo().search([
             ('product_tmpl_id', '=', self.id),
             ('pricelist_id', '=', pricelist.id),
             ('min_purchase_qty', '>', 0),
         ], limit=1)
-        min_purchase_qty = min_rule.min_purchase_qty if min_rule else 0
+        return rule.min_purchase_qty if rule else 0
 
-        # Récupération des règles de prix pour ce produit
-        price_rules = self._get_price_break_rules(pricelist, partner_id)
+    def get_website_min_purchase_qty(self):
+        """Quantité minimale d'achat pour la liste de prix active sur le site."""
+        self.ensure_one()
+        return self._get_min_purchase_qty(self._get_price_break_pricelist())
 
-        if not price_rules:
-            return {
-                'rows': [],
-                'currency': pricelist.currency_id,
-                'current_quantity': quantity,
-                'min_purchase_qty': min_purchase_qty,
-            }
-        
-        # Construction des lignes du tableau
-        table_rows = []
-        for rule in price_rules:
-            min_qty = rule.get('min_quantity', 0)
-            max_qty = rule.get('max_quantity', 0)
-            price = rule.get('price', 0)
-            
-            # Formatage de la quantité (enlever les décimales inutiles)
-            if max_qty and max_qty != 999999:
-                if min_qty == int(min_qty):
-                    qty_display = f"{int(min_qty)}+ à {int(max_qty)}"
-                else:
-                    qty_display = f"{min_qty}+ à {max_qty}"
-            else:
-                if min_qty == int(min_qty):
-                    qty_display = f"{int(min_qty)}+"
-                else:
-                    qty_display = f"{min_qty}+"
-            
-            # Détermination si cette ligne est active (correspond à la quantité actuelle)
-            is_active = min_qty <= quantity and (not max_qty or max_qty >= quantity)
-            
-            table_rows.append({
-                'min_quantity': min_qty,
-                'max_quantity': max_qty,
-                'quantity_display': qty_display,
-                'price': price,
-                'price_formatted': pricelist.currency_id.format(price),
-                'is_active': is_active,
-                'rule_id': rule.get('id'),
-            })
-            
-        
-        result = {
-            'rows': table_rows,
-            'currency': pricelist.currency_id,
-            'current_quantity': quantity,
-            'pricelist_id': pricelist.id,
-            'min_purchase_qty': min_purchase_qty,
-        }
-        return result
+    def get_price_break_table_data(self, pricelist_id=None):
+        """Données du tableau de prix dégressifs pour la page produit du site.
 
-    def _get_price_break_rules(self, pricelist, partner_id=None):
-        """
-        Récupère les règles de prix dégressifs pour un produit et une liste de prix.
-        Utilise la même logique de priorité qu'Odoo.
+        :param pricelist_id: ID de la liste de prix à forcer (sinon résolution
+            automatique via _get_price_break_pricelist)
+        :return: dict avec les clés rows, currency, pricelist_id, min_purchase_qty
         """
         self.ensure_one()
-        
-        try:
-            # Recherche des règles de prix
-            all_rules = self.env['product.pricelist.item'].search([
-                ('pricelist_id', '=', pricelist.id),
-                ('min_quantity', '>', 0),
-            ])
-            
-            # Filtrer les règles applicables à ce produit
-            applicable_rules = []
-            for rule in all_rules:
-                # Vérifier si la règle s'applique à ce produit
-                is_applicable = False
-                
-                # Règle spécifique au produit
-                if rule.product_tmpl_id and rule.product_tmpl_id.id == self.id:
-                    is_applicable = True
-                
-                # Règle spécifique à une variante du produit
-                elif rule.product_id and rule.product_id.product_tmpl_id.id == self.id:
-                    is_applicable = True
-                
-                # Règle globale (pas de produit spécifique)
-                elif not rule.product_tmpl_id and not rule.product_id:
-                    is_applicable = True
-                
-                # Règle par catégorie
-                elif rule.categ_id and self.categ_id and rule.categ_id in self.categ_id.parent_path.split('/'):
-                    is_applicable = True
-                
-                if is_applicable:
-                    # Calcul du prix direct (comme dans la méthode debug)
-                    if rule.compute_price == 'fixed':
-                        price = rule.fixed_price
-                    elif rule.compute_price == 'percentage':
-                        price = self.list_price * (1 - rule.percent_price / 100)
-                    else:
-                        price = self.list_price
-                    
-                    applicable_rules.append({
-                        'id': rule.id,
-                        'min_quantity': rule.min_quantity,
-                        'max_quantity': 999999,  # Valeur JSON valide au lieu d'infinity
-                        'price': price,
-                        'sequence': rule.id,
-                    })
-            
-            # Tri par quantité minimale
-            applicable_rules.sort(key=lambda x: x['min_quantity'])
-            
-            return applicable_rules
-            
-        except Exception as e:
-            return []
 
-    def _is_rule_applicable(self, rule, partner_id=None):
-        """Vérifie si une règle de prix est applicable"""
-        # Vérification du partenaire
-        if rule.partner_id and partner_id and rule.partner_id.id != partner_id:
-            return False
-        
-        # Vérification des dates
-        if rule.date_start and rule.date_start > fields.Datetime.now():
-            return False
-        if rule.date_end and rule.date_end < fields.Datetime.now():
-            return False
-        
-        # Vérification des catégories
-        if rule.categ_id and rule.categ_id not in self.categ_id.parent_path.split('/'):
-            return False
-        
-        return True
+        pricelist = self._get_price_break_pricelist(pricelist_id)
+        if not pricelist:
+            return {'rows': [], 'currency': False, 'pricelist_id': False, 'min_purchase_qty': 0}
 
-    def _compute_price_with_pricelist(self, pricelist, rule):
-        """Calcule le prix selon la règle avec la méthode Odoo standard"""
-        try:
-            # Utilisation de la méthode standard d'Odoo pour calculer le prix
-            if rule.compute_price == 'fixed':
-                return rule.fixed_price
-            elif rule.compute_price == 'percentage':
-                base_price = self.list_price
-                return base_price * (1 - rule.percent_price / 100)
-            elif rule.compute_price == 'formula':
-                # Logique de formule (simplifiée)
-                base_price = self.list_price
-                return base_price * (1 + rule.price_discount / 100)
-            
-            # Fallback : prix de base
-            return self.list_price
-        except Exception:
-            return self.list_price
+        rules = self._get_price_break_rules(pricelist)
 
-    @api.model
-    def get_price_break_table_js_data(self, product_id, pricelist_id=None, partner_id=None, quantity=1.0):
+        # La remise affichée est relative au premier palier de la même liste de prix :
+        # le tableau montre le gain lié au volume, sans y mélanger la remise dont le
+        # visiteur bénéficie déjà au titre de sa catégorie de client.
+        reference_price = rules[0]['price'] if rules else 0.0
+
+        rows = []
+        for rule in rules:
+            price = rule['price']
+            min_qty = rule['min_quantity']
+            discount = (reference_price - price) / reference_price * 100.0 if reference_price else 0.0
+            rows.append({
+                'min_quantity': min_qty,
+                'quantity_display': '%s+' % (int(min_qty) if min_qty == int(min_qty) else min_qty),
+                'price': price,
+                'price_formatted': pricelist.currency_id.format(price),
+                'discount_percent': discount,
+                'discount_display': self._format_price_break_discount(discount),
+            })
+
+        return {
+            'rows': rows,
+            'currency': pricelist.currency_id,
+            'pricelist_id': pricelist.id,
+            'min_purchase_qty': self._get_min_purchase_qty(pricelist),
+        }
+
+    @staticmethod
+    def _format_price_break_discount(discount):
+        """« -12,5 % » (espace insécable) ; chaîne vide si la remise est nulle ou négative."""
+        rounded = round(discount, 1)
+        if rounded <= 0:
+            return ''
+        return ('-%g %%' % rounded).replace('.', ',')
+
+    def _get_price_break_rules(self, pricelist):
+        """Paliers de la liste de prix applicables à ce produit, triés par quantité.
+
+        Ne gère que les types de calcul Fixe et Remise (%) : une règle en Formule
+        retombe sur le prix de vente du produit.
         """
-        Méthode appelée par JavaScript pour récupérer les données du tableau
-        """
-        product = self.browse(product_id)
-        if not product.exists():
-            return {}
-        
-        return product.get_price_break_table_data(pricelist_id, partner_id, quantity)
+        self.ensure_one()
+
+        items = self.env['product.pricelist.item'].search([
+            ('pricelist_id', '=', pricelist.id),
+            ('min_quantity', '>', 0),
+        ])
+
+        # parent_path vaut « 1/5/12/ » : les ids de la catégorie et de ses parents.
+        categ_path = (self.categ_id.parent_path or '').split('/')
+
+        rules = []
+        for item in items:
+            if item.product_tmpl_id:
+                applicable = item.product_tmpl_id.id == self.id
+            elif item.product_id:
+                applicable = item.product_id.product_tmpl_id.id == self.id
+            elif item.categ_id:
+                applicable = str(item.categ_id.id) in categ_path
+            else:
+                applicable = True
+            if not applicable:
+                continue
+
+            if item.compute_price == 'fixed':
+                price = item.fixed_price
+            elif item.compute_price == 'percentage':
+                price = self.list_price * (1 - item.percent_price / 100)
+            else:
+                price = self.list_price
+
+            rules.append({'min_quantity': item.min_quantity, 'price': price})
+
+        rules.sort(key=lambda rule: rule['min_quantity'])
+        return rules
