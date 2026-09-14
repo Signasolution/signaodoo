@@ -197,6 +197,73 @@ class ProductTemplate(models.Model):
             cache['pricelist'] = pricelist
         return pricelist
 
+    @staticmethod
+    def _pb_safe(getter):
+        """Evalue getter() et renvoie sa valeur, ou le message d'erreur.
+
+        Le panneau de diagnostic ne doit jamais casser la fiche produit, meme
+        si l'une des informations collectees est indisponible.
+        """
+        try:
+            value = getter()
+        except Exception as exc:
+            return 'ERREUR: %s' % exc
+        if value is None or value is False:
+            return '(vide)'
+        return value
+
+    def get_price_break_debug_info(self):
+        """Panneau de diagnostic de la fiche produit, active par ?pb_debug=1.
+
+        Reserve aux utilisateurs internes : un visiteur ou un client portail ne
+        peut pas l'afficher, meme en ajoutant le parametre. Renvoie une liste de
+        couples (libelle, valeur), ou False si le panneau ne doit pas paraitre.
+
+        Diagnostic temporaire (voir commit diag) : a retirer une fois la cause
+        du tableau manquant identifiee.
+        """
+        self.ensure_one()
+        try:
+            if not request or not request.params.get('pb_debug'):
+                return False
+            if not self.env.user.has_group('base.group_user'):
+                return False
+        except Exception:
+            return False
+
+        safe = self._pb_safe
+        pricelist = self._get_price_break_pricelist()
+        order = self._pb_safe(lambda: request.website.sale_get_order())
+        rules = safe(lambda: self._get_price_break_rules(pricelist))
+        rows_count = len(rules) if isinstance(rules, list) else rules
+
+        return [
+            ('Utilisateur', safe(lambda: '%s (uid %s, portail/public=%s)' % (
+                self.env.user.login, self.env.uid, self.env.user.share))),
+            ('Societe active', safe(lambda: '%s (id %s)' % (
+                self.env.company.display_name, self.env.company.id))),
+            ('Site web', safe(lambda: 'id %s, societe %s' % (
+                request.website.id, request.website.company_id.display_name))),
+            ('Partenaire', safe(lambda: self.env.user.partner_id.display_name)),
+            ('Tarif du partenaire', safe(
+                lambda: self.env.user.partner_id.property_product_pricelist.display_name)),
+            ('Panier en session', safe(lambda: order.id if order else False)),
+            ('Tarif du panier', safe(lambda: order.pricelist_id.display_name if order else False)),
+            ('website.pricelist_id', safe(lambda: request.website.pricelist_id.display_name)),
+            ('Tarif dans le contexte', safe(
+                lambda: self.env.context.get('pricelist') or self.env.context.get('pricelist_id'))),
+            ('>>> TARIF RETENU', safe(lambda: '%s (id %s)' % (
+                pricelist.display_name, pricelist.id))),
+            ('Paliers min_quantity>0 dans ce tarif', safe(
+                lambda: len(self._get_price_break_items(pricelist)))),
+            ('Categorie du produit', safe(
+                lambda: '%s (chemin %s)' % (self.categ_id.display_name, self.categ_id.parent_path))),
+            ('Paliers applicables a ce produit', rows_count),
+            ('Verdict', 'tableau affiche' if isinstance(rules, list) and len(rules) > 1
+                        else 'tableau MASQUE (il faut au moins 2 paliers)'),
+            ('Quantite minimale', safe(lambda: self._get_min_purchase_qty(pricelist))),
+        ]
+
     def _get_min_purchase_qty(self, pricelist):
         """Quantité minimale de commande de ce produit pour une liste de prix (0 = aucune)."""
         self.ensure_one()
