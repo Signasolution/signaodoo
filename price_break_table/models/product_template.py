@@ -135,7 +135,10 @@ class ProductTemplate(models.Model):
             if order and order.pricelist_id:
                 pricelist = order.pricelist_id
             else:
-                pricelist = request.website.get_current_pricelist()
+                # get_current_pricelist() n'existe plus en Odoo 18 : le champ
+                # calcule la liste de prix du visiteur (partenaire, geoip, code
+                # promo). Meme resolution que WebsiteSalePriceBreak.
+                pricelist = request.website.pricelist_id
         except Exception:
             pass
         if not pricelist:
@@ -223,7 +226,11 @@ class ProductTemplate(models.Model):
         if cache is not None and key in cache:
             return cache[key]
 
-        items = self.env['product.pricelist.item'].search([
+        # sudo() : les paliers relevent du catalogue public, mais
+        # product.pricelist.item est filtre par la regle multi-societe. Un
+        # utilisateur interne dont la societe active n'est pas celle du site ne
+        # verrait aucun palier et le tableau disparaitrait de la fiche produit.
+        items = self.env['product.pricelist.item'].sudo().search([
             ('pricelist_id', '=', pricelist.id),
             ('min_quantity', '>', 0),
         ])
