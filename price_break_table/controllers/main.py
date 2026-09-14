@@ -24,7 +24,7 @@ class WebsiteSalePriceBreak(WebsiteSale):
         warning_msg = None
 
         if product.exists():
-            pricelist = self._get_current_pricelist_compat()
+            pricelist = self._get_min_qty_pricelist(product)
             if pricelist:
                 min_rule = request.env['product.min.purchase.qty'].sudo().search([
                     ('product_tmpl_id', '=', product.product_tmpl_id.id),
@@ -51,22 +51,20 @@ class WebsiteSalePriceBreak(WebsiteSale):
 
         return result
 
-    def _get_current_pricelist_compat(self):
-        """Récupère la liste de prix courante de façon compatible avec Odoo 18.
+    @staticmethod
+    def _get_min_qty_pricelist(product):
+        """Liste de prix servant à retrouver le minimum de commande du produit.
 
-        Utilise force_create=True pour que le panier soit créé (avec la bonne
-        liste de prix du partenaire) si c'est le premier ajout — c'est de toute
-        façon ce que fait super().cart_update_json() juste après.
+        La résolution est déléguée à celle de la page produit : le minimum
+        appliqué ici est ainsi exactement celui annoncé au visiteur — panier du
+        site courant s'il existe, sinon liste de prix du site. Un panier resté
+        ouvert sur un autre site (une session de navigateur ne retient qu'un
+        seul sale_order_id pour tous les sites) n'impose donc pas son minimum.
+
+        Cette liste ne sert qu'à choisir la règle de minimum : le prix de la
+        ligne reste calculé par Odoo depuis la liste de prix du panier.
         """
         try:
-            order = request.website.sale_get_order(force_create=True)
-            if order and order.pricelist_id:
-                return order.pricelist_id
+            return product.product_tmpl_id._get_price_break_pricelist()
         except Exception:
-            pass
-        # Dernier recours : liste de prix par défaut du site
-        try:
-            return request.website.pricelist_id
-        except Exception:
-            pass
-        return None
+            return None

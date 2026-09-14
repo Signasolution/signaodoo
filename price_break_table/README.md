@@ -39,7 +39,7 @@ Le module est conçu pour fonctionner correctement sur une installation Odoo mul
 
 Cette garde est indispensable : une session de navigateur ne conserve qu'un seul `sale_order_id` pour tous les sites. Un panier resté ouvert sur un autre site imposerait donc sa liste de prix ici, et les paliers seraient cherchés dans une grille qui n'est pas celle du site affiché — tableau vide sur la fiche produit et disparition du « à partir de » sur les cartes, alors qu'un visiteur anonyme, sans panier inter-sites, verrait l'affichage correct.
 
-Attention, l'application du minimum de commande à l'ajout au panier (`WebsiteSalePriceBreak.cart_update_json`) ne pose pas cette garde : elle lit la liste de prix du panier telle quelle, puisque c'est elle qui facture réellement la ligne. Dans la situation anormale d'un panier inter-sites, le minimum appliqué peut donc différer de celui affiché sur la fiche.
+L'application du minimum de commande à l'ajout au panier passe par la même résolution : `WebsiteSalePriceBreak._get_min_qty_pricelist` délègue à `_get_price_break_pricelist`, de sorte que le minimum appliqué au panier est toujours celui annoncé sur la fiche produit. Cette liste de prix ne sert qu'à choisir la règle de minimum ; le prix de la ligne, lui, reste calculé par Odoo depuis la liste de prix du panier.
 
 ## Règles prises en compte dans le tableau
 
