@@ -151,9 +151,14 @@ class ProductTemplate(models.Model):
         error = None
         try:
             order = request.website.sale_get_order()
-            if order and order.pricelist_id:
+            # Le panier ne fait autorite que s'il appartient au site courant.
+            # Une meme session de navigateur conserve un seul sale_order_id pour
+            # tous les sites : sans cette garde, un panier ouvert sur un autre
+            # site impose sa liste de prix ici, et les paliers cherches ne sont
+            # pas ceux du site affiche.
+            if order and order.pricelist_id and order.website_id == request.website:
                 pricelist = order.pricelist_id
-                source = 'panier'
+                source = 'panier du site courant'
             else:
                 # get_current_pricelist() n'existe plus en Odoo 18 : le champ
                 # calcule la liste de prix du visiteur (partenaire, geoip, code
@@ -171,7 +176,7 @@ class ProductTemplate(models.Model):
             self._price_break_diag(
                 'resolution | uid=%s login=%s share=%s | societe_active=%s (%s) '
                 '| site=%s societe_site=%s | partenaire=%s tarif_partenaire=%s '
-                '| panier=%s tarif_panier=%s | website.pricelist_id=%s '
+                '| panier=%s site_panier=%s tarif_panier=%s | website.pricelist_id=%s '
                 '| ctx_pricelist=%s | erreur=%r | RETENUE=%s (id=%s, source=%s)',
                 self.env.uid,
                 self.env.user.login,
@@ -182,6 +187,7 @@ class ProductTemplate(models.Model):
                 self.env.user.partner_id.display_name,
                 self.env.user.partner_id.property_product_pricelist.display_name,
                 order and order.id,
+                order and order.website_id.display_name,
                 order and order.pricelist_id.display_name,
                 website_pricelist and website_pricelist.display_name,
                 self.env.context.get('pricelist') or self.env.context.get('pricelist_id'),
@@ -248,6 +254,7 @@ class ProductTemplate(models.Model):
             ('Tarif du partenaire', safe(
                 lambda: self.env.user.partner_id.property_product_pricelist.display_name)),
             ('Panier en session', safe(lambda: order.id if order else False)),
+            ('Site du panier', safe(lambda: order.website_id.display_name if order else False)),
             ('Tarif du panier', safe(lambda: order.pricelist_id.display_name if order else False)),
             ('website.pricelist_id', safe(lambda: request.website.pricelist_id.display_name)),
             ('Tarif dans le contexte', safe(
