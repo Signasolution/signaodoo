@@ -65,19 +65,6 @@
                         </table>
                     </div>
                 </div>
-
-                <!-- Diagnostic temporaire (voir commit diag) : visible uniquement
-                     pour un utilisateur interne ayant ajouté ?pb_debug=1 à l'URL.
-                     À retirer une fois la cause du tableau manquant identifiée. -->
-                <t t-set="price_break_debug" t-value="product.get_price_break_debug_info()"/>
-                <div t-if="price_break_debug" class="alert alert-info mt-3 small">
-                    <strong class="d-block mb-2">Diagnostic prix dégressifs</strong>
-                    <ul class="mb-0 ps-3">
-                        <li t-foreach="price_break_debug" t-as="entry">
-                            <span t-esc="entry[0]"/> : <strong t-esc="entry[1]"/>
-                        </li>
-                    </ul>
-                </div>
             </xpath>
         </template>
 

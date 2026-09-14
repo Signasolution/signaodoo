@@ -35,7 +35,11 @@ Attention : la carte n'affiche alors plus le prix à l'unité. Un visiteur qui n
 
 ### Multi-site
 
-Le module est conçu pour fonctionner correctement sur une installation Odoo multi-site (plusieurs sites web partageant la même base de données, chacun avec ses propres listes de prix). La résolution de la liste de prix (`ProductTemplate._get_price_break_pricelist`) suit en priorité la liste de prix réellement attachée au panier du visiteur (`website.sale_get_order().pricelist_id`), la même que celle utilisée pour l'application du minimum de commande — évitant qu'un site récupère par erreur la liste de prix (et donc les règles) d'un autre site.
+Le module est conçu pour fonctionner correctement sur une installation Odoo multi-site (plusieurs sites web partageant la même base de données, chacun avec ses propres listes de prix). `ProductTemplate._get_price_break_pricelist` retient la liste de prix du panier du visiteur (`website.sale_get_order().pricelist_id`) — la même que celle appliquée au minimum de commande — **mais seulement si ce panier appartient au site courant**. Sinon elle retombe sur `website.pricelist_id`.
+
+Cette garde est indispensable : une session de navigateur ne conserve qu'un seul `sale_order_id` pour tous les sites. Un panier resté ouvert sur un autre site imposerait donc sa liste de prix ici, et les paliers seraient cherchés dans une grille qui n'est pas celle du site affiché — tableau vide sur la fiche produit et disparition du « à partir de » sur les cartes, alors qu'un visiteur anonyme, sans panier inter-sites, verrait l'affichage correct.
+
+Attention, l'application du minimum de commande à l'ajout au panier (`WebsiteSalePriceBreak.cart_update_json`) ne pose pas cette garde : elle lit la liste de prix du panier telle quelle, puisque c'est elle qui facture réellement la ligne. Dans la situation anormale d'un panier inter-sites, le minimum appliqué peut donc différer de celui affiché sur la fiche.
 
 ## Règles prises en compte dans le tableau
 
