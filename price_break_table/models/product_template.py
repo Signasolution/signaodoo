@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import logging
+
 from odoo import models, fields
 from odoo.http import request
+
+_logger = logging.getLogger(__name__)
 
 
 class ProductTemplate(models.Model):
@@ -103,6 +107,17 @@ class ProductTemplate(models.Model):
                 return None
         return cache
 
+    @staticmethod
+    def _price_break_diag(message, *args):
+        """Trace de diagnostic temporaire (voir commit diag). A retirer ensuite.
+
+        Ne doit jamais faire echouer le rendu d'une page : tout est avale.
+        """
+        try:
+            _logger.info('[PRICE_BREAK] ' + message, *args)
+        except Exception:
+            pass
+
     def _get_price_break_pricelist(self, pricelist_id=None):
         """Liste de prix à utiliser pour l'affichage site de ce produit.
 
@@ -130,19 +145,53 @@ class ProductTemplate(models.Model):
             return cache['pricelist']
 
         pricelist = False
+        source = 'aucune'
+        order = None
+        website_pricelist = False
+        error = None
         try:
             order = request.website.sale_get_order()
             if order and order.pricelist_id:
                 pricelist = order.pricelist_id
+                source = 'panier'
             else:
                 # get_current_pricelist() n'existe plus en Odoo 18 : le champ
                 # calcule la liste de prix du visiteur (partenaire, geoip, code
                 # promo). Meme resolution que WebsiteSalePriceBreak.
-                pricelist = request.website.pricelist_id
-        except Exception:
-            pass
+                website_pricelist = request.website.pricelist_id
+                pricelist = website_pricelist
+                source = 'website.pricelist_id'
+        except Exception as exc:
+            error = exc
         if not pricelist:
             pricelist = self.env['product.pricelist'].search([('active', '=', True)], limit=1)
+            source = 'repli premiere liste active'
+
+        try:
+            self._price_break_diag(
+                'resolution | uid=%s login=%s share=%s | societe_active=%s (%s) '
+                '| site=%s societe_site=%s | partenaire=%s tarif_partenaire=%s '
+                '| panier=%s tarif_panier=%s | website.pricelist_id=%s '
+                '| ctx_pricelist=%s | erreur=%r | RETENUE=%s (id=%s, source=%s)',
+                self.env.uid,
+                self.env.user.login,
+                self.env.user.share,
+                self.env.company.display_name, self.env.company.id,
+                request.website.id,
+                request.website.company_id.display_name,
+                self.env.user.partner_id.display_name,
+                self.env.user.partner_id.property_product_pricelist.display_name,
+                order and order.id,
+                order and order.pricelist_id.display_name,
+                website_pricelist and website_pricelist.display_name,
+                self.env.context.get('pricelist') or self.env.context.get('pricelist_id'),
+                error,
+                pricelist and pricelist.display_name,
+                pricelist and pricelist.id,
+                source,
+            )
+        except Exception:
+            pass
 
         if cache is not None:
             cache['pricelist'] = pricelist
@@ -199,11 +248,21 @@ class ProductTemplate(models.Model):
                 'discount_display': self._format_price_break_discount(discount),
             })
 
+        min_purchase_qty = self._get_min_purchase_qty(pricelist)
+        self._price_break_diag(
+            'fiche produit | produit=%s (id=%s) categorie=%s | tarif=%s '
+            '| %s ligne(s) -> tableau %s | qte_mini=%s',
+            self.display_name, self.id, self.categ_id.display_name,
+            pricelist.display_name, len(rows),
+            'affiche' if len(rows) > 1 else 'MASQUE',
+            min_purchase_qty,
+        )
+
         return {
             'rows': rows,
             'currency': pricelist.currency_id,
             'pricelist_id': pricelist.id,
-            'min_purchase_qty': self._get_min_purchase_qty(pricelist),
+            'min_purchase_qty': min_purchase_qty,
         }
 
     @staticmethod
@@ -234,6 +293,11 @@ class ProductTemplate(models.Model):
             ('pricelist_id', '=', pricelist.id),
             ('min_quantity', '>', 0),
         ])
+
+        self._price_break_diag(
+            'paliers | tarif=%s (id=%s) | %s regle(s) min_quantity>0 dans cette liste',
+            pricelist.display_name, pricelist.id, len(items),
+        )
 
         if cache is not None:
             cache[key] = items
