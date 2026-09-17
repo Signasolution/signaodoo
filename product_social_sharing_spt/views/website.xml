@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="social_sharing_website_view_form" model="ir.ui.view">
+        <field name="name">social.sharing.website.view.form</field>
+        <field name="model">website</field>
+        <field name="inherit_id" ref="website.view_website_form"/>
+        <field name="arch" type="xml">
+        <xpath expr="//field[@name='language_ids']" position="after">
+                <field name="is_share"/>
+                <field name="dynamic_share"/>
+        </xpath>
+        <xpath expr="//notebook" position="inside">
+                <page string="Social Sharing" invisible="dynamic_share == True">
+                    <group>
+                        <group>
+                            <field name="fb_visible"/>
+                            <field name="linkedin_visible"/>
+                            <field name="twitter_visible"/>
+                            <field name="email_visible"/>
+                            <field name="gmail_visible"/>
+                        </group>
+                        <group>
+                            <field name="evernote_visible"/>
+                            <field name="whatsApp_visible"/>
+                            <field name="telegram_visible"/>
+                            <field name="pocket_visible"/>
+                        </group>
+                        <group>
+                            <field name="pinterest_visible"/>
+                            <field name="reddit_visible"/>
+                            <field name="flipboard_visible"/>
+                            <field name="fbm_visible"/>
+                            <field name="line_visible"/>
+                        </group>
+                        <group>
+                            <field name="viber_visible"/>
+                            <field name="wechat_visible"/>
+                            <field name="sms_visible"/>
+                            <field name="skype_visible"/>
+                            <field name="copylink_visible"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
